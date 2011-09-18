@@ -167,6 +167,9 @@ namespace FsoAudio
                 case "palmpre":
                     typename = "RouterPalmPre";
                     break;
+                case "aci":
+                    typename = "RouterAci";
+                    break;
                 default:
                     router = new FsoAudio.NullRouter();
                     break;

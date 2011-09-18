@@ -66,6 +66,75 @@ public class FsoAudio.BunchOfMixerControls
 }
 
 /**
+ * @class FsoAudio.AciRoute
+ **/
+public class FsoAudio.AciRoute
+{
+    public FsoAudio.AciControl[] controls;
+    public FsoAudio.AciControl mastervol;
+    public int priority;
+
+    public AciRoute( FsoAudio.AciControl[] controls, int priority, FsoAudio.AciControl? mastervol )
+    {
+        this.controls = controls;
+        this.priority = priority;
+        this.mastervol = mastervol;
+    }
+
+    public string to_string()
+    {
+        var str = @"priority $priority\n";
+        for ( int i = 0; i < controls.length; ++i )
+        {
+            str += @"$(controls[i])\n";
+        }
+        return str;
+    }
+}
+
+
+/**
+ * @class FsoAudio.AciDevice
+ **/
+public class FsoAudio.AciDevice
+{
+    public FsoAudio.AciRoute mic_route;
+    public FsoAudio.AciRoute speaker_route;
+
+    public AciDevice( FsoAudio.AciRoute? speaker_route, FsoAudio.AciRoute? mic_route )
+    {
+        this.speaker_route = speaker_route;
+        this.mic_route = mic_route;
+    }
+
+    public string to_string()
+    {
+        string str;
+
+        if ( mic_route != null )
+        {
+            str = @"Mic route:\n$(mic_route.to_string())\n";
+        }
+        else
+        {
+            str = "No mic route\n";
+        }
+
+        if ( speaker_route != null )
+        {
+            str = @"Speaker route:\n$(speaker_route.to_string())\n";
+        }
+        else
+        {
+            str = "No speaker route\n";
+        }
+
+        return str;
+    }
+}
+
+
+/**
  * @class FsoAudio.SoundDevice
  *
  * Encapsulates access to one Alsa Mixer Device
@@ -215,6 +284,23 @@ public class FsoAudio.SoundDevice : FsoFramework.AbstractObject
     }
 
     /**
+     * Set all controls of an ACI route
+     * remember the old values for unsetting
+     * the route later
+     **/
+    public void setAciRoute( AciRoute route ) throws SoundError
+    {
+        assert( card != null );
+        foreach ( var control in route.controls )
+        {
+            var res = card.elem_read( control.unset_value );
+            if ( res < 0 )
+                throw new SoundError.DEVICE_ERROR( "%s".printf( Alsa.strerror( res ) ) );
+            card.elem_write( control.value );
+        }
+    }
+
+    /**
      * Construct @a MixerControl from a string description.
      **/
     public MixerControl controlForString( string description ) throws SoundError
@@ -265,6 +351,191 @@ public class FsoAudio.SoundDevice : FsoFramework.AbstractObject
                 break;
         }
         return control;
+    }
+
+    /**
+     * construct an AciControl from an amix-like string description
+     *
+     * description is some string which could be fed into amixer
+     * example: cset name='Line Left Mux' 1 # @prio=12
+     */
+    public AciControl controlForAmixString( string description )
+    {
+        int priority = 1;
+
+        description.strip();
+
+        /* split amixer command and the rest of the description
+         * the only valid command is cset */
+        var strings = description.split( " ", 2 );
+        if ( strings[0] != "cset" )
+            throw new SoundError.INVALID_DESCRIPTOR( "Expected an amix style cset control description - got %s instead".printf( description ) );
+
+        /* split the control description and an eventual comment */
+        var tokens = strings[1].split( "#", 2 );
+
+        ElemIdExt eid;
+        var res = ElemIdExt.alloc( out eid );
+        if ( res < 0 )
+            throw new SoundError.DEVICE_ERROR( "%s".printf( Alsa.strerror( res ) ) );
+
+        ElemInfo info;
+        res = ElemInfo.alloc( out info );
+        if ( res < 0 )
+            throw new SoundError.DEVICE_ERROR( "%s".printf( Alsa.strerror( res ) ));
+
+        ElemValue value;
+        res = ElemValue.alloc( out value );
+        if ( res < 0 )
+            throw new SoundError.DEVICE_ERROR( "%s".printf( Alsa.strerror( res ) ) );
+
+        ElemValue unset_value;
+        res = ElemValue.alloc( out unset_value );
+        if ( res  < 0 )
+            throw new SoundError.DEVICE_ERROR( "%s".printf( Alsa.strerror( res) ) );
+
+        string part = tokens[0];
+        int next_comma = 1;
+        while ( next_comma > 0 )
+        {
+            if ( part.has_prefix( "numid=" ) )
+            {
+                var numid  = part.offset( 6 ).to_int();
+                if ( numid <= 0 )
+                    throw new SoundError.INVALID_DESCRIPTOR( "Invalid numid in description %s".printf( description ) );
+                eid.set_numid( numid );
+            }
+            else if ( part.has_prefix( "iface=" ) )
+            {
+                part = part.offset( 6 );
+                if ( part.ascii_ncasecmp( "card", 4 ) == 0 )
+                    eid.set_interface( ElemInterface.CARD );
+                else if ( part.ascii_ncasecmp( "mixer", 5 ) == 0 )
+                    eid.set_interface( ElemInterface.MIXER );
+                else if ( part.ascii_ncasecmp( "pcm", 3 ) == 0 )
+                    eid.set_interface( ElemInterface.PCM );
+                else if ( part.ascii_ncasecmp( "rawmidi", 7 ) == 0 )
+                    eid.set_interface( ElemInterface.RAWMIDI );
+                else if ( part.ascii_ncasecmp( "timer", 5 ) == 0 )
+                    eid.set_interface( ElemInterface.TIMER );
+                else if ( part.ascii_ncasecmp( "sequencer", 9 ) == 0 )
+                    eid.set_interface( ElemInterface.SEQUENCER );
+                else
+                    throw new SoundError.INVALID_DESCRIPTOR( "Invalid iface in description %s".printf( description ) );
+            }
+            else if ( part.has_prefix( "name=" ) )
+            {
+                string name;
+                char sep = 0;
+                part = part.offset( 5 );
+                if ( part[0] == '\'' || part[0] == '"' )
+                {
+                    sep = part[0];
+                    part = part.offset( 1 );
+                }
+                if ( sep != 0 )
+                {
+                    name = part.substring( 0, part.index_of_char( sep ) );
+                    part = part.offset( name.length );
+                }
+                else
+                {
+                    next_comma = part.index_of_char( ',' );
+                    if ( next_comma > 0 )
+                    {
+                        name = part.substring( 0, next_comma );
+                    }
+                    else
+                    {
+                        name = part;
+                    }
+                }
+                eid.set_name( name );
+            }
+            else if ( part.has_prefix( "index=" ) )
+            {
+                var index  = part.offset( 6 ).to_int();
+                if ( index <= 0 )
+                    throw new SoundError.INVALID_DESCRIPTOR( "Invalid index in description %s".printf( description ) );
+                eid.set_index( index );
+            }
+            else if ( part.has_prefix( "device=" ) )
+            {
+                var device  = part.offset( 7 ).to_int();
+                if ( device <= 0 )
+                    throw new SoundError.INVALID_DESCRIPTOR( "Invalid device in description %s".printf( description ) );
+                eid.set_device( device );
+            }
+            else if ( part.has_prefix( "subdevice=" ) )
+            {
+                var subdevice  = part.offset( 7 ).to_int();
+                if ( subdevice <= 0 )
+                    throw new SoundError.INVALID_DESCRIPTOR( "Invalid device in description %s".printf( description ) );
+                eid.set_subdevice( subdevice );
+            }
+
+            next_comma = part.index_of_char( ',' );
+            if ( next_comma > 0 )
+                part = part.offset( next_comma + 1 );
+        }
+
+        info.set_id( eid );
+        res = card.elem_info( info );
+        if ( res < 0 )
+            throw new SoundError.DEVICE_ERROR( "%s".printf( Alsa.strerror( res ) ) );
+
+        value.set_id( eid );
+        res = card.elem_read( value );
+        if ( res < 0 )
+            throw new SoundError.DEVICE_ERROR( "%s".printf( Alsa.strerror( res ) ) );
+
+        unset_value.set_id( eid );
+
+        var count = info.get_count();
+        var segments = part.split( " " );
+        if ( segments.length != count )
+            throw new SoundError.INVALID_DESCRIPTOR( "Missing or wrong value for control in description %s". printf( description ) );
+
+        switch ( info.get_type() )
+        {
+            case ElemType.BOOLEAN:
+                for ( var i = 0; i < count; ++i )
+                    value.set_boolean( i, segments[i] == "1" );
+                break;
+            case ElemType.INTEGER:
+                for ( var i = 0; i < count; ++i )
+                    value.set_integer( i, segments[i].to_int() );
+                break;
+            case ElemType.INTEGER64:
+                for ( var i = 0; i < count; ++i )
+                    value.set_integer64( i, segments[i].to_int64() );
+                break;
+            case ElemType.ENUMERATED:
+                for ( var i = 0; i < count; ++i )
+                    value.set_enumerated( i, segments[i].to_int() );
+                break;
+            case ElemType.BYTES:
+                for ( var i = 0; i < count; ++i )
+                    value.set_byte( i, (uchar) ( segments[i].to_int() & 0xff ) );
+                break;
+            case ElemType.IEC958:
+#if DEBUG
+                debug( "Can't restore IEC958 element" );
+#endif
+                break;
+            default:
+                warning( "Unknown type %d... ignoring".printf( info.get_type() ) );
+                break;
+        }
+
+        if ( tokens.length > 1 )
+        {
+            var pos = tokens[1].index_of( "@prio=" );
+            if ( pos > 0 )
+                priority = tokens[1].offset( pos + 6 ).to_int();
+        }
+
+        return new FsoAudio.AciControl( ref eid, ref info, ref value, ref unset_value, priority );
     }
 
     /**
@@ -331,6 +602,7 @@ public class FsoAudio.SoundDevice : FsoFramework.AbstractObject
     }
 }
 
+
 /**
  * @class FsoAudio.MixerControl
  *
@@ -352,6 +624,81 @@ public class FsoAudio.MixerControl
     public string to_string()
     {
         var infoline = "%u:'%s':%u:".printf( eid.get_numid(), eid.get_name(), info.get_count() );
+
+        var type = info.get_type();
+        var count = info.get_count();
+
+        switch (type)
+        {
+            case ElemType.BOOLEAN:
+                for ( var i = 0; i < count; ++i )
+                    infoline += "%u,".printf( (uint)value.get_boolean( i ) );
+                break;
+            case ElemType.INTEGER:
+                for ( var i = 0; i < count; ++i )
+                    infoline += "%ld,".printf( value.get_integer( i ) );
+                break;
+            case ElemType.INTEGER64:
+                for ( var i = 0; i < count; ++i )
+                    infoline += "%ld,".printf( (long)value.get_integer64( i ) );
+                break;
+            case ElemType.ENUMERATED:
+                for ( var i = 0; i < count; ++i )
+                    infoline += "%u,".printf( value.get_enumerated( i ) );
+                break;
+            case ElemType.BYTES:
+                for ( var i = 0; i < count; ++i )
+                    infoline += "%2.2x,".printf( value.get_byte( i ) );
+                break;
+            case ElemType.IEC958:
+                AesIec958 iec958 = {};
+                value.get_iec958( iec958 );
+                infoline += "<IEC958>";
+                break;
+            default:
+                for ( var i = 0; i < count; ++i )
+                    infoline += "<unknown>,";
+                break;
+        }
+        return ( infoline[infoline.length-1] == ',' ) ? infoline.substring( 0, infoline.length-1 ) : infoline;
+    }
+
+    public uint volume {
+        set {
+            assert_not_reached();
+        }
+
+        get {
+            assert_not_reached();
+        }
+    }
+}
+
+/**
+ * @class FsoAudio.AciControl
+ *
+ * One control of an ACI audio route
+ **/
+public class FsoAudio.AciControl
+{
+    public ElemIdExt eid;
+    public ElemInfo info;
+    public ElemValue value;
+    public ElemValue unset_value;
+    public int priority;
+
+
+    public AciControl( ref ElemIdExt eid, ref ElemInfo info, ref ElemValue value, ref ElemValue unset_value, int priority )
+    {
+        this.eid = (owned) eid;
+        this.info = (owned) info;
+        this.value = (owned) value;
+        this.priority = priority;
+    }
+
+    public string to_string()
+    {
+        var infoline = "%u:'%s':%u:prio %d:".printf( eid.get_numid(), eid.get_name(), info.get_count(), priority );
 
         var type = info.get_type();
         var count = info.get_count();

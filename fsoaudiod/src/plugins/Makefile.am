@@ -8,6 +8,7 @@ SUBDIRS = \
 	\
 	router_palmpre \
 	router_alsa \
+	router_aci \
 	\
 	streamcontrol_alsa \
 	sessionpolicy_default \
