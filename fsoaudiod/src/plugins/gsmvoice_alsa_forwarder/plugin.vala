@@ -37,6 +37,10 @@ class RingBuffer : GLib.Object
     private int ring_tail;
     private int ring_size;
 
+     public int free;
+     public int avail;
+
+
     public RingBuffer( int size )
     {
         this.ring = new uint8[size];
@@ -45,14 +49,23 @@ class RingBuffer : GLib.Object
         this.ring_size = size;
     }
 
+    public void logInfos()
+    {
+          assert ( FsoFramework.theLogger.info ( @"<RingBuffer.Status> ring_tail: $(ring_tail) ring_head: $(ring_head) ring_size: $(ring_size) avail: $(avail) free: $(free)" ) );
+    }
+
+
+
     public void write( uint8[] x, int count ) throws RingError
     {
         int new_ring_head = (ring_head + count) % ring_size;
-        int free = (ring_size + ring_tail - ring_head) % ring_size;
-        if ( free == 0 )
-            free = ring_size;
-        stderr.printf( "RingBuffer.write: ring_head=%d, ring_tail=%d, count=%d, free=%d\n", ring_head, ring_tail, count, free );
-        if ( count > free )
+        this.free = (ring_size + ring_tail - ring_head) % ring_size;
+        this.avail = (ring_size + ring_head - ring_tail) % ring_size;
+
+        if ( this.free == 0 )
+            this.free = ring_size;
+        stderr.printf( "RingBuffer.write: ring_head=%d, ring_tail=%d, count=%d, free=%d\n", ring_head, ring_tail, count, this.free );
+        if ( count > this.free )
         {
             throw new RingError.Overflow( @"Buffer is full (free: $free / wanted to write: $count)" );
         }
@@ -80,10 +93,11 @@ class RingBuffer : GLib.Object
     /* wouldn't want the function to malloc a new buffer each time */
     public void read( uint8[] x, int count ) throws RingError
     {
-        int avail = (ring_size + ring_head - ring_tail) % ring_size;
+        this.avail = (ring_size + ring_head - ring_tail) % ring_size;
+        this.free = (ring_size + ring_tail - ring_head) % ring_size;
 
-        stderr.printf( "RingBuffer.read: ring_head=%d, ring_tail=%d, count=%d, avail=%d\n", ring_head, ring_tail, count, avail );
-        if ( avail < count )
+        stderr.printf( "RingBuffer.read: ring_head=%d, ring_tail=%d, count=%d, avail=%d\n", ring_head, ring_tail, count, this.avail );
+        if ( this.avail < count )
         {
             throw new RingError.Underflow( @"Buffer has only $avail bytes available ($count requested)" );
         }
@@ -119,7 +133,7 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
     private FsoAudio.PcmDevice modemPCM;
     private FsoAudio.PcmDevice codecPCM;
 
-    private Mutex bufferMutex = new Mutex();
+//    private Mutex bufferMutex = new Mutex();
     private RingBuffer transferBuffer;
     private int bufferSize;
     private int numFrames;
@@ -179,6 +193,7 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
 
         while ( this.runRecord > 0 )
         {
+            transferBuffer.logInfos();
             try
             {
                 frames = modemPCM.readi( buffer, this.numFrames );
@@ -194,9 +209,9 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
                         stderr.printf("frames: %ld \n",(long)frames);
                     }
 
-                    bufferMutex.lock();
+//                    bufferMutex.lock();
                     transferBuffer.write( buffer,(int)frames * this.frameSize );
-                    bufferMutex.unlock();
+                         //                   bufferMutex.unlock();
                 }
 
             }
@@ -206,7 +221,7 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
             }
             catch ( RingError e )
             {
-                bufferMutex.unlock();
+                    //          bufferMutex.unlock();
                 logger.warning( @"Record  RingBuffer error: $(e.message)" );
             }
         }
@@ -220,20 +235,22 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
 
         while (this.runPlayback > 0)
         {
+            transferBuffer.logInfos();
+               // if ( transferBuffer.avail < this.numFrames * this.frameSize )
+               //      continue;
             try
             {
-                bufferMutex.lock();
+//                bufferMutex.lock();
                 transferBuffer.read( buffer,this.numFrames * this.frameSize );
-                bufferMutex.unlock();
+                    //              bufferMutex.unlock();
 
                 frames  = codecPCM.writei( buffer, this.numFrames );
-                if ( frames != this.numFrames )
-                {
-                    stderr.printf("frames: %ld \n",(long)frames);
-                }
-                else if ( frames == -Posix.EPIPE)
+                    if ( frames == -Posix.EPIPE)
                 {
                     codecPCM.recover ( -Posix.EPIPE,0);
+                }else if ( frames != this.numFrames )
+                {
+                    stderr.printf("frames: %ld \n",(long)frames);
                 }
             }
            catch ( FsoAudio.SoundError e )
@@ -242,7 +259,7 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
             }
             catch ( RingError e )
             {
-                bufferMutex.unlock();
+//                bufferMutex.unlock();
                 logger.warning( @"Playback RingBuffer error: $(e.message)" );
                 play_silence( 1 );
             }
@@ -416,7 +433,7 @@ class FsoAudio.GsmVoiceForwarder.Plugin : FsoFramework.AbstractObject
     private FsoFramework.Subsystem subsystem;
     private FreeSmartphone.GSM.Call gsmcallproxy;
     /* TODO: configure the values */
-    private PlaybackFromModem modemSourceCodecSink = new PlaybackFromModem(160,2);
+    private PlaybackFromModem modemSourceCodecSink = new PlaybackFromModem(320,2);
 
     //
     // Private API
