@@ -164,7 +164,7 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
             }
             catch ( FsoAudio.SoundError e )
             {
-                logger.error( @"Error: $(e.message)" );
+                logger.error( @"Silence  Error: $(e.message)" );
                 return;
             }
         }
@@ -202,11 +202,12 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
             }
             catch ( FsoAudio.SoundError e )
             {
-                logger.error( @"SoundError: $(e.message)" );
+                logger.error( @"Record SoundError: $(e.message)" );
             }
             catch ( RingError e )
             {
                 bufferMutex.unlock();
+                logger.warning( @"Record  RingBuffer error: $(e.message)" );
             }
         }
         return null;
@@ -237,12 +238,12 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
             }
            catch ( FsoAudio.SoundError e )
             {
-                logger.error( @"Error: $(e.message)" );
+                logger.error( @"Playback Error: $(e.message)" );
             }
             catch ( RingError e )
             {
                 bufferMutex.unlock();
-                logger.warning( @"RingBuffer error: $(e.message)" );
+                logger.warning( @"Playback RingBuffer error: $(e.message)" );
                 play_silence( 1 );
             }
         }
