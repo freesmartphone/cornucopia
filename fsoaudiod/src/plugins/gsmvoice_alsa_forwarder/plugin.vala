@@ -142,6 +142,9 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
     private int runPlayback = 0; //it's an int to be atomic
     private bool status;
 
+     private Cond conditionalWait = new Cond();
+     private Mutex readyToRead = new Mutex();
+
     private unowned Thread<void *> recordThread = null;
     private unowned Thread<void *> playbackThread = null;
 
@@ -212,6 +215,7 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
 //                    bufferMutex.lock();
                     transferBuffer.write( buffer,(int)frames * this.frameSize );
                          //                   bufferMutex.unlock();
+                         this.conditionalWait.broadcast();
                 }
 
             }
@@ -235,6 +239,9 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
 
         while (this.runPlayback > 0)
         {
+               this.conditionalWait.wait(this.readyToRead);
+            this.transferBuffer.logInfos();
+
             transferBuffer.logInfos();
                // if ( transferBuffer.avail < this.numFrames * this.frameSize )
                //      continue;
@@ -245,7 +252,7 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
                     //              bufferMutex.unlock();
 
                 frames  = codecPCM.writei( buffer, this.numFrames );
-                    if ( frames == -Posix.EPIPE)
+                if ( frames == -Posix.EPIPE)
                 {
                     codecPCM.recover ( -Posix.EPIPE,0);
                 }else if ( frames != this.numFrames )
@@ -253,7 +260,7 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
                     stderr.printf("frames: %ld \n",(long)frames);
                 }
             }
-           catch ( FsoAudio.SoundError e )
+            catch ( FsoAudio.SoundError e )
             {
                 logger.error( @"Playback Error: $(e.message)" );
             }
@@ -405,8 +412,8 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
 
         if ( enabled )
         {
-            this.startRecord();
-            this.startPlayback();
+             this.startRecord();
+             this.startPlayback();
         }
         else
         {
@@ -433,7 +440,7 @@ class FsoAudio.GsmVoiceForwarder.Plugin : FsoFramework.AbstractObject
     private FsoFramework.Subsystem subsystem;
     private FreeSmartphone.GSM.Call gsmcallproxy;
     /* TODO: configure the values */
-    private PlaybackFromModem modemSourceCodecSink = new PlaybackFromModem(320,2);
+    private PlaybackFromModem modemSourceCodecSink = new PlaybackFromModem(8000,2);
 
     //
     // Private API
