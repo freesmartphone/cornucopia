@@ -133,7 +133,6 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
     private FsoAudio.PcmDevice modemPCM;
     private FsoAudio.PcmDevice codecPCM;
 
-//    private Mutex bufferMutex = new Mutex();
     private RingBuffer transferBuffer;
     private int bufferSize;
     private int numFrames;
@@ -212,10 +211,8 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
                         stderr.printf("frames: %ld \n",(long)frames);
                     }
 
-//                    bufferMutex.lock();
                     transferBuffer.write( buffer,(int)frames * this.frameSize );
-                         //                   bufferMutex.unlock();
-                         this.conditionalWait.broadcast();
+                    this.conditionalWait.broadcast();
                 }
 
             }
@@ -225,7 +222,6 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
             }
             catch ( RingError e )
             {
-                    //          bufferMutex.unlock();
                 logger.warning( @"Record  RingBuffer error: $(e.message)" );
             }
         }
@@ -243,13 +239,9 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
             this.transferBuffer.logInfos();
 
             transferBuffer.logInfos();
-               // if ( transferBuffer.avail < this.numFrames * this.frameSize )
-               //      continue;
             try
             {
-//                bufferMutex.lock();
                 transferBuffer.read( buffer,this.numFrames * this.frameSize );
-                    //              bufferMutex.unlock();
 
                 frames  = codecPCM.writei( buffer, this.numFrames );
                 if ( frames == -Posix.EPIPE)
@@ -266,7 +258,6 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
             }
             catch ( RingError e )
             {
-//                bufferMutex.unlock();
                 logger.warning( @"Playback RingBuffer error: $(e.message)" );
                 play_silence( 1 );
             }
