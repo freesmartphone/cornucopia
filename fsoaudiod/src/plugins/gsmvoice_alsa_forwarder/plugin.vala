@@ -134,29 +134,71 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
     private FsoAudio.PcmDevice codecPCM;
 
     private RingBuffer transferBuffer;
-    private int bufferSize;
-    private int numFrames;
+    private Alsa.PcmUnsignedFrames modemBufferSize;
+    private Alsa.PcmUnsignedFrames codecBufferSize;
+    private Alsa.PcmUnsignedFrames modemPeriodSize;
+    private Alsa.PcmUnsignedFrames codecPeriodSize;
     private int frameSize;
     private int runRecord = 0; //it's an int to be atomic
     private int runPlayback = 0; //it's an int to be atomic
     private bool status;
 
-     private Cond conditionalWait = new Cond();
-     private Mutex readyToRead = new Mutex();
+
+    private Cond conditionalWait = new Cond();
+    private Mutex readyToRead = new Mutex();
 
     private unowned Thread<void *> recordThread = null;
     private unowned Thread<void *> playbackThread = null;
 
 
-    public PlaybackFromModem( int frames , int frameSize )
+    public PlaybackFromModem()
     {
-        this.numFrames = frames;
-        this.frameSize = frameSize;
-        this.bufferSize = 3 * frames * frameSize;
-        this.transferBuffer = new RingBuffer( this.bufferSize );
+        /* TODO: Close the sound cards and re-open later */
+        Alsa.PcmFormat format = Alsa.PcmFormat.S16_LE; //TODO: make that configurable or automatic
+        Alsa.PcmAccess access = Alsa.PcmAccess.RW_INTERLEAVED; //TODO: make that configurable or automatic
+        int channels = 1; //TODO: make that configurable or automatic
+        int rate = 8000; //TODO: make that configurable or automatic
+        try
+        {
+            int transferBufferSize;
+
+            this.frameSize = 2; //TODO: make that configurable or automatic
+
+            //main Sound card
+            assert( logger.debug( @"Setup alsa sink for modem audio" ) );
+            this.codecPCM = new FsoAudio.PcmDevice();
+            /* TODO: add an fso config for that (plug:dmix:0) */
+            this.codecPCM.open( "plug:dmix:0", Alsa.PcmStream.PLAYBACK);
+            this.codecPCM.setFormat( access, format, rate, channels );
+
+            //modem sound card
+            assert( logger.debug( @"Setup alsa source for modem audio" ) );
+            this.modemPCM = new FsoAudio.PcmDevice();
+            /* TODO: add an fso config for that (plug:dnoop:1) */
+            this.modemPCM.open( "plug:dsnoop:1", Alsa.PcmStream.CAPTURE );
+            this.modemPCM.setFormat( access, format, rate, channels );
+
+            /* get the buffer parameters from the kernel */
+
+            this.codecPCM.getParams( out this.codecBufferSize, out this.codecPeriodSize);
+            assert ( logger.info( @"CODEC Buffer size is $((int)this.codecBufferSize), CODEC period size is $((int)this.codecPeriodSize)") );
+
+            this.modemPCM.getParams( out this.modemBufferSize, out this.modemPeriodSize);
+            assert ( logger.info( @"Modem Buffer size is $((int)this.modemBufferSize), Modem period size is $((int)this.modemPeriodSize)") );
+
+            transferBufferSize = ((int)this.codecBufferSize > (int)this.modemBufferSize) ?
+                (int)this.codecBufferSize : (int)this.modemBufferSize;
+
+            assert ( logger.info( @"Buffer size is $(transferBufferSize)") );
+            this.transferBuffer = new RingBuffer( transferBufferSize );
+        }
+        catch ( Error e )
+        {
+            logger.error( @"Error: $(e.message)" );
+        }
     }
 
-    private void play_silence( int frames )
+    private void playSilence( int frames )
     {
         Alsa.PcmSignedFrames ret;
         uint8[] silence_buffer = new uint8[ frames  * this.frameSize ];
@@ -191,14 +233,14 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
     private void * recordThreadMethod()
     {
         Alsa.PcmSignedFrames frames;
-        var buffer = new uint8[this.bufferSize];
+        var buffer = new uint8[this.modemBufferSize];
 
         while ( this.runRecord > 0 )
         {
             transferBuffer.logInfos();
             try
             {
-                frames = modemPCM.readi( buffer, this.numFrames );
+                frames = modemPCM.readi( buffer, this.modemPeriodSize );
 
                 if ( frames == -Posix.EPIPE)
                 {
@@ -206,7 +248,7 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
                 }
                 else
                 {
-                    if ( frames != this.numFrames)
+                    if ( frames != this.modemPeriodSize)
                     {
                         stderr.printf("frames: %ld \n",(long)frames);
                     }
@@ -231,23 +273,23 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
     private void * playbackThreadMethod()
     {
         Alsa.PcmSignedFrames frames;
-        var buffer = new uint8[this.bufferSize];
+        var buffer = new uint8[this.codecBufferSize];
 
         while (this.runPlayback > 0)
         {
-               this.conditionalWait.wait(this.readyToRead);
+            this.conditionalWait.wait(this.readyToRead);
             this.transferBuffer.logInfos();
 
             transferBuffer.logInfos();
             try
             {
-                transferBuffer.read( buffer,this.numFrames * this.frameSize );
+                transferBuffer.read( buffer, (int)this.codecPeriodSize * this.frameSize );
 
-                frames  = codecPCM.writei( buffer, this.numFrames );
+                frames  = codecPCM.writei( buffer, this.codecPeriodSize);
                 if ( frames == -Posix.EPIPE)
                 {
                     codecPCM.recover ( -Posix.EPIPE,0);
-                }else if ( frames != this.numFrames )
+                }else if ( frames != this.codecPeriodSize )
                 {
                     stderr.printf("frames: %ld \n",(long)frames);
                 }
@@ -259,7 +301,7 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
             catch ( RingError e )
             {
                 logger.warning( @"Playback RingBuffer error: $(e.message)" );
-                play_silence( 1 );
+                playSilence( 1 );
             }
         }
         return null;
@@ -267,25 +309,6 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
 
     private void startPlayback()
     {
-        int channels = 1;
-        int rate = 8000;
-
-        Alsa.PcmFormat format = Alsa.PcmFormat.S16_LE;
-        Alsa.PcmAccess access = Alsa.PcmAccess.RW_INTERLEAVED;
-
-        this.codecPCM = new FsoAudio.PcmDevice();
-        assert( logger.debug( @"Setup alsa sink for modem audio" ) );
-        try
-        {
-            /* TODO: add an fso config for that */
-            codecPCM.open( "plug:dmix" );
-            codecPCM.setFormat( access, format, rate, channels );
-        }
-        catch ( Error e )
-        {
-            logger.error( @"Error: $(e.message)" );
-        }
-
         /* start the playback thread now
          */
         if ( !Thread.supported() )
@@ -314,27 +337,8 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
         }
     }
 
-
-    public void startRecord()
+    private void startRecord()
     {
-        int channels = 1;
-        int rate = 8000;
-        Alsa.PcmFormat format = Alsa.PcmFormat.S16_LE;
-        Alsa.PcmAccess access = Alsa.PcmAccess.RW_INTERLEAVED;
-
-        this.modemPCM = new FsoAudio.PcmDevice();
-        assert( logger.debug( @"Setup alsa source for modem audio" ) );
-        try
-        {
-            /* TODO: add an fso config for that */
-            modemPCM.open( "plug:dsnoop:1", Alsa.PcmStream.CAPTURE );
-            modemPCM.setFormat( access, format, rate, channels );
-        }
-        catch ( Error e )
-        {
-            logger.error( @"Error: $(e.message)" );
-        }
-
         /* start the record thread now */
         if ( !Thread.supported() )
         {
@@ -362,6 +366,8 @@ public class PlaybackFromModem : FsoFramework.AbstractObject
         }
 
     }
+
+
 
 
     private void stopPlayback()
@@ -431,7 +437,7 @@ class FsoAudio.GsmVoiceForwarder.Plugin : FsoFramework.AbstractObject
     private FsoFramework.Subsystem subsystem;
     private FreeSmartphone.GSM.Call gsmcallproxy;
     /* TODO: configure the values */
-    private PlaybackFromModem modemSourceCodecSink = new PlaybackFromModem(8000,2);
+    private PlaybackFromModem modemSourceCodecSink = new PlaybackFromModem();
 
     //
     // Private API
