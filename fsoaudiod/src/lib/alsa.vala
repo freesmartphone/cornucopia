@@ -497,6 +497,10 @@ public class FsoAudio.PcmDevice
         return device.recover(error,silent);
     }
 
+    public int getParams ( out PcmUnsignedFrames buffer_size, out PcmUnsignedFrames period_size )
+    {
+         return device.get_params( out buffer_size, out period_size);
+    }
 }
 
 // vim:ts=4:sw=4:expandtab
