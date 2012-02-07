@@ -91,6 +91,68 @@ namespace Connman
         VENDOR
     }
 
+    [CCode (cname = "int", cprefix = "CONNMAN_SERVICE_TYPE_", has_type_id = false, cheader_filename = "connman/service.h")]
+    public enum ServiceType
+    {
+        UNKNOWN,
+        SYSTEM,
+        ETHERNET,
+        WIFI,
+        WIMAX,
+        BLUETOOTH,
+        CELLULAR,
+        GPS,
+        VPN,
+        GADGET,
+    }
+
+    [CCode (cname = "int", cprefix = "CONNMAN_SERVICE_SECURITY_", has_type_id = false, cheader_filename = "connman/service.h")]
+    public enum ServiceSecurity
+    {
+        UNKNOWN,
+        NONE,
+        WEP,
+        PSK,
+        // 8021X
+        WPA,
+        RSN,
+    }
+
+    [CCode (cname = "int", cprefix = "CONNMAN_SERVICE_STATE_", has_type_id = false, cheader_filename = "connman/service.h")]
+    public enum ServiceState
+    {
+        UNKNOWN,
+        IDLE,
+        ASSOCIATION,
+        CONFIGURATION,
+        READY,
+        ONLINE,
+        DISCONNECT,
+        FAILURE,
+    }
+
+    [CCode (cname = "int", cprefix = "CONNMAN_SERVICE_ERROR_", has_type_id = false, cheader_filename = "connman/service.h")]
+    public enum ServiceError
+    {
+        UNKNOWN,
+        OUT_OF_RANGE,
+        PIN_MISSING,
+        DHCP_FAILED,
+        CONNECT_FAILED,
+        LOGIN_FAILED,
+        AUTH_FAILED,
+        INVALID_KEY,
+    }
+
+    [CCode (cname = "int", cprefix = "CONNMAN_SERVICE_PROXY_METHOD_", has_type_id = false, cheader_filename = "connman/service.h")]
+    public enum ServiceProxyMethod
+    {
+        UNKNOWN,
+        DIRECT,
+        MANUAL,
+        AUTO,
+    }
+
     public enum DevicePriority
     {
         LOW = -100,
@@ -229,6 +291,45 @@ namespace Connman
         public int register();
         [CCode (cname = "connman_device_driver_register")]
         public void unregister();
+    }
+
+    [CCode (has_target = false)]
+    public delegate int TechnologyProbeFunc(TechnologyDriver technology);
+    [CCode (has_target = false)]
+    public delegate void TechnologyRemoveFunc(TechnologyDriver technology);
+    [CCode (has_target = false)]
+    public delegate void TechnologyAddInterfaceFunc(TechnologyDriver technology, int index,
+        string name, string ident);
+    [CCode (has_target = false)]
+    public delegate void TechnologyRemoveInterfaceFunc(TechnologyDriver technology, int index);
+    [CCode (has_target = false)]
+    public delegate int TechnologySetTetheringFunc(TechnologyDriver technology, string identifier,
+        string passphrase, string bridge, bool enabled);
+    [CCode (has_target = false)]
+    public delegate int TechnologySetRegdomFunc(TechnologyDriver technology, string alpha2);
+
+    [CCode (cname = "struct connman_technology_driver", cheader_filename = "connman/technology.h", destroy_function = "")]
+    public struct TechnologyDriver
+    {
+        public string name;
+        public ServiceType type;
+        public int priority;
+
+        public TechnologyProbeFunc probe;
+        public TechnologyRemoveFunc remove;
+        public TechnologyAddInterfaceFunc add_interface;
+        public TechnologyRemoveInterfaceFunc remove_interface;
+        public TechnologySetTetheringFunc set_tethering;
+        public TechnologySetRegdomFunc set_regdom;
+
+        [CCode (cname = "connman_technology_driver_register")]
+        public int register();
+        [CCode (cname = "connman_technology_driver_unregister")]
+        public void unregister();
+        [CCode (cname = "connman_technology_tethering_notify")]
+        public void tethering_notify(bool enabled);
+        [CCode (cname = "connman_technology_regdom_notify")]
+        public void regdom_notify(string alpha2);
     }
 }
 

@@ -18,9 +18,12 @@
  **/
 
 using GLib;
+using FsoFramework;
 
 Connman.NetworkDriver network_driver;
 Connman.DeviceDriver modem_driver;
+Connman.TechnologyDriver tech_driver;
+
 FsoGsm.ModemHandler modem;
 
 public static int network_probe( Connman.Network network )
@@ -69,6 +72,15 @@ public static int modem_disable( Connman.Device device )
     return 0;
 }
 
+public static int tech_probe( Connman.TechnologyDriver technology )
+{
+    return 0;
+}
+
+public static void tech_remove( Connman.TechnologyDriver technology )
+{
+}
+
 public int fsogsm_plugin_init()
 {
     int err;
@@ -94,15 +106,33 @@ public int fsogsm_plugin_init()
         disable = modem_disable
     };
 
+    tech_driver = Connman.TechnologyDriver() {
+        name = "cellular",
+        type = Connman.ServiceType.CELLULAR,
+        probe = tech_probe,
+        remove = tech_remove
+    };
+
     err = network_driver.register();
     if ( err < 0 )
     {
+        theLogger.error( @"Failed to register connman network driver" );
         return err;
     }
 
     err = modem_driver.register();
     if ( err < 0 )
     {
+        theLogger.error( @"Failed to register connman modem driver" );
+        network_driver.unregister();
+        return err;
+    }
+
+    err = tech_driver.register();
+    if ( err < 0 )
+    {
+        theLogger.error( @"Failed to register connman technology driver" );
+        modem_driver.unregister();
         network_driver.unregister();
         return err;
     }
@@ -113,6 +143,8 @@ public int fsogsm_plugin_init()
 public void fsogsm_plugin_exit()
 {
     modem.shutdown();
+    tech_driver.unregister();
+    modem_driver.unregister();
     network_driver.unregister();
 }
 
