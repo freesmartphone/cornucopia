@@ -28,13 +28,11 @@ FsoGsm.ModemHandler modem;
 
 public static int network_probe( Connman.Network network )
 {
-    debug( "network_probe()" );
     return 0;
 }
 
 public static int network_remove( Connman.Network network )
 {
-    debug( "network_remove()" );
     return 0;
 }
 
@@ -52,13 +50,11 @@ public static int network_disconnect( Connman.Network network )
 
 public static int modem_probe( Connman.Device device )
 {
-    debug( "modem_probe()" );
     return 0;
 }
 
 public static int modem_remove( Connman.Device device )
 {
-    debug( "modem_remove()" );
     return 0;
 }
 
@@ -86,7 +82,6 @@ public int fsogsm_plugin_init()
     int err;
 
     modem = new FsoGsm.ModemHandler();
-    modem.initialize();
 
     network_driver = Connman.NetworkDriver() {
         name = "network",
@@ -136,6 +131,8 @@ public int fsogsm_plugin_init()
         network_driver.unregister();
         return err;
     }
+
+    modem.initialize();
 
     return 0;
 }

@@ -268,6 +268,7 @@ namespace Connman
         public int add_network(Network network);
         public Network get_network(string identifier);
         public void remove_all_networks();
+        public void remove_network(Network network);
         public void schedule_scan();
         public int register();
         public void unregister();

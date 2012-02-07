@@ -18,7 +18,6 @@
  **/
 
 using GLib;
-using Posix;
 
 public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
 {
@@ -32,25 +31,26 @@ public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
     private FreeSmartphone.Data.World world_service;
 
     /* these are the parts we need as interface to the connman core */
-    private Connman.Device? network_device;
+    private Connman.Device? modem_device;
     private Connman.Network? network;
     private Connman.IpAddress ipaddr;
 
-    /* local informations about the modem state */    
-    private FreeSmartphone.GSM.DeviceStatus modem_status;
+    /* local informations about the modem state */
     private bool initialized;
-    private bool available;
+    private bool resource_locked;
     private bool supports_gprs;
+    private bool connected = false;
     private int signal_strength;
     private string operator_name;
     private string mccmnc;
+    private uint watch = 0;
 
     /**
      * Reset internal data structure
      **/
     private void reset_internal_data()
     {
-        available = false;
+        resource_locked = false;
         signal_strength =  0;
         supports_gprs = false;
         operator_name = "";
@@ -64,40 +64,16 @@ public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
     {
         if ( name == "GSM" )
         {
-            if ( availability && !available )
+            if ( availability && !resource_locked )
             {
-                on_gsm_resource_available();
+                request_resource();
             }
-            else
+            else if ( !availability && resource_locked )
             {
-                available = false;
+                assert( logger.debug( @"GSM resource has gone; releasing modem device ..." ) );
+                release_modem_device();
+                resource_locked = false;
             }
-        }
-    }
-
-    /**
-     * Retrieve a dbus proxy for the supplied interface defintion from the FSO
-     * GSM message bus.
-     **/
-    private T get_service<T>() throws GLib.Error
-    {
-        return Bus.get_proxy_sync<T>( BusType.SYSTEM, FsoFramework.GSM.ServiceDBusName,
-                                      FsoFramework.GSM.DeviceServicePath, DBusProxyFlags.NONE );
-    }
-
-    /**
-     * Try to find out if the modem supports gprs data connections.
-     **/
-    private async void check_gprs_support()
-    {
-        try
-        {
-            var features = yield device_service.get_features();
-            supports_gprs = ( features.lookup( "pdp" ) != null );
-        }
-        catch ( Error err )
-        {
-            logger.error( @"Cannot check if modem supports gprs" );
         }
     }
 
@@ -110,12 +86,7 @@ public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
         {
             var device_status = yield device_service.get_device_status();
             if ( device_status <= FreeSmartphone.GSM.DeviceStatus.ALIVE_SIM_READY )
-            {
-                logger.info( @"Modem is not yet in ALIVE_REGISTERED state; aborting registration check ..." );
                 return;
-            }
-
-            logger.debug( @"Modem is in ALIVE_REGISTERED state now; we can register our network device now" );
 
             if ( network != null )
             {
@@ -123,11 +94,11 @@ public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
                 return;
             }
 
-            string imsi = network_device.get_ident();
+            string imsi = modem_device.get_ident();
             network = new Connman.Network( imsi, Connman.NetworkType.CELLULAR );
             if ( network == null )
             {
-                logger.error( @"Could not create network provided by our current device" );
+                logger.error( @"Could not create a new network for our current device" );
                 return;
             }
 
@@ -141,9 +112,9 @@ public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
             network.set_string( "Operator", operator_name );
             network.set_strength( (uint8) signal_strength );
 
-            network_device.add_network( network );
+            modem_device.add_network( network );
 
-            logger.info( @"Successfully provided the network to the device" );
+            assert( logger.debug( @"Successfully create a new network for our cellular device" ) );
         }
         catch ( Error err )
         {
@@ -155,42 +126,38 @@ public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
      * Create a new default device and register it to the internal connman core.
      * The device can later identified by the IMSI supplied by the modem.
      **/
-    private async bool create_device()
+    private async bool create_modem_device()
     {
         string imsi = DEFAUTL_IMSI;
         bool result = true;
+        int rc = 0;
+
+        if ( modem_device != null )
+            return false;
 
         try
         {
             var info = yield sim_service.get_sim_info();
             imsi = info.lookup( "imsi" ) as string;
-            if ( imsi == null )
-            {
-                imsi = DEFAUTL_IMSI;
-            }
+            imsi = ( imsi == null ) ? DEFAUTL_IMSI : imsi;
 
-            // if we already have a network device registered with then unregister it
-            // first before we create our new one
-            if ( network_device != null )
+            modem_device = new Connman.Device( imsi, Connman.DeviceType.CELLULAR );
+            if ( modem_device == null )
             {
-                network_device.unregister();
-                network_device = null;
-            }
-
-            network_device = new Connman.Device( imsi, Connman.DeviceType.CELLULAR );
-            if ( network_device == null )
-            {
+                logger.error( @"Failed to create a new cellular device instance" );
                 return false;
             }
 
-            // FIXME why do we have to set the identifier twice? (this is the way how it
-            // is done in the ofono plugin)
-            network_device.set_ident( imsi );
+            modem_device.set_ident( imsi );
 
-            if ( network_device.register() != 0 )
+            if ( ( rc = modem_device.register() ) != 0 )
             {
-                network_device = null;
+                logger.error( @"Failed to register our cellular device with connmand (rc = $(rc))" );
+                modem_device = null;
+                return false;
             }
+
+            assert( logger.debug( @"Created a new network device successfully" ) );
         }
         catch ( Error err )
         {
@@ -198,10 +165,37 @@ public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
             result = false;
         }
 
-        check_registration();
-        check_gprs_support();
-
         return result;
+    }
+
+    private void release_modem_device()
+    {
+        if ( modem_device == null )
+            return;
+
+        if ( network != null )
+        {
+            modem_device.remove_network( network );
+            network = null;
+        }
+
+        modem_device.unregister();
+        modem_device = null;
+
+        assert( logger.debug( @"Successfully released modem device from connman" ) );
+    }
+
+    private T value_from_variant<T>(Variant? vt, VariantType type, T alternative)
+    {
+        if ( vt == null || !vt.is_of_type( type ) )
+            return alternative;
+
+        if ( type == VariantType.STRING )
+                return (T) vt.get_string();
+        else if ( type == VariantType.INT32 )
+                return (T) vt.get_int32();
+
+        return alternative;
     }
 
     /**
@@ -211,16 +205,13 @@ public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
     private async void on_modem_network_status_changed( HashTable<string,Variant> status )
     {
         Variant? v0 = status.lookup( "provider" );
-        operator_name = ( v0 == null ? "unknown" : v0.get_string() );
+        operator_name = value_from_variant<string>( v0, VariantType.STRING, "unknown" );
 
-#if 0
         Variant? v1 = status.lookup( "strength" );
-        logger.debug( @"$(v1.classify())" );
-        signal_strength = ( v1 == null ? 0 : v1.get_int32() );
-#endif
+        signal_strength = value_from_variant<int>( v1, VariantType.INT32, 0 );
 
         Variant? v2 = status.lookup( "code" );
-        mccmnc = ( v2 == null ? "" : v2.get_string() );
+        mccmnc = value_from_variant( v2, VariantType.STRING, "" );
 
         if ( network != null )
         {
@@ -233,63 +224,106 @@ public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
      * When device status has changed we have to register/remove our network
      * object from the connman core.
      **/
-    private async void on_modem_device_status_changed( FreeSmartphone.GSM.DeviceStatus status )
+    private void on_modem_device_status_changed( FreeSmartphone.GSM.DeviceStatus status )
     {
-        logger.debug( @"Got modem status $(status)" );
+        assert( logger.debug( @"Got modem status $(status)" ) );
 
-        if ( status < modem_status && 
-             status < FreeSmartphone.GSM.DeviceStatus.ALIVE_SIM_READY )
+        if ( status == FreeSmartphone.GSM.DeviceStatus.ALIVE_REGISTERED )
         {
-            logger.debug( @"Removing network as modem is not ready anymore" );
-            return;
+            check_registration();
         }
-
-        switch ( status )
+        else if ( status != FreeSmartphone.GSM.DeviceStatus.ALIVE_REGISTERED &&
+                  status != FreeSmartphone.GSM.DeviceStatus.SUSPENDING &&
+                  status != FreeSmartphone.GSM.DeviceStatus.RESUMING &&
+                  network != null )
         {
-            case FreeSmartphone.GSM.DeviceStatus.ALIVE_SIM_READY:
-                if ( network_device == null )
-                {
-                    create_device();
-                }
-                break;
-            case FreeSmartphone.GSM.DeviceStatus.ALIVE_REGISTERED:
-                check_registration();
-                break;
+            modem_device.remove_network( network );
+            network = null;
         }
-
-        modem_status = status;
     }
 
-    private async void on_gsm_resource_available()
+    private void on_modem_sim_auth_status_changed( FreeSmartphone.GSM.SIMAuthStatus status )
+    {
+        assert( logger.debug( @"Got SIM auth status $(status)" ) );
+
+        if ( status == FreeSmartphone.GSM.SIMAuthStatus.READY && modem_device != null )
+        {
+            assert( logger.debug( @"SIM card is now ready; creating a device for our modem ..." ) );
+            create_modem_device();
+        }
+        else
+        {
+            release_modem_device();
+        }
+    }
+
+    private async void setup_services()
+    {
+        try
+        {
+            device_service = Bus.get_proxy_sync<FreeSmartphone.GSM.Device>( BusType.SYSTEM, FsoFramework.GSM.ServiceDBusName,
+                                      FsoFramework.GSM.DeviceServicePath, DBusProxyFlags.NONE );
+
+            sim_service = Bus.get_proxy_sync<FreeSmartphone.GSM.SIM>( BusType.SYSTEM, FsoFramework.GSM.ServiceDBusName,
+                                      FsoFramework.GSM.DeviceServicePath, DBusProxyFlags.NONE );
+
+            network_service = Bus.get_proxy_sync<FreeSmartphone.GSM.Network>( BusType.SYSTEM, FsoFramework.GSM.ServiceDBusName,
+                                      FsoFramework.GSM.DeviceServicePath, DBusProxyFlags.NONE );
+
+            pdp_service = Bus.get_proxy_sync<FreeSmartphone.GSM.PDP>( BusType.SYSTEM, FsoFramework.GSM.ServiceDBusName,
+                                      FsoFramework.GSM.DeviceServicePath, DBusProxyFlags.NONE );
+
+            sim_service.auth_status.connect( on_modem_sim_auth_status_changed );
+            device_service.device_status.connect( on_modem_device_status_changed );
+            network_service.status.connect( on_modem_network_status_changed );
+
+            var sim_auth_status = yield sim_service.get_auth_status();
+            assert( logger.debug( @"sim_auth_status = $(sim_auth_status)" ) );
+            if ( sim_auth_status == FreeSmartphone.GSM.SIMAuthStatus.READY )
+            {
+                assert( logger.debug( @"SIM card is READY; creating device for our modem ..." ) );
+                create_modem_device();
+            }
+
+            assert( logger.debug( @"Setup of relevant services is done" ) );
+        }
+        catch ( GLib.Error err )
+        {
+            logger.error( @"Failed to setup necessary GSM services" );
+        }
+    }
+
+    private async void request_resource()
     {
         try
         {
             yield usage.request_resource( "GSM" );
-            available = true;
+            resource_locked = true;
+            yield setup_services();
 
-            device_service = get_service<FreeSmartphone.GSM.Device>();
-            sim_service = get_service<FreeSmartphone.GSM.SIM>();
-            network_service = get_service<FreeSmartphone.GSM.Network>();
-            pdp_service = get_service<FreeSmartphone.GSM.PDP>();
+            if ( watch > 0 )
+                GLib.Source.remove( watch );
 
-            world_service = Bus.get_proxy_sync<FreeSmartphone.Data.World>( BusType.SYSTEM, FsoFramework.Data.ServiceDBusName,
-                                                                          FsoFramework.Data.WorldServicePath,
-                                                                          DBusProxyFlags.NONE );
-
-            device_service.device_status.connect( on_modem_device_status_changed );
-            network_service.status.connect( on_modem_network_status_changed );
-
-            logger.info( @"Successfully registered with GSM resource" );
-
-            var device_status = yield device_service.get_device_status();
-            if ( device_status >= FreeSmartphone.GSM.DeviceStatus.ALIVE_SIM_READY )
-            {
-                create_device();
-            }
+            assert( logger.debug( @"Successfully requested GSM resource" ) );
         }
         catch ( Error err )
         {
-            logger.error( @"Can't setup for using GSM resource: $(err.message)" );
+            logger.error( @"Could not request GSM resource from usage system; trying again in five seconds ..." );
+            watch = Timeout.add_seconds( 5, () => { request_resource(); return false; } );
+        }
+    }
+
+    private async void release_resource()
+    {
+        try
+        {
+            release_modem_device();
+            yield usage.release_resource( "GSM" );
+            resource_locked = false;
+        }
+        catch ( Error err )
+        {
+            logger.error( @"Failed to release GSM resource: $(err.message)" );
         }
     }
 
@@ -327,14 +361,7 @@ public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
                                                               DBusProxyFlags.NONE );
             usage.resource_available.connect( on_resource_available );
 
-            resources = yield usage.list_resources();
-
-            // if gsm resource is already available we can request it right now. Otherwise
-            // we have to wait until the resource arrives on the bus.
-            if ( "GSM" in resources )
-            {
-                on_gsm_resource_available();
-            }
+            yield request_resource();
         }
         catch ( GLib.Error err )
         {
@@ -354,7 +381,7 @@ public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
         if ( mccmnc.length == 0 )
         {
             logger.error( "We don't have mcc and mnc to retrieve correct APN for PDP connection" );
-            return -EINVAL;
+            return -Posix.EINVAL;
         }
 
         try
@@ -364,7 +391,7 @@ public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
             if ( apns.length == 0 )
             {
                 logger.error( "Invalid mcc and mnc wihtout context information!" );
-                return -EINVAL;
+                return -Posix.EINVAL;
             }
 
             var apn = apns[0];
@@ -381,6 +408,7 @@ public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
         // FIXME set ipaddr, method ...
 
         network.set_connected( true );
+        connected = true;
 
         return 0;
     }
@@ -403,6 +431,7 @@ public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
         }
 
         network.set_connected( false );
+        connected = false;
 
         return 0;
     }
@@ -411,13 +440,18 @@ public class FsoGsm.ModemHandler : FsoFramework.AbstractObject
     {
         logger.info( "Shuting down ..." );
 
-        if ( network_device != null )
+        if ( connected )
+            disconnect_network();
+
+        if ( modem_device != null )
         {
-            network_device.remove_all_networks();
-            network_device.unregister();
-            network_device = null;
+            modem_device.remove_all_networks();
+            modem_device.unregister();
+            modem_device = null;
             network = null;
         }
+
+        release_resource();
     }
 }
 
