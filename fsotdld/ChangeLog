@@ -1,4 +1,18 @@
+2012-04-23  Simon Busch  <morphis@gravedo.de>
+
+	Update changelogs of component for 0.10.1 release cycle
+
+	fsotdld: in respect of SHR we're requiring 2.96 of libgps
+
+	fsotdld: require version 3.4 of libgps
+
+	fsotdld/fsodeviced/fsosystemd/fsoaudiod: bump to version 0.10.1
+
+	fsotdld/fsodeviced/fsosystemd/fsoaudiod: include systemd services file in our release tarball
+
 2012-04-18  Simon Busch  <morphis@gravedo.de>
+
+	Release version 0.10.0
 
 	fsotdld: restructure autoconf configuration to be ready for a release
 

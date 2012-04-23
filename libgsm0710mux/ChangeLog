@@ -1,3 +1,11 @@
+2012-04-23  Simon Busch  <morphis@gravedo.de>
+
+	libgsm0710mux: refactor autoconf/automake logic
+
+2012-04-18  Simon Busch  <morphis@gravedo.de>
+
+	Release version 0.10.0
+
 2012-04-17  Simon Busch  <morphis@gravedo.de>
 
 	Remove unneeded stuff from all autogen.sh files

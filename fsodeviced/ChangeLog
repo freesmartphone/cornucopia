@@ -1,4 +1,12 @@
+2012-04-23  Simon Busch  <morphis@gravedo.de>
+
+	fsotdld/fsodeviced/fsosystemd/fsoaudiod: bump to version 0.10.1
+
+	fsotdld/fsodeviced/fsosystemd/fsoaudiod: include systemd services file in our release tarball
+
 2012-04-18  Simon Busch  <morphis@gravedo.de>
+
+	Release version 0.10.0
 
 	Bump required version of libfso-glib to 2012.04.18.1
 

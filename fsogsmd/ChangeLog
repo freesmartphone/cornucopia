@@ -1,4 +1,12 @@
+2012-04-23  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: bump to version 0.10.1
+
+	fsogsmd: modem_samsung: add missing samsung_modem_ctl.h for distribution
+
 2012-04-18  Simon Busch  <morphis@gravedo.de>
+
+	Release version 0.10.0
 
 	fsogsmd: modem_nokia_isi: respect gisicomm ABI bump
 
