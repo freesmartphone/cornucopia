@@ -177,7 +177,8 @@ public class MsmUnsolicitedResponseHandler : AbstractObject
                     hexpdu += "%02x".printf (byte);
                 }
 
-                smshandler.handleIncomingSms( hexpdu, tpdulen );
+                // Add 0-byte to the beginning of hexpdu, this way underlaying logic can parse it.
+                smshandler.handleIncomingSms( "00" + hexpdu, tpdulen );
             }
         });
 

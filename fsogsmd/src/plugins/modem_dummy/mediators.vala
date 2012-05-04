@@ -358,22 +358,6 @@ public class DummyAtSmsSendTextMessage : SmsSendTextMessage
     }
 }
 
-public class DummyAtSmsRetrieveTextMessages : SmsRetrieveTextMessages
-{
-    public override async void run() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
-    {
-        var mb = new FreeSmartphone.GSM.SIMMessage[] {};
-        var props = new GLib.HashTable<string,GLib.Variant>( GLib.str_hash, GLib.str_equal );
-
-        mb += FreeSmartphone.GSM.SIMMessage( 1, "single", "+123456789", "Yo, what's up in da house tonight?", "timestamp", props );
-        mb += FreeSmartphone.GSM.SIMMessage( 2, "single", "+555456789", "It's going to be cold, don't forget your coat, sun!", "timestamp", props );
-        mb += FreeSmartphone.GSM.SIMMessage( 3, "single", "+123456789", "And I thought you loved me :(", "timestamp", props );
-        mb += FreeSmartphone.GSM.SIMMessage( 4, "single", "+555456789", "Don't forget to bring Dad's medicine", "timestamp", props );
-
-        this.messagebook = mb;
-    }
-}
-
 /**
  * Network Mediators
  **/
@@ -558,7 +542,6 @@ public void registerDummyMediators( HashMap<Type,Type> table )
     table[ typeof(SimSetServiceCenterNumber) ]    = typeof( DummyAtSimSetServiceCenterNumber );
     table[ typeof(SimUnlock) ]                    = typeof( DummyAtSimUnlock );
 
-    table[ typeof(SmsRetrieveTextMessages) ]      = typeof( DummyAtSmsRetrieveTextMessages );
     table[ typeof(SmsSendTextMessage) ]           = typeof( DummyAtSmsSendTextMessage );
 
     table[ typeof(NetworkGetSignalStrength) ]     = typeof( DummyAtNetworkGetSignalStrength );

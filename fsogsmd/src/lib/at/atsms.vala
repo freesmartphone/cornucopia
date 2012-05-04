@@ -40,27 +40,20 @@ public class FsoGsm.AtSmsHandler : FsoGsm.AbstractSmsHandler
         return cimi.value;
     }
 
-    protected override async void fillStorageWithMessageFromSIM()
+    protected override async void fetchMessagesFromSIM()
     {
         var cmgl = theModem.createAtCommand<PlusCMGL>( "+CMGL" );
         var cmglresponse = yield theModem.processAtCommandAsync( cmgl, cmgl.issue( PlusCMGL.Mode.ALL ) );
         if ( cmgl.validateMulti( cmglresponse ) != Constants.AtResponse.VALID )
         {
-            logger.warning( "Can't synchronize SMS storage with SIM" );
+            logger.warning( "Could not fetch SMS messages from SIM card" );
             return;
         }
 
-        foreach( var sms in cmgl.messagebook )
-        {
-            var ret = storage.addSms( sms.message );
-            // send the incoming_text_message signal if ret == 1 (message is new).
-            if ( ret == 1 )
-            {
-                var msg = storage.message( sms.message.hash() );
-                var obj = theModem.theDevice<FreeSmartphone.GSM.SMS>();
-                obj.incoming_text_message( msg.number, msg.timestamp, msg.contents );
-            }
-        }
+        // FIXME remove all messages from SIM card!
+
+        foreach( var pdu in cmgl.hexpdus )
+            handleIncomingSms( pdu.hexpdu, pdu.tpdulen );
     }
 
     protected override async bool readSmsMessageFromSIM( uint index, out string hexpdu, out int tpdulen )
@@ -79,6 +72,19 @@ public class FsoGsm.AtSmsHandler : FsoGsm.AbstractSmsHandler
         return true;
     }
 
+    protected override async bool removeSmsMessageFromSIM( uint index )
+    {
+        var cmd = theModem.createAtCommand<PlusCMGD>( "+CMGD" );
+        var response = yield theModem.processAtCommandAsync( cmd, cmd.issue( (int) index ) );
+        if ( cmd.validateOk( response ) != Constants.AtResponse.OK )
+        {
+            logger.warning( @"Can't delete SMS message with index $index from SIM card." );
+            return false;
+        }
+
+        return true;
+    }
+
     protected override async bool acknowledgeSmsMessage( int id )
     {
         var cmd = theModem.createAtCommand<PlusCNMA>( "+CNMA" );
@@ -89,20 +95,6 @@ public class FsoGsm.AtSmsHandler : FsoGsm.AbstractSmsHandler
             return false;
         }
         return true;
-    }
-
-    //
-    // public
-    //
-
-    public AtSmsHandler()
-    {
-        base();
-    }
-
-    public override string repr()
-    {
-        return storage != null ? storage.repr() : "<None>";
     }
 }
 

@@ -577,7 +577,7 @@ public class PlusCMGD : SimpleAtCommand<int>
 
 public class PlusCMGL : AbstractAtCommand
 {
-    public Gee.ArrayList<WrapSms> messagebook;
+    public Gee.ArrayList<WrapHexPdu> hexpdus;
 
     public enum Mode
     {
@@ -604,9 +604,8 @@ public class PlusCMGL : AbstractAtCommand
 
     public override void parseMulti( string[] response ) throws AtCommandError
     {
-        messagebook = new Gee.ArrayList<WrapSms>();
-
-        var tpdulen = 0;
+        int tpdulen = 0;
+        hexpdus = new Gee.ArrayList<WrapHexPdu>();
 
         for ( int i = 0; i < response.length; ++i )
         {
@@ -617,11 +616,7 @@ public class PlusCMGL : AbstractAtCommand
             }
             else
             {
-                var sms = Sms.Message.newFromHexPdu( response[i], tpdulen );
-                if ( sms != null )
-                {
-                    messagebook.add( new WrapSms( (owned) sms, to_int( "id" ) ) );
-                }
+                hexpdus.add( new WrapHexPdu( response[i], tpdulen ) );
             }
         }
     }

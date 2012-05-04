@@ -20,90 +20,85 @@
 using GLib;
 using FsoGsm;
 
-//===========================================================================
-void test_fso_sms_storage_new()
-//===========================================================================
+FsoGsm.ISmsStorage create_storage( string storagedir )
 {
     var storage = SmsStorageFactory.create( "default", IMSI );
+    (storage as SmsStorage).set_storage_dir( storagedir );
+    return storage;
 }
 
-void test_fso_sms_storage_add_single()
+void test_sms_storage_create()
 {
-    var storage = SmsStorageFactory.create( "default", IMSI );
+    var storagedir = @"%s/fsogsmd/test_sms_storage_create".printf( GLib.Environment.get_tmp_dir() );
+    var storage = create_storage( storagedir );
+    assert( !FsoFramework.FileHandling.isPresent( storagedir ) );
+}
+
+void test_sms_storage_pending_message_with_confirmation()
+{
+    var storagedir = "%s/fsogsmd/test_sms_storage_pending_message_with_confirmation".printf( GLib.Environment.get_tmp_dir() );
+    var storage = create_storage( storagedir );
     storage.clean();
 
-    var sms = Sms.Message.newFromHexPdu( pdu3, pdulength3 );
-    assert( sms != null );
+    var transaction_index = 4;
 
-    // new one
-    assert( storage.addSms( sms ) == SmsStorage.SMS_SINGLE_COMPLETE );
+    storage.add_pending_message_fragments( { new WrapHexPdu( pdu3, pdulength3, transaction_index ) } );
+    assert( storage.confirm_pending_message( transaction_index ) == storage.last_reference_number() );
 
-    // this one we have already seen
-    assert( storage.addSms( sms ) == SmsStorage.SMS_ALREADY_SEEN );
+    storage.clean();
+    storage.add_pending_message_fragments( { new WrapHexPdu( pdus2[0], pdulengths2[0], transaction_index ),
+                                             new WrapHexPdu( pdus2[1], pdulengths2[1], transaction_index + 1 ) } );
+    assert( storage.confirm_pending_message( transaction_index ) == -1 );
+    assert( storage.confirm_pending_message( transaction_index + 1 ) == 0 );
 }
 
-//===========================================================================
-void test_fso_sms_storage_add_concatenated()
-//===========================================================================
+void test_sms_storage_reference_number_handling()
 {
-    var storage = SmsStorageFactory.create( "default", IMSI );
+    var storagedir = "%s/fsogsmd/test_sms_storage_reference_number_handling".printf( GLib.Environment.get_tmp_dir() );
+    var storage = create_storage( storagedir );
     storage.clean();
 
-    var smses = new Sms.Message[pdulengths1.length] {};
-
-    for( int i = 0; i < pdulengths1.length; ++i )
-    {
-        smses[i] = Sms.Message.newFromHexPdu( pdus1[i], pdulengths1[i] );
-    }
-
-    for( int i = 0; i < pdulengths1.length-1; ++i )
-    {
-        assert( storage.addSms( smses[i] ) == SmsStorage.SMS_MULTI_INCOMPLETE );
-    }
-    assert( storage.addSms( smses[pdulengths1.length-1] ) == pdulengths1.length );
+    assert( storage.next_reference_number() == 0 );
+    assert( storage.last_reference_number() == 0 );
+    assert( storage.next_reference_number() == 1 );
+    assert( storage.last_reference_number() == 1 );
+    assert( storage.next_reference_number() == 2 );
+    assert( storage.last_reference_number() == 2 );
 }
 
-//===========================================================================
-void test_fso_sms_storage_store_transaction_index()
-//===========================================================================
+void test_sms_storage_extract_message()
 {
-    var handler = new AtSmsHandler();
-    handler.storage = SmsStorageFactory.create( "default", IMSI );
-    //handler.storage.clean();
-    var pdus = handler.formatTextMessage( PHONE_NUMBER, LONG_TEXT, true );
-    var i = 0;
-    foreach ( var pdu in pdus )
-    {
-        pdu.transaction_index = ++i;
-    }
-    handler.storeTransactionIndizesForSentMessage( pdus );
+    uint16 ref_num = 0;
+    uint8 max_msgs = 0, seq_num = 0;
+
+    var storagedir = "%s/fsogsmd/test_sms_storage_extract_message".printf( GLib.Environment.get_tmp_dir() );
+    var storage = create_storage( storagedir );
+    storage.clean();
+
+    var message0 = Sms.Message.newFromHexPdu( pdus2[0], pdulengths2[0] );
+    message0.extract_concatenation( out ref_num, out max_msgs, out seq_num );
+    assert( storage.add_message_fragment( message0, ref_num, max_msgs, seq_num ) == SmsMessageStatus.INCOMPLETE );
+
+    var message1 = Sms.Message.newFromHexPdu( pdus2[1], pdulengths2[1] );
+    message1.extract_concatenation( out ref_num, out max_msgs, out seq_num );
+    assert( storage.add_message_fragment( message1, ref_num, max_msgs, seq_num ) == SmsMessageStatus.COMPLETE );
+
+    var complete_message = storage.extract_message( message1.hash() );
+    assert( complete_message != null );
+
+    assert( complete_message.content != "" );
+    assert( complete_message.number == "+491702720003" );
+    assert( complete_message.timestamp == "09/10/30,15:46:55+04" );
 }
 
-//===========================================================================
-void test_fso_sms_storage_confirm_ack()
-//===========================================================================
-{
-    var handler = new AtSmsHandler();
-    handler.storage = SmsStorageFactory.create( "default", IMSI );
-    //handler.storage.clean();
-    assert( handler.storage.confirmReceivedMessage( 2 ) == -1 );
-    assert( handler.storage.confirmReceivedMessage( 3 ) == -1 );
-    assert( handler.storage.confirmReceivedMessage( 4 ) == -1 );
-    assert( handler.storage.confirmReceivedMessage( 1 ) != -1 );
-}
-
-//===========================================================================
 void main( string[] args )
-//===========================================================================
 {
     Test.init( ref args );
 
-    Test.add_func( "/Fso/Sms/Storage/New", test_fso_sms_storage_new );
-    // Test.add_func( "/Fso/Sms/Storage/Existing", test_fso_sms_storage_new_existing );
-    Test.add_func( "/Fso/Sms/Storage/Add/Single", test_fso_sms_storage_add_single );
-    Test.add_func( "/Fso/Sms/Storage/Add/Concatenated", test_fso_sms_storage_add_concatenated );
-    Test.add_func( "/Fso/Sms/Storage/StoreTransactionIndex", test_fso_sms_storage_store_transaction_index );
-    Test.add_func( "/Fso/Sms/Storage/ConfirmReceivedMessage", test_fso_sms_storage_confirm_ack );
+    Test.add_func( "/SmsStorage/New", test_sms_storage_create );
+    Test.add_func( "/SmsStorage/PendingMessageWithConfirmation", test_sms_storage_pending_message_with_confirmation );
+    Test.add_func( "/SmsStorage/ReferenceNumberHandling", test_sms_storage_reference_number_handling );
+    Test.add_func( "/SmsStorage/ExtractCompleteMessage", test_sms_storage_extract_message );
 
     Test.run();
 }

@@ -25,12 +25,6 @@ namespace NokiaIsi
  * org.freesmartphone.GSM.SMS
  */
 
-
-/* pending for implementation of SIM side */
-//public class IsiSmsRetrieveTextMessages : SmsRetrieveTextMessages
-//{
-//}
-
 public class IsiSmsSendTextMessage : SmsSendTextMessage
 {
     public override async void run( string recipient_number, string contents, bool want_report ) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error

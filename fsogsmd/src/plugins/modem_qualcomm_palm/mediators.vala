@@ -81,7 +81,6 @@ public void registerMsmMediators( HashMap<Type,Type> table )
     table[ typeof(CallRelease) ]                  = typeof( MsmCallRelease );
     table[ typeof(CallSendDtmf) ]                 = typeof( MsmCallSendDtmf );
 
-    table[ typeof(SmsRetrieveTextMessages) ]      = typeof( MsmSmsRetrieveTextMessages );
     table[ typeof(SmsGetSizeForTextMessage) ]     = typeof( MsmSmsGetSizeForTextMessage );
     table[ typeof(SmsSendTextMessage) ]           = typeof( MsmSmsSendTextMessage );
 

@@ -571,10 +571,7 @@ class DBusService.Device :
 
     public async FreeSmartphone.GSM.SIMMessage[] retrieve_text_messages() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_SIM_READY );
-        var m = modem.createMediator<FsoGsm.SmsRetrieveTextMessages>();
-        yield m.run();
-        return m.messagebook;
+         throw new FreeSmartphone.Error.UNSUPPORTED( "This method is not supported anymore" );
     }
 
     public async void send_text_message( string recipient_number, string contents, bool want_report, out int transaction_index, out string timestamp ) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError

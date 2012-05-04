@@ -76,7 +76,12 @@ public class Samsung.SmsHandler : FsoGsm.AbstractSmsHandler
         return true;
     }
 
-    protected override async void fillStorageWithMessageFromSIM()
+    protected override async bool removeSmsMessageFromSIM( uint index )
+    {
+        return true;
+    }
+
+    protected override async void fetchMessagesFromSIM()
     {
     }
 

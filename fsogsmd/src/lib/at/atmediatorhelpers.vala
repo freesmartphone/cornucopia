@@ -275,7 +275,6 @@ public void registerGenericAtMediators( HashMap<Type,Type> table )
     table[ typeof(SimWriteEntry) ]                = typeof( AtSimWriteEntry );
     table[ typeof(SimUnlock) ]                    = typeof( AtSimUnlock );
 
-    table[ typeof(SmsRetrieveTextMessages) ]      = typeof( AtSmsRetrieveTextMessages );
     table[ typeof(SmsGetSizeForTextMessage) ]     = typeof( AtSmsGetSizeForTextMessage );
     table[ typeof(SmsSendTextMessage) ]           = typeof( AtSmsSendTextMessage );
 

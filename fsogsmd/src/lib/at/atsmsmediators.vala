@@ -30,22 +30,6 @@ namespace FsoGsm {
 /**
  * SMS Mediators
  **/
-public class AtSmsRetrieveTextMessages : SmsRetrieveTextMessages
-{
-    public override async void run() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
-    {
-        //FIXME: Bug in Vala
-        //messagebook = theModem.smshandler.storage.messagebook();
-        //FIXME: Work around
-        var array = theModem.smshandler.storage.messagebook();
-        messagebook = new FreeSmartphone.GSM.SIMMessage[array.length] {};
-        for( int i = 0; i < array.length; ++i )
-        {
-            messagebook[i] = array[i];
-        }
-    }
-}
-
 public class AtSmsGetSizeForTextMessage : SmsGetSizeForTextMessage
 {
     public override async void run( string contents ) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
@@ -84,9 +68,7 @@ public class AtSmsSendTextMessage : SmsSendTextMessage
 
         // remember transaction indizes for later
         if ( want_report )
-        {
             theModem.smshandler.storeTransactionIndizesForSentMessage( hexpdus );
-        }
     }
 }
 

@@ -23,14 +23,6 @@ using FsoGsm;
  * SMS Mediators
  **/
 
-public class SamsungSmsRetrieveTextMessages : SmsRetrieveTextMessages
-{
-    public override async void run() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
-    {
-        throw new FreeSmartphone.Error.UNSUPPORTED( "Not yet implemented!" );
-    }
-}
-
 public class SamsungSmsGetSizeForTextMessage : SmsGetSizeForTextMessage
 {
     public override async void run( string contents ) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error

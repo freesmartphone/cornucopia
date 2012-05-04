@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ *               2012 Simon Busch <morphis@gravedo.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,17 +29,84 @@ namespace FsoGsm
                                                                Posix.S_IXGRP | Posix.S_IROTH |
                                                                Posix.S_IXOTH;
 
+    public enum SmsMessageStatus
+    {
+        ALREADY_SEEN,
+        INCOMPLETE,
+        COMPLETE
+    }
+
+    public struct SmsMessage
+    {
+        public string number;
+        public string status;
+        public string content;
+        public string timestamp;
+    }
+
     public interface ISmsStorage : FsoFramework.AbstractObject
     {
+        /**
+         * Cleanup the complete storage. All stored objects will be removed and are not
+         * available any longer. This will also reset the reference number counter to 0.
+         **/
         public abstract void clean();
-        public abstract int addSms( Sms.Message message );
-        public abstract Gee.ArrayList<string> keys();
-        public abstract FreeSmartphone.GSM.SIMMessage message( string key, int index = 0 );
-        public abstract FreeSmartphone.GSM.SIMMessage[] messagebook();
-        public abstract uint16 lastReferenceNumber();
-        public abstract uint16 increasingReferenceNumber();
-        public abstract void storeTransactionIndizesForSentMessage( Gee.ArrayList<WrapHexPdu> hexpdus );
-        public abstract int confirmReceivedMessage( int netreference );
+
+        /**
+         * Add a fragment of a concatenated message to the storage. Once the message is
+         * complete (all fragments are available in the storage) the return code will
+         * change to SmsMessageStatus.COMPLETE.
+         *
+         * @param message Message fragment object to be add to the storage
+         * @param ref_num Reference number of the message fragment
+         * @param max_msgs Number of message fragments part of the concatenated message
+         * @param seq_num Sequence number of the message.
+         * @return Status of the concatenated message. See @SmsMessageStatus.
+         **/
+        public abstract SmsMessageStatus add_message_fragment( Sms.Message message, uint16 ref_num, uint8 max_msgs, uint8 seq_num );
+
+        /**
+         * Add fragments of a pending message. All fragments are stored within the storage
+         * until they get confirmed.
+         *
+         * @param message List of the message fragments to add to the storage
+         **/
+        public abstract void add_pending_message_fragments( WrapHexPdu[] messages );
+
+        /**
+         * Confirm a pending message by it's reference number.
+         *
+         * @param netreference Reference number recieved with the confirmation report.
+         * @return The index of the message within the storage or -1 if not all fragments
+         *         of the message are confirmed or no message is confirmed with the
+         *         supplied reference number.
+         **/
+        public abstract int confirm_pending_message( int netreference );
+
+        /**
+         * Extract a message from the storage. This is only possible for completed
+         * concatenated messages and the message will be removed from storage after it is
+         * successfully extracted.
+         *
+         * @param hash Hash of the message to extract.
+         * @return The SMS message identified by the supplied hash or null if no message
+         *         with the hash exists or the message is still incomplete.
+         **/
+        public abstract SmsMessage? extract_message( string hash );
+
+        /**
+         * Retrieve the last reference number used for a message.
+         *
+         * @return Last Reference number used.
+         **/
+        public abstract uint16 last_reference_number();
+
+        /**
+         * Retrieve the next reference number to use for sending a new message.
+         *
+         * @return Next reference number.
+         **/
+        public abstract uint16 next_reference_number();
     }
 
     public class SmsStorageFactory
@@ -59,25 +127,9 @@ namespace FsoGsm
      */
     public class SmsStorage : FsoFramework.AbstractObject, ISmsStorage
     {
-        private static string storagedirprefix;
-        private string imsi;
-        private string storagedir;
-
-        static construct
-        {
-            storagedirprefix = SMS_STORAGE_DEFAULT_STORAGE_DIR;
-        }
-
-        // for debugging purposes mainly
-        public static void setStorageDir( string dirname )
-        {
-            storagedirprefix = dirname;
-        }
-
-        public override string repr()
-        {
-            return imsi != null ? @"<$imsi>" : @"<>";
-        }
+        private string _storagedirprefix =  SMS_STORAGE_DEFAULT_STORAGE_DIR;
+        private string _imsi;
+        private string _storagedir;
 
         //
         // public API
@@ -85,296 +137,214 @@ namespace FsoGsm
 
         public SmsStorage( string imsi )
         {
-            this.imsi = imsi;
-            storagedirprefix = config.stringValue( CONFIG_SECTION, "sms_storage_dir", SMS_STORAGE_DEFAULT_STORAGE_DIR );
-            this.storagedir = GLib.Path.build_filename( storagedirprefix, imsi );
-            GLib.DirUtils.create_with_parents( storagedir, SMS_STORAGE_DIRECTORY_PERMISSIONS );
-            logger.info( @"Created w/ storage dir $(this.storagedir)" );
-        }
-
-        public const int SMS_ALREADY_SEEN = -1;
-        public const int SMS_MULTI_INCOMPLETE = 0;
-        public const int SMS_SINGLE_COMPLETE = 1;
-
-        public void clean()
-        {
-            FsoFramework.FileHandling.removeTree( this.storagedir );
+            _imsi = imsi;
+            _storagedirprefix = config.stringValue( CONFIG_SECTION, "sms_storage_dir", SMS_STORAGE_DEFAULT_STORAGE_DIR );
+            _storagedir = GLib.Path.build_filename( _storagedirprefix, imsi );
         }
 
         /**
-         * Hand a new message over to the storage.
+         * Set the storage dir to use.
+         * WARNING: should only used for testing purposes. In production environments
+         * storage dir path is always read from the configuration file.
          *
-         * @note The storage will now own the message.
-         * @returns -1, if the message is already known.
-         * @returns 0, if the message is a fragment of an incomplete concatenated sms.
-         * @returns 1, if the message is not concatenated, hence complete.
-         * @returns n > 1, if the message is a fragment which completes an incomplete concatenated sms composed out of n fragments.
+         * @param storagedir Path to storage directory.
          **/
-        public int addSms( Sms.Message message )
+        public void set_storage_dir( string storagedir )
         {
-            // only deal with DELIVER types for now
+            _storagedir = storagedir;
+        }
+
+        public void clean()
+        {
+            FsoFramework.FileHandling.removeTree( _storagedir );
+        }
+
+        public SmsMessageStatus add_message_fragment( Sms.Message message, uint16 ref_num, uint8 max_msgs, uint8 seq_num )
+        {
             if ( message.type != Sms.Type.DELIVER )
             {
                 logger.info( "Ignoring message with type %u (!= DELIVER)".printf( (uint)message.type ) );
-                return SMS_ALREADY_SEEN;
+                return SmsMessageStatus.ALREADY_SEEN;
             }
-            // generate hash
+
             var smshash = message.hash();
+            var dirname = GLib.Path.build_filename( _storagedir, smshash );
+            var filename = GLib.Path.build_filename( dirname, "%03u".printf( seq_num ) );
+            if ( FsoFramework.FileHandling.isPresent( filename ) )
+                return SmsMessageStatus.ALREADY_SEEN;
 
-            uint16 ref_num;
-            uint8 max_msgs = 1;
-            uint8 seq_num = 1;
+            if ( !FsoFramework.FileHandling.isPresent( dirname ) )
+                GLib.DirUtils.create_with_parents( dirname, SMS_STORAGE_DIRECTORY_PERMISSIONS );
 
-            GLib.DirUtils.create_with_parents( GLib.Path.build_filename( storagedir, smshash ), SMS_STORAGE_DIRECTORY_PERMISSIONS );
+            // message is not present, save it now
+            FsoFramework.FileHandling.writeBuffer( message, message.size(), filename, true );
 
-            if ( !message.extract_concatenation( out ref_num, out max_msgs, out seq_num ) )
+            assert( logger.debug( @"fragment file $filename now present, checking for completeness..." ) );
+
+            // check whether we have all fragments?
+            for( int i = 1; i <= max_msgs; ++i )
             {
-                // message is not concatenated
-                var filename = GLib.Path.build_filename( storagedir, smshash, "001" );
-                if ( FsoFramework.FileHandling.isPresent( filename ) )
+                var fragmentfilename = GLib.Path.build_filename( _storagedir, smshash, "%03u".printf( i ) );
+                if( !FsoFramework.FileHandling.isPresent( fragmentfilename ) )
                 {
-                    return SMS_ALREADY_SEEN;
+                    assert( logger.debug( @"fragment file $fragmentfilename not present ==> INCOMPLETE" ) );
+                    return SmsMessageStatus.INCOMPLETE;
                 }
-                // message is not present, save it
-                FsoFramework.FileHandling.writeBuffer( message, message.size(), filename, true );
-                return SMS_SINGLE_COMPLETE;
+
+                assert( logger.debug( @"fragment file $fragmentfilename present" ) );
             }
-            else
-            {
-                // message is concatenated
-                var filename = GLib.Path.build_filename( storagedir, smshash, "%03u".printf( seq_num ) );
-                if ( FsoFramework.FileHandling.isPresent( filename ) )
-                {
-                    return SMS_ALREADY_SEEN;
-                }
-    #if DEBUG
-                GLib.message( "fragment file %s now present, checking for completeness...", filename );
-    #endif
-                // message is not present, save it
-                FsoFramework.FileHandling.writeBuffer( message, message.size(), filename, true );
-                // check whether we have all fragments?
-                for( int i = 1; i <= max_msgs; ++i )
-                {
-                    var fragmentfilename = GLib.Path.build_filename( storagedir, smshash, "%03u".printf( i ) );
-                    if( !FsoFramework.FileHandling.isPresent( fragmentfilename ) )
-                    {
-    #if DEBUG
-                        GLib.message( "fragment file %s not present ==> INCOMPLETE", fragmentfilename );
-    #endif
-                        return SMS_MULTI_INCOMPLETE;
-                    }
-    #if DEBUG
-                    GLib.message( "fragment file %s present", fragmentfilename );
-    #endif
-                }
-                return max_msgs; // SMS_MULTI_COMPLETE
-            }
+
+            return SmsMessageStatus.COMPLETE;
         }
 
-        public Gee.ArrayList<string> keys()
+        public SmsMessage? extract_message( string hash )
         {
-            var result = new Gee.ArrayList<string>();
-            GLib.Dir dir;
-            try
+            SmsMessage? result = SmsMessage();
+            var namecomponents = hash.split( "_" );
+            var dirname = GLib.Path.build_filename( _storagedir, hash );
+            var max_fragment = namecomponents[namecomponents.length-1].to_int();
+            var smses = new Sms.Message[max_fragment-1] {};
+            bool complete = true;
+            bool info = false;
+
+            if ( !FsoFramework.FileHandling.isPresent( dirname ) )
+                return null;
+
+            for( int i = 1; i <= max_fragment; ++i )
             {
-                dir = GLib.Dir.open( storagedir );
-                for ( var smshash = dir.read_name(); smshash != null; smshash = dir.read_name() )
+                smses[i-1] = new Sms.Message();
+                var filename = GLib.Path.build_filename( dirname, "%03u".printf( i ) );
+                if ( ! FsoFramework.FileHandling.isPresent( filename ) )
                 {
-                    result.add( smshash );
+                    complete = false;
+                    result.status = "incomplete";
+                    smses[i-1] = null;
                 }
-            }
-            catch ( GLib.Error e )
-            {
-                logger.error( @"Can't access SMS storage dir: $(e.message)" );
-            }
-            return result;
-        }
-
-        public FreeSmartphone.GSM.SIMMessage message( string key, int index = 0 )
-        {
-            var result = FreeSmartphone.GSM.SIMMessage(
-                index,
-                "unknown",
-                "unknown",
-                "unknown",
-                "unknown",
-                new GLib.HashTable<string,Variant>( str_hash, str_equal )
-            );
-
-            if ( ! ( key in keys() ) )
-            {
-                return result;
-            }
-
-            if ( key.has_suffix( "_1" ) )
-            {
-                // single SMS
-                string contents;
-                try
+                else
                 {
-                    GLib.FileUtils.get_contents( GLib.Path.build_filename( storagedir, key, "001" ), out contents );
-                }
-                catch ( GLib.Error e )
-                {
-                    logger.error( @"Can't access SMS storage dir: $(e.message)" );
-                    return result;
-                }
-                unowned Sms.Message message = (Sms.Message) contents;
+                    string contents;
 
-                result.status = "single";
-                result.number = message.number();
-                result.contents = message.to_string();
-                result.timestamp = message.timestamp().to_string();
-                result.properties = message.properties();
-            }
-            else
-            {
-                // concatenated SMS
-                result.status = "concatenated";
-                var namecomponents = key.split( "_" );
-                var max_fragment = namecomponents[namecomponents.length-1].to_int();
-    #if DEBUG
-                GLib.message( "highest fragment = %d", max_fragment );
-    #endif
-                var smses = new Sms.Message[max_fragment-1] {};
-                bool complete = true;
-                bool info = false;
-
-                for( int i = 1; i <= max_fragment; ++i )
-                {
-                    smses[i-1] = new Sms.Message();
-                    var filename = GLib.Path.build_filename( storagedir, key, "%03u".printf( i ) );
-                    if ( ! FsoFramework.FileHandling.isPresent( filename ) )
+                    try
                     {
-                        complete = false;
-                        result.status = "incomplete";
-
-                        smses[i-1] = null;
+                        GLib.FileUtils.get_contents( filename, out contents );
                     }
-                    else
+                    catch ( GLib.Error e )
                     {
-                        string contents;
-                        try
-                        {
-                            GLib.FileUtils.get_contents( filename, out contents );
-                        }
-                        catch ( GLib.Error e )
-                        {
-                            logger.error( @"Can't access SMS storage dir: $(e.message)" );
-                            return result;
-                        }
-                        Memory.copy( smses[i-1], contents, Sms.Message.size() );
+                        logger.error( @"Can't access SMS storage dir: $(e.message)" );
+                        return result;
+                    }
 
-                        if ( !info )
-                        {
-                            result.number = smses[i-1].number();
-                            result.timestamp = smses[i-1].timestamp().to_string();
-                            result.properties = smses[i-1].properties();
-                            info = true;
-                        }
+                    Memory.copy( smses[i-1], contents, Sms.Message.size() );
+
+                    if ( !info )
+                    {
+                        result.number = smses[i-1].number();
+                        result.timestamp = smses[i-1].timestamp().to_string();
+                        info = true;
                     }
                 }
+            }
 
+            if ( complete )
+            {
                 var smslist = new SList<weak Sms.Message>();
                 for( int i = 0; i < max_fragment; ++i )
                 {
                     if ( smses[i] != null )
-                    {
-                            smslist.append( smses[i] );
-                    }
+                        smslist.append( smses[i] );
                 }
+
                 var text = Sms.decode_text( smslist );
-                result.contents = ( text != null ) ? text : "decode error";
+                result.content = ( text != null ) ? text : "decode error";
             }
+            else
+            {
+                result = null;
+            }
+
+            FsoFramework.FileHandling.removeTree( dirname );
+
             return result;
         }
 
-        public FreeSmartphone.GSM.SIMMessage[] messagebook()
+        public void add_pending_message_fragments( WrapHexPdu[] messages )
         {
-            var mb = new FreeSmartphone.GSM.SIMMessage[] {};
-            var index = 0;
-            foreach ( var key in keys() )
-            {
-                mb += message( key, index = index++ );
-            }
-            return mb;
-        }
+            string refnum = last_reference_number().to_string();
+            string name = "";
 
-        public uint16 lastReferenceNumber()
-        {
-            var filename = GLib.Path.build_filename( storagedir, "refnum" );
-            return (uint16) FsoFramework.FileHandling.readIfPresent( filename ).to_int();
-        }
-
-        public uint16 increasingReferenceNumber()
-        {
-            var filename = GLib.Path.build_filename( storagedir, "refnum" );
-            var number = FsoFramework.FileHandling.readIfPresent( filename );
-            uint16 num = (uint16) number.to_int() + 1;
-            FsoFramework.FileHandling.write( num.to_string(), filename, true ); // create, if not existing
-            return num;
-        }
-
-        public void storeTransactionIndizesForSentMessage( Gee.ArrayList<WrapHexPdu> hexpdus )
-        {
-            var refnum = lastReferenceNumber().to_string();
-
-            var name = "";
-            foreach ( var hexpdu in hexpdus )
-            {
+            foreach ( var hexpdu in messages )
                 name += @":$(hexpdu.transaction_index)";
-            }
 
-            var dirname = GLib.Path.build_filename( storagedir, SMS_STORAGE_SENT_UNCONFIRMED, name );
+            var dirname = GLib.Path.build_filename( _storagedir, SMS_STORAGE_SENT_UNCONFIRMED, name );
             if ( ! FsoFramework.FileHandling.isPresent( dirname ) )
-            {
                 GLib.DirUtils.create_with_parents( dirname, SMS_STORAGE_DIRECTORY_PERMISSIONS );
-            }
-            foreach ( var hexpdu in hexpdus )
+
+            foreach ( var hexpdu in messages )
             {
                 var filename = GLib.Path.build_filename( dirname, hexpdu.transaction_index.to_string() );
                 FsoFramework.FileHandling.write( refnum, filename, true );
             }
         }
 
-        public int confirmReceivedMessage( int netreference )
+        public int confirm_pending_message( int netreference )
         {
-            var dirname = GLib.Path.build_filename( storagedir, SMS_STORAGE_SENT_UNCONFIRMED );
-            var listUnconfirmed = FsoFramework.FileHandling.listDirectory( dirname );
-            foreach ( var unconfirmed in listUnconfirmed )
+            var dirname = GLib.Path.build_filename( _storagedir, SMS_STORAGE_SENT_UNCONFIRMED );
+            var unconfirmed_messages = FsoFramework.FileHandling.listDirectory( dirname );
+
+            foreach ( var message in unconfirmed_messages )
             {
-                var components = unconfirmed.split( ":" );
+                var components = message.split( ":" );
                 foreach ( var component in components )
                 {
                     if ( component.to_int() == netreference )
                     {
-    #if DEBUG
-                        debug( @"Found reference ($netreference) of unconfirmed SMS:$component in $unconfirmed" );
-    #endif
-                        var filedirname = GLib.Path.build_filename( dirname, unconfirmed );
+                        assert( logger.debug( @"Found reference ($netreference) of unconfirmed SMS:$component in $message" ) );
+
+                        var filedirname = GLib.Path.build_filename( dirname, message );
                         var filename = GLib.Path.build_filename( filedirname, component );
                         var transaction_index = FsoFramework.FileHandling.read( filename ).to_int();
+
                         GLib.FileUtils.unlink( filename );
-                        var ok = GLib.DirUtils.remove( filedirname );
-                        if ( ok != 0 )
+                        if ( GLib.DirUtils.remove( filedirname ) != 0 )
                         {
-    #if DEBUG
-                            debug( @"$(strerror(errno)) (Not all fragments confirmed yet)" );
-    #endif
+                            assert( logger.debug( @"$(strerror(errno)) (Not all fragments confirmed yet)" ) );
                             return -1;
                         }
                         else
                         {
-    #if DEBUG
-                            debug( @"All fragments confirmed & removed directory. Returning index $transaction_index" );
-    #endif
+                            assert( logger.debug( @"All fragments confirmed & removed directory. Returning index $transaction_index" ) );
                             return transaction_index;
                         }
                     }
                 }
             }
+
             logger.warning( @"Did not find unconfirmed SMS for reference $netreference" );
+
             return -1;
+        }
+
+        public uint16 last_reference_number()
+        {
+            var filename = GLib.Path.build_filename( _storagedir, "refnum" );
+            return (uint16) FsoFramework.FileHandling.readIfPresent( filename ).to_int();
+        }
+
+        public uint16 next_reference_number()
+        {
+            if ( !FsoFramework.FileHandling.isPresent( _storagedir ) )
+                GLib.DirUtils.create_with_parents( _storagedir, SMS_STORAGE_DIRECTORY_PERMISSIONS );
+
+            var filename = GLib.Path.build_filename( _storagedir, "refnum" );
+            var number = FsoFramework.FileHandling.readIfPresent( filename );
+            uint16 num = number == "" ? 0 : (uint16) number.to_int() + 1;
+            FsoFramework.FileHandling.write( num.to_string(), filename, true );
+            return num;
+        }
+
+        public override string repr()
+        {
+            return @"<$_imsi>";
         }
     }
 }
