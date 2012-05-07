@@ -604,7 +604,7 @@ public class PlusCMGL : AbstractAtCommand
 
     public override void parseMulti( string[] response ) throws AtCommandError
     {
-        int tpdulen = 0;
+        int tpdulen = 0, index = -1;
         hexpdus = new Gee.ArrayList<WrapHexPdu>();
 
         for ( int i = 0; i < response.length; ++i )
@@ -613,10 +613,11 @@ public class PlusCMGL : AbstractAtCommand
             {
                 base.parse( response[i] );
                 tpdulen = to_int( "tpdulen" );
+                index = to_int( "id" );
             }
             else
             {
-                hexpdus.add( new WrapHexPdu( response[i], tpdulen ) );
+                hexpdus.add( new WrapHexPdu( response[i], tpdulen, index ) );
             }
         }
     }
