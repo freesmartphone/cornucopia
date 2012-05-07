@@ -120,7 +120,12 @@ public abstract class FsoGsm.AbstractSmsHandler : FsoGsm.SmsHandler, FsoFramewor
     private void onModemStatusChanged( FsoGsm.Modem modem, FsoGsm.Modem.Status status )
     {
         if ( status == Modem.Status.ALIVE_SIM_READY )
-            Idle.add( () => { syncWithSim(); return false; } );
+            _syncWithSimWrapper();
+    }
+
+    private async void _syncWithSimWrapper()
+    {
+        syncWithSim();
     }
 
     //
