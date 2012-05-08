@@ -7,6 +7,7 @@ SUBDIRS = \
 	data \
 	src \
 	tests \
+	vapi \
 	$(NULL)
 
 DISTCHECK_CONFIGURE_FLAGS = --disable-datafiles
