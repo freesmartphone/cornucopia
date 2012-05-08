@@ -1,4 +1,16 @@
+2012-05-08  Simon Busch  <morphis@gravedo.de>
+
+	Bump version for next bug fix release and update changelog
+
+	libgsm0710mux: include missing vapi files in generate distribution archives
+
+	libgsm0710mux: add missing Makefile.decl
+
 2012-04-23  Simon Busch  <morphis@gravedo.de>
+
+	Update changelogs of component for 0.10.1 release cycle
+
+	libgsm0710mux: bump version to 0.10.1
 
 	libgsm0710mux: refactor autoconf/automake logic
 

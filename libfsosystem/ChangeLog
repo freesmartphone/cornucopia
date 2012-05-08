@@ -1,5 +1,7 @@
 2012-04-28  Simon Busch  <morphis@gravedo.de>
 
+	libfsosystem: bump version to 0.10.1 and update ChangeLog
+
 	libfsosystem: package missing linuxext vapi file too
 
 2012-04-18  Simon Busch  <morphis@gravedo.de>

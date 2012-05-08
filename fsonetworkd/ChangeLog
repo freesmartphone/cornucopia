@@ -1,4 +1,12 @@
+2012-05-08  Simon Busch  <morphis@gravedo.de>
+
+	Bump version for next bug fix release and update changelog
+
+	fsonetworkd: include missing vapi files in generate distribution archives
+
 2012-04-18  Simon Busch  <morphis@gravedo.de>
+
+	Release version 0.10.0
 
 	Bump required version of libfso-glib to 2012.04.18.1
 

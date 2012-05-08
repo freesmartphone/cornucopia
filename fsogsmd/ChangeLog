@@ -1,4 +1,12 @@
+2012-05-08  Simon Busch  <morphis@gravedo.de>
+
+	Bump version for next bug fix release and update changelog
+
+	fsogsmd: include missing vapi files in generate distribution archives
+
 2012-04-23  Simon Busch  <morphis@gravedo.de>
+
+	Update changelogs of component for 0.10.1 release cycle
 
 	fsogsmd: bump to version 0.10.1
 

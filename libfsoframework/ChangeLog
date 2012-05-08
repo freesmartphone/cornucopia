@@ -1,3 +1,13 @@
+2012-05-08  Simon Busch  <morphis@gravedo.de>
+
+	Bump version for next bug fix release and update changelog
+
+	libfsoframework: include missing vapi files in generate distribution archives
+
+2012-04-18  Simon Busch  <morphis@gravedo.de>
+
+	Release version 0.10.0
+
 2012-04-17  Simon Busch  <morphis@gravedo.de>
 
 	Remove unneeded stuff from all autogen.sh files
