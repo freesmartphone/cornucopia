@@ -176,6 +176,7 @@ AC_CONFIG_FILES([
   src/plugins/source_ntp/Makefile
   src/plugins/sync_time/Makefile
   tests/Makefile
+  vapi/Makefile
 ])
 
 AC_OUTPUT
