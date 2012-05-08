@@ -154,6 +154,7 @@ AC_CONFIG_FILES([
   src/plugins/Makefile
   src/plugins/world/Makefile
   tests/Makefile
+  vapi/Makefile
   fsodata-2.0.pc
 ])
 AC_OUTPUT
