@@ -109,6 +109,7 @@ AM_CONDITIONAL( [WANT_DEBUG], [test x"$enable_debug" = x"yes"])
 
 AC_CONFIG_FILES([
   Makefile
+  vapi/Makefile
   conf/Makefile
   conf/default/Makefile
   data/Makefile
