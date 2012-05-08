@@ -91,8 +91,9 @@ public class FsoGsm.AtSmsHandler : FsoGsm.AbstractSmsHandler
         return true;
     }
 
-    protected override async bool acknowledgeSmsMessage( int id )
+    protected override async bool acknowledgeSmsMessage( string hepdu, int tpdulen )
     {
+        // NOTE: we're expecting here to use GSM phase 2+ commands only
         var cmd = theModem.createAtCommand<PlusCNMA>( "+CNMA" );
         var response = yield theModem.processAtCommandAsync( cmd, cmd.issue( 0 ) );
         if ( cmd.validate( response ) != Constants.AtResponse.VALID )

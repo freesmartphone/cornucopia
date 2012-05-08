@@ -111,7 +111,12 @@ public abstract class FsoGsm.AbstractSmsHandler : FsoGsm.SmsHandler, FsoFramewor
     protected abstract async void fetchMessagesFromSIM();
     protected abstract async bool readSmsMessageFromSIM( uint index, out string hexpdu, out int tpdulen );
     protected abstract async bool removeSmsMessageFromSIM( uint index );
-    protected abstract async bool acknowledgeSmsMessage( int id );
+    protected abstract async bool acknowledgeSmsMessage( string hexpdu, int tpdulen );
+
+    // FIXME currently unused; should be used later when we detect that modem does not
+    // support GSM phase 2+ commands for SMS messages
+    private string ack_pdu = "";
+    private int ack_tpdulen = 0;
 
     //
     // private
@@ -225,7 +230,7 @@ public abstract class FsoGsm.AbstractSmsHandler : FsoGsm.SmsHandler, FsoFramewor
             return;
         }
 
-        // FIXME check wether this message needs a report
+        yield acknowledgeSmsMessage( ack_pdu, ack_tpdulen );
 
         if ( !message.extract_concatenation( out ref_num, out max_msgs, out seq_num ) )
         {

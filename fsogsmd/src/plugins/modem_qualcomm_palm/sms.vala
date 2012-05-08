@@ -59,7 +59,7 @@ public class MsmSmsHandler : FsoGsm.AbstractSmsHandler
         return true;
     }
 
-    protected override async bool acknowledgeSmsMessage( int id )
+    protected override async bool acknowledgeSmsMessage( string hexpdu, int tpdulen )
     {
         bool result = true;
         var channel = theModem.channel( "main" ) as MsmChannel;

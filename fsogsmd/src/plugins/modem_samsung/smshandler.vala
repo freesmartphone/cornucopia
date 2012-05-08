@@ -46,7 +46,7 @@ public class Samsung.SmsHandler : FsoGsm.AbstractSmsHandler
         return ( response != null ? SamsungIpc.Security.RSimAccessResponseMessage.get_file_data( response ) : "unknown" );
     }
 
-    protected override async bool acknowledgeSmsMessage( int id )
+    protected override async bool acknowledgeSmsMessage( string hexpdu, int tpdulen )
     {
         var channel = theModem.channel( "main" ) as Samsung.IpcChannel;
         unowned SamsungIpc.Response? response = null;
