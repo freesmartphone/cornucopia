@@ -50,15 +50,10 @@ public class FsoGsm.AtSmsHandler : FsoGsm.AbstractSmsHandler
             return;
         }
 
-        var cmgd = theModem.createAtCommand<PlusCMGD>( "+CMGD" );
         foreach( var pdu in cmgl.hexpdus )
         {
             handleIncomingSms( pdu.hexpdu, pdu.tpdulen );
-            var response = yield theModem.processAtCommandAsync( cmgd, cmgd.issue( pdu.transaction_index ) );
-            if ( cmgd.validateOk( response ) != Constants.AtResponse.OK )
-            {
-                logger.error( @"Could not delete SMS with index $(pdu.transaction_index) from SIM" );
-            }
+            yield removeSmsMessageFromSIM( pdu.transaction_index );
         }
     }
 
