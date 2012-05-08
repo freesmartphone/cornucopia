@@ -298,6 +298,7 @@ AC_CONFIG_FILES([
   src/ppp/Makefile
   src/connman/Makefile
   tests/Makefile
+  vapi/Makefile
 ])
 AC_OUTPUT
 

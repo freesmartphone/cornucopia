@@ -7,6 +7,7 @@ SUBDIRS = \
 	src \
 	data \
 	tests \
+	vapi \
 	$(NULL)
 
 MAINTAINERCLEANFILES = \
