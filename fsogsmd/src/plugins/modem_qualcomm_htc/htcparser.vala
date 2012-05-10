@@ -165,7 +165,7 @@ public class FsoGsm.HtcAtParser : FsoFramework.BaseParser
                 return State.INLINE;
         }
 
-        if ( haveCommand() )
+        if ( _delegate.haveCommand() )
         {
             switch (c)
             {
@@ -345,7 +345,7 @@ public class FsoGsm.HtcAtParser : FsoFramework.BaseParser
         debug( "line completed: '%s'", (string)curline );
 #endif
 
-        if ( !haveCommand() )
+        if ( !_delegate.haveCommand() )
         {
             return endoflineSurelyUnsolicited();
         }
@@ -381,10 +381,10 @@ public class FsoGsm.HtcAtParser : FsoFramework.BaseParser
         }
 
 #if DEBUG
-        var prefixExpected = expectedPrefix( (string)curline );
+        var prefixExpected = _delegate.isExpectedPrefix( (string)curline );
         debug( "prefix expected = %s", prefixExpected.to_string() );
 #endif
-        if ( !expectedPrefix( (string)curline ) )
+        if ( !_delegate.isExpectedPrefix( (string)curline ) )
         {
             return endoflineSurelyUnsolicited();
         }
@@ -403,7 +403,7 @@ public class FsoGsm.HtcAtParser : FsoFramework.BaseParser
 #if DEBUG
         debug( "is final response. solicited response with %d lines", solicited.length );
 #endif
-        solicitedCompleted( solicited ); //TODO: rather call in idle mode or will this confuse everything?
+        _delegate.solicitedCompleted( solicited ); //TODO: rather call in idle mode or will this confuse everything?
         return resetAll();
     }
 
@@ -420,7 +420,7 @@ public class FsoGsm.HtcAtParser : FsoFramework.BaseParser
             debug( "pending PDU received; unsolicited response completed." );
 #endif
             pendingUnsolicitedPDU = false;
-            unsolicitedCompleted( unsolicited );
+            _delegate.unsolicitedCompleted( unsolicited );
             return resetAll( false );
         }
 
@@ -435,7 +435,7 @@ public class FsoGsm.HtcAtParser : FsoFramework.BaseParser
 #if DEBUG
         debug( "unsolicited response completed." );
 #endif
-        unsolicitedCompleted( unsolicited );
+        _delegate.unsolicitedCompleted( unsolicited );
         return resetAll( false );  // do not clear solicited responses; we might have sneaked in-between
     }
 

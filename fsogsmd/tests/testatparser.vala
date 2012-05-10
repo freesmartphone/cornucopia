@@ -20,41 +20,44 @@
 using GLib;
 using FsoGsm;
 
-bool haveCommand = false;
+bool _haveCommand = false;
 bool expectedPrefix = false;
-
-public bool hcf()
-{
-    return haveCommand;
-}
-
-public bool epf()
-{
-    return expectedPrefix;
-}
 
 string[] solicitedResponse;
 string[] unsolicitedResponse;
 
-public void soli( string[] response )
+public class TestParserDelegate : FsoFramework.IParserDelegate, GLib.Object
 {
-    assert( haveCommand );
-    assert( solicitedResponse.length == response.length );
-    for ( int i = 0; i < response.length; ++i )
+    public bool haveCommand()
     {
-        debug( "line %d = '%s'", i, response[i] );
-        assert( response[i] == solicitedResponse[i] );
+        return _haveCommand;
     }
-}
 
-public void unsoli( string[] response )
-{
-    assert( !haveCommand || !expectedPrefix );
-    assert( unsolicitedResponse.length == response.length );
-    for ( int i = 0; i < response.length; ++i )
+    public bool isExpectedPrefix( string line )
     {
-        debug( "line %d = '%s'", i, response[i] );
-        assert( response[i] == unsolicitedResponse[i] );
+        return expectedPrefix;
+    }
+
+    public void solicitedCompleted( string[] response )
+    {
+        assert( _haveCommand );
+        assert( solicitedResponse.length == response.length );
+        for ( int i = 0; i < response.length; ++i )
+        {
+            debug( "line %d = '%s'", i, response[i] );
+            assert( response[i] == solicitedResponse[i] );
+        }
+    }
+
+    public void unsolicitedCompleted( string[] response )
+    {
+        assert( !_haveCommand || !expectedPrefix );
+        assert( unsolicitedResponse.length == response.length );
+        for ( int i = 0; i < response.length; ++i )
+        {
+            debug( "line %d = '%s'", i, response[i] );
+            assert( response[i] == unsolicitedResponse[i] );
+        }
     }
 }
 
@@ -63,9 +66,9 @@ void test_parser_1_solicited()
 //===========================================================================
 {
     FsoFramework.Parser parser = new StateBasedAtParser();
-    parser.setDelegates( hcf, epf, soli, unsoli );
+    parser.setDelegate( new TestParserDelegate() );
 
-    haveCommand = true;
+    _haveCommand = true;
     expectedPrefix = false; // irrelevant for terminal lines
     solicitedResponse = { "OK" };
     unsolicitedResponse = {};
@@ -77,9 +80,9 @@ void test_parser_1_unsolicited()
 //===========================================================================
 {
     FsoFramework.Parser parser = new StateBasedAtParser();
-    parser.setDelegates( hcf, epf, soli, unsoli );
+    parser.setDelegate( new TestParserDelegate() );
 
-    haveCommand = false;
+    _haveCommand = false;
     expectedPrefix = false;
     solicitedResponse = {};
     unsolicitedResponse = { "+FOO: Yo Kurt" };
@@ -91,9 +94,9 @@ void test_parser_2_solicited()
 //===========================================================================
 {
     FsoFramework.Parser parser = new StateBasedAtParser();
-    parser.setDelegates( hcf, epf, soli, unsoli );
+    parser.setDelegate( new TestParserDelegate() );
 
-    haveCommand = true;
+    _haveCommand = true;
     expectedPrefix = true;
     solicitedResponse = { "+CPIN: \"READY\"", "OK" };
     unsolicitedResponse = {};
@@ -106,9 +109,9 @@ void test_parser_2_unsolicited()
 //===========================================================================
 {
     FsoFramework.Parser parser = new StateBasedAtParser();
-    parser.setDelegates( hcf, epf, soli, unsoli );
+    parser.setDelegate( new TestParserDelegate() );
 
-    haveCommand = false;
+    _haveCommand = false;
     expectedPrefix = false;
     solicitedResponse = {};
     unsolicitedResponse = { "+FOO: Yo Kurt" };
@@ -123,9 +126,9 @@ void test_parser_2_unsolicited_pdu()
 //===========================================================================
 {
     FsoFramework.Parser parser = new StateBasedAtParser();
-    parser.setDelegates( hcf, epf, soli, unsoli );
+    parser.setDelegate( new TestParserDelegate() );
 
-    haveCommand = false;
+    _haveCommand = false;
     expectedPrefix = false;
     solicitedResponse = {};
     unsolicitedResponse = { "+CMT: 120", "1234567890" };
@@ -138,9 +141,9 @@ void test_parser_multiline_solicited()
 //===========================================================================
 {
     FsoFramework.Parser parser = new StateBasedAtParser();
-    parser.setDelegates( hcf, epf, soli, unsoli );
+    parser.setDelegate( new TestParserDelegate() );
 
-    haveCommand = true;
+    _haveCommand = true;
     expectedPrefix = true;
     solicitedResponse = { "+FOO: 123456", "+BAR: 123456", "OK" };
     unsolicitedResponse = {};
