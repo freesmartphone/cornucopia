@@ -1,4 +1,334 @@
+2012-05-24  Simon Busch  <morphis@gravedo.de>
+
+	Update changelogs of all components for 0.11 release
+
+	Bump required version of libfso-glib to 2012.05.24.1
+
+2012-05-23  Simon Busch  <morphis@gravedo.de>
+
+	Merge branch 'master' into 0.11
+
+	fsogsmd: conf: GTA04: modem urc access is a serial line and not a tcp transport
+
+2012-05-22  Simon Busch  <morphis@gravedo.de>
+
+	Merge branch 'master' into 0.11
+
+	Set log level of all configurations for each component to INFO rather than DEBUG
+	We're trying to ship all time production ready software which should only log in INFO
+	level and not in debug mode.
+
+	Merge branch 'master' into 0.11
+
+	fsogsmd: modem_option_gtm601: _OWANCALL seems to return OK rather than CONNECT
+
+	Merge branch 'master' into 0.11
+
+	fsogsmd: modem_option_gtm601: rather than using a combined transport create another channel
+	If we're treating the additional line on the GTA04 as the same as the primary modem port
+	we have troubles in our AT parser with unsolicited response comming in between when a AT
+	command is still pending. To avoid this we have to create an additional channel for the
+	second line.
+
+	fsogsmd: conf: GTA04: only use the /dev/ttyHS_Application dev node for modem access
+
+	fsogsmd: modem_option_gtm601: get PDP session configuration data from modem and configure network iface
+
+	fsogsmd: modem_option_gtm601: include specific pdp handler for this modem
+
+	fsogsmd: modem_option_gtm601: get PDP session configuration data from modem and configure network iface
+
+	fsogsmd: modem_option_gtm601: include specific pdp handler for this modem
+
+	Enter release mode for all components
+
+2012-05-21  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: lib: introduce concept of a internal network state
+
+	fsogsmd: lib: at: be more verbose when initializing or shutting down a channel
+
+	fsogsmd: modem_option_gtm601: add hexadecimal string conversion for NetworkListProviders and SimGetServiceCenterNumber mediators
+
+2012-05-18  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: modem_option_gtm601: add missing copyright notice
+
+	fsogsmd: lib: detect channel hangup correctly when channel is not active anymore
+
+	fsogmd: lib: only create a new phonebook storage if don't have already one
+
+	fsogsmd: lib: only create a new sms storage if we don't already have one
+
+	fsogsmd: modem_option_gtm601: use common helper method to update network signal strength
+
+	fsogsmd: lib: add a common helper method to update the signal strength depending on modem state
+
+2012-05-15  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: modem_qualcomm_palm: implement missing syncWithSim method for phonebook handler
+
+	fsogsmd: lib: resync phonebook storage after entry was deleted
+
+	fsogsmd: lib: at: clearly separate public and private methods of phonebook handler class
+
+	fsogsmd: lib: split AT specific phonebook handler into own vala source file
+
+	fsogsmd: lib: removed unneeded and commented code
+
+	fsogsmd: plugins: no reimplementation of SmsGetSizeForTextMessage mediator needed
+
+	fsogsmd: lib: sms: use md5 hash of complete pdu as hash for single part SMS messages
+	This fixes bug #568
+
+2012-05-12  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: bin: set right content for MAINTAINERCLEANFILES
+
+2012-05-11  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: plugins: fix most warnings issued by the vala compiler
+
+	fsogsmd: lib: activate null pdp handler when creation of a real one failed
+
+	fsogsmd: modem_dummy: use null call, sms and watchdog handlers
+
+	fsogsmd: lib: introduce null class implementation of sms, call and watchdog handlers
+
+	fsogsmd: lib: fix warnings the vala compiler reports
+	Just two warnings are still there:
+
+	  VALAC  libfsogsm_la_vala.stamp
+	  at/atunsolicited.vala:63.75-63.78: warning: copying delegates is discouraged
+	  at/atunsolicited.vala:68.81-68.84: warning: copying delegates is discouraged
+	  Compilation succeeded - 2 warning(s)
+
+	Both will not be fixed in a reasonable time as they require a complete rework of the
+	unsolicited response handling.
+
+	Use ustar format for the distribution tar archive in all components of the stack
+	If we're not using ustar format for the tar archives we're getting problems when trying to
+	package files with a path longer than 99 characters which isn't supported by the default
+	tar format but by the ustart one.
+
+2012-05-10  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: adjust for recent changes to libfsotransport about delegate handling
+
+2012-05-09  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: modem_nokia_isi: mixing kernel network interface with netlink interface does not work
+	/usr/include/net/if.h:45:5: error: expected identifier before numeric constant
+	/usr/include/net/if.h:112:8: error: redefinition of 'struct ifmap'
+	/usr/include/linux/if.h:137:8: note: originally defined here
+	/usr/include/net/if.h:127:8: error: redefinition of 'struct ifreq'
+	/usr/include/linux/if.h:171:8: note: originally defined here
+	/usr/include/net/if.h:177:8: error: redefinition of 'struct ifconf'
+	/usr/include/linux/if.h:220:8: note: originally defined here
+
+	Revert "fsogsmd: 3rdparty: drop unused storage related code from 3rdparty project"
+	This reverts commit 80f56dac3efc8c9a255292d92b3c2c59de148085.
+
+	Revert "fsogsmd: lib: don't build not existing storage.c (was removed from source tree before)"
+	This reverts commit f661b21fb57a29abd3d5bc4e542f29fa65525660.
+
+	fsogsmd: lib: don't build not existing storage.c (was removed from source tree before)
+
+	Bump required FSO version of all components to 0.11.0
+
+2012-05-08  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: 3rdparty: drop unused storage related code from 3rdparty project
+
+	fsogsmd: remove connman vapi file too after the plugin is gone
+
+	fsogsmd: include missing vapi files in generate distribution archives
+
+	fsogsmd: remove connman plugin; this will be done as part of connman itself later
+
+2012-05-04  Simon Busch  <morphis@gravedo.de>
+
+	Revert "fsogsmd: lib: atcommandsequence: rework AtCommandSequence to inherit from a common interface"
+	This reverts commit e9a2a958830596d7125843cc10062fd5bca9b6cb.
+
+	Conflicts:
+
+		fsogsmd/tests/Makefile.am
+
+	fsogsmd: lib: at: configure network registration report type on channel initialization
+
+	fsogsmd: tests: rework makefile
+
+	fsogsmd: lib: atcommandsequence: rework AtCommandSequence to inherit from a common interface
+
+	fsogsmd: lib: atnetworkmediators: take first result of +CREG? for network registration status and mode
+
+	fsogsmd: conf: correct destination folder for default configuration
+
+	fsogsmd: modem_phonesim: add basic modem plugin for phonesim support
+
+	fsogsmd: lib: atnetworkmediators: take care that mandatory keys/values are always available
+
+2012-05-03  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: lib: remove unnecessary whitespace
+
+	fsogsmd: modem_option_gtm601: implement AT_OPSYS command to change radio access mode
+
+	fsogsmd: modem_option_gtm601: enable signal strength updates as unsolicited response
+
+2012-05-02  Simon Busch  <morphis@gravedo.de>
+
+	Fix checking for the wrong *_release variable when enabling vala source compilation
+
+	Merge remote-tracking branch 'origin/slyon/gta04-sms-during-suspend'
+
+2012-05-01  Lukas Märdian  <lukasmaerdian@gmail.com>
+
+	fsogsmd: modem_option_gtm601: fix typo in assert()
+
+2012-04-30  Lukas Märdian  <lukasmaerdian@gmail.com>
+
+	fsogsmd: modem_option_gtm601: rework sms during suspend
+	* we're now listening to the modem status RESUMING signal
+	  and sync the SIM afterwards.
+
+2012-04-29  Lukas Märdian  <lukasmaerdian@gmail.com>
+
+	fsogsmd: modem_option_gtm601: poll for new SMS on SIM after resume
+	This is necessary on the GTA04, as it awakes but does not recognize there was
+	an incoming SMS.
+
+2012-04-27  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: modem: validate pdp handler before checking it's status
+	Otherwise we're dieing cause of a failed assertion:
+
+	2012-04-27T19:47:20.437796Z [DEBUG] Gtm601Modem <>: Check wether we have to deactivate the
+	PDP context ...
+	2012-04-27T19:47:20.437967Z [CRITICAL] fsogsmd : GLib <>: fso_gsm_pdp_handler_get_status:
+	assertion `self != NULL' failed
+
+	fsogsmd: modem_option_gtm601: clean up the code from unnecessary stuff
+
+	fsogsmd: modem_option_gtm601: handle _OSIGQ urc for network signal strength updates
+
+	fsogsmd: lowlevel_gta04: minimize power on/off logic to be rock solid
+
+	fsogsmd: tests: disable testoptiongtm601 for now as it's causing runtime link errors
+
+	fsogsmd: lowlevel_gta04: be more verbose when powering modem on/off
+
+	fsogsmd: modem_option_gtm601: rename PlusCEER to ExtPlusCEER
+	Using the same classname as the base class already has produces runtime errors like this
+	one:
+
+	fsogsmd: symbol lookup error: /usr/lib/cornucopia/modules/fsogsm/modem_option_gtm601.so:
+	undefined symbol: gtm601_plus_chup_register_type
+
+	Somehow Vala can't deal with class with the same name in different namespaces.
+
+	fsogsmd: lowlevel_gta04: use what configuration tells to use for the modem dev node we're polling
+
+	fsogsmd: modem_option_gtm601: implement different format for AT+CEER
+	Differently to what is implemented in the core AT command the Option GTM601 modem is using
+	the AT+CEER command with the following format "AT+CEER: <reason>". This is exactly the
+	same 27.007 describes as format for this command.
+
+2012-04-26  Lukas Märdian  <lukasmaerdian@gmail.com>
+
+	fsogsmd: conf: gta04: use udev modem nodes
+	This way we can be sure to have the right nodes all the time.
+	The default nodes changed their numbers sometimes (e.g. /dev/ttyHS3 -> /dev/ttyHS6)
+
+2012-04-25  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: don' distribute vapi and header file for internal library
+
+	Add --disable-datafiles configure option just for make distcheck target
+
+	fsogsmd: tests: split out SMS storage tests into own binary
+
+	fsogsmd: lib: don't install internal lib into ${libdir} but into modules directory
+
+2012-04-24  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: tests: adjust SMS tests for recent changes to SMS storage class
+
+	fsogsmd: lib: at: make our at-based sms handler inherit from the generic handler
+
+	fsogsmd: lib: refactor usage of sms storage to be based on an interface
+
+	fsogsmd: lowlevel_gta04: extend modem power on/off logic to be more reliable
+
+	fsogsmd: refactor automake configuration
+
+	fsogsmd: add myself to the list of authors
+
+2012-04-23  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: modem_samsung: add missing samsung_modem_ctl.h for distribution
+
+2012-04-20  Simon Busch  <morphis@gravedo.de>
+
+	Make dbus system directories for all components configurable in the configure script
+
+	fsogsmd: conf: gta04: adjust for latest changes to libfsotransport
+
+	fsogsmd: lib: use fsodatad's dbus interface to retrieve the name of a provider for MCC/MNC
+
+	fsogsmd: rework dependency on libfsodata library; will be replaced we dbus access of it's services later
+
+	fsogsmd: modem_cinterion_mc75: adjust for changes to libfsotransport
+
+	fsogsmd: lib: add fsodata-2.0 a dependency
+
+	Revert "fsogsmd: lib: introduce a NullPdpHandler for cases where no implementation is available"
+	This reverts commit d30bcf8579ceeb614560d27dea6d5e05c34b8eb8.
+
+	fsogsmd: lib: muxtransport: forward transport directly without using the transport spec
+
+	fsogsmd: lib: at: try to get the provider name of the current network from database if no one is available
+	This fixes bug #565.
+
+	fsogsmd: lib: introduce a NullPdpHandler for cases where no implementation is available
+
+	fsogsmd: lib: correct spelling
+
+	fsogsmd: modem: encapsulate transport specification with our TransportSpec class
+
+2012-04-19  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: modem_option_gtm601: reimplement AtCallSendDtmf as we're not getting an answer for AT+VTS
+
+	fsogsmd: lib: mark method validateDtmfTones as possible source of FreeSmartphone.Error exception
+
+	fsogsmd: tests: testatcommand: make all tests working again
+
+	fsogsmd: at: PlusCOPS: correct order of parameters for constructor of class NetworkProvider
+	Before longname was the shortname of a network received from the modem and vice versa.
+
+	fsogsmd: lib: at: PlusCOPS: remove unneeded status field from class definition
+
+	fsogsmd: lib: add a NullModem class to be used on tests
+
+	fsogsmd: lib: atcommand: pass message to exception rather than logging it
+
+	fsogsmd: tests: add test case for AT+VTS command implementation
+
+	fsogsmd: tests: simplify Makefile for generation of test binaries
+
+	fsogsmd: dbus_service: validate dtmf tones before passing them to the mediator
+
+	fsogsmd: lib: at commands: generate for each tone one AT+VTS command
+
+	fsogsmd: bump required version of msmcomm-specs to 0.10
+
 2012-04-18  Simon Busch  <morphis@gravedo.de>
+
+	Bump version of all components for next development cycle
+
+	Release version 0.10.0
 
 	fsogsmd: modem_nokia_isi: respect gisicomm ABI bump
 

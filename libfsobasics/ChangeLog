@@ -1,3 +1,58 @@
+2012-05-24  Simon Busch  <morphis@gravedo.de>
+
+	Update changelogs of all components for 0.11 release
+
+2012-05-22  Simon Busch  <morphis@gravedo.de>
+
+	Merge branch 'master' into 0.11
+
+	Set log level of all configurations for each component to INFO rather than DEBUG
+	We're trying to ship all time production ready software which should only log in INFO
+	level and not in debug mode.
+
+	Enter release mode for all components
+
+2012-05-16  Simon Busch  <morphis@gravedo.de>
+
+	libfsobasics: tests: disable test case which requires root priviledge
+
+2012-05-15  Simon Busch  <morphis@gravedo.de>
+
+	libfsobasics: filehandling: refactor remoteTree method to completely remove a directory structure
+
+2012-05-11  Simon Busch  <morphis@gravedo.de>
+
+	Use ustar format for the distribution tar archive in all components of the stack
+	If we're not using ustar format for the tar archives we're getting problems when trying to
+	package files with a path longer than 99 characters which isn't supported by the default
+	tar format but by the ustart one.
+
+2012-05-08  Simon Busch  <morphis@gravedo.de>
+
+	libfsobasics: vapi: drop files for libnl-3.0; they are shipped with vala-0.14 already
+
+2012-05-08  Klaus Kurzmann  <mok@fluxnetz.de>
+
+	libfsobasics: switch to libnl-3
+
+2012-05-08  Simon Busch  <morphis@gravedo.de>
+
+	libfsobasics: include missing vapi files in generate distribution archives
+
+2012-05-03  Simon Busch  <morphis@gravedo.de>
+
+	libfsobasics: make library ABI version configurable
+
+2012-05-02  Simon Busch  <morphis@gravedo.de>
+
+	Fix checking for the wrong *_release variable when enabling vala source compilation
+
+2012-04-18  Simon Busch  <morphis@gravedo.de>
+
+	Bump version of all components for next development cycle
+
+	Release version 0.10.0
+
 2012-04-17  Simon Busch  <morphis@gravedo.de>
 
 	Remove unneeded stuff from all autogen.sh files

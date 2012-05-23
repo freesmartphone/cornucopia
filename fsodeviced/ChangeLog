@@ -1,4 +1,56 @@
+2012-05-24  Simon Busch  <morphis@gravedo.de>
+
+	Update changelogs of all components for 0.11 release
+
+	Bump required version of libfso-glib to 2012.05.24.1
+
+2012-05-22  Simon Busch  <morphis@gravedo.de>
+
+	Merge branch 'master' into 0.11
+
+	Set log level of all configurations for each component to INFO rather than DEBUG
+	We're trying to ship all time production ready software which should only log in INFO
+	level and not in debug mode.
+
+	Enter release mode for all components
+
+2012-05-11  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: autoconf/automake fixes to get make distcheck working again
+
+2012-05-09  Simon Busch  <morphis@gravedo.de>
+
+	Bump required FSO version of all components to 0.11.0
+
+	fsodeviced: refactor automake configuration
+
+2012-05-08  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: include missing vapi files in generate distribution archives
+
+2012-05-02  Simon Busch  <morphis@gravedo.de>
+
+	Fix checking for the wrong *_release variable when enabling vala source compilation
+
+2012-04-25  Simon Busch  <morphis@gravedo.de>
+
+	Add --disable-datafiles configure option just for make distcheck target
+
+	fsodeviced: kernel26_rfkill: enable building by default
+
+2012-04-23  Simon Busch  <morphis@gravedo.de>
+
+	fsotdld/fsodeviced/fsosystemd/fsoaudiod: include systemd services file in our release tarball
+
+2012-04-20  Simon Busch  <morphis@gravedo.de>
+
+	Make dbus system directories for all components configurable in the configure script
+
 2012-04-18  Simon Busch  <morphis@gravedo.de>
+
+	Bump version of all components for next development cycle
+
+	Release version 0.10.0
 
 	Bump required version of libfso-glib to 2012.04.18.1
 
