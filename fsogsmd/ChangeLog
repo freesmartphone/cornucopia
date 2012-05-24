@@ -1,5 +1,7 @@
 2012-05-24  Simon Busch  <morphis@gravedo.de>
 
+	fsogsmd: modem_samsung: add missing samsung_modem_ctl.h to distribution package
+
 	Update changelogs of all components for 0.11 release
 
 	Bump required version of libfso-glib to 2012.05.24.1
