@@ -1,4 +1,12 @@
+2012-05-28  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: lib: pack fsogsm-2.0.deps file into our distribution package too
+
+	fsogsmd: lib: include missing fsogsm3rdparty.vapi/.deps files for distribution
+
 2012-05-24  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: update for 0.11.1 bug fix release
 
 	fsogsmd: modem_samsung: add missing samsung_modem_ctl.h to distribution package
 
