@@ -1,5 +1,9 @@
 2012-05-30  Simon Busch  <morphis@gravedo.de>
 
+	fsodeviced: plugins: we need to pass WANT_FSO_RESOURCE to valac to get usage integration
+
+	fsodeviced: release version 0.11.2
+
 	fsodeviced: router_qdsp5: add missing playwav2.vapi file to distribution archive
 
 2012-05-29  Simon Busch  <morphis@gravedo.de>
