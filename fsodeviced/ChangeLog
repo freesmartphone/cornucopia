@@ -1,4 +1,10 @@
+2012-05-30  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: router_qdsp5: add missing playwav2.vapi file to distribution archive
+
 2012-05-29  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: release version 0.11.1
 
 	fsodeviced: lib: fsodevice-2.0.deps should be part of the distribution archive
 
