@@ -1,4 +1,10 @@
+2012-05-31  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: kernel26_rfkill: $(AM_VALAFLAGS) should be used in kernel26_rfkill_la_VALAFLAGS
+
 2012-05-30  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: release version 0.11.3
 
 	fsodeviced: plugins: we need to pass WANT_FSO_RESOURCE to valac to get usage integration
 
