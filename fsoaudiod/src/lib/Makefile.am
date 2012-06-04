@@ -48,6 +48,13 @@ libfsoaudio_la_LIBADD = \
 	$(NULL)
 libfsoaudio_la_LDFLAGS = -no-undefined -avoid-version
 
+BUILT_SOURCES = \
+	fsoaudio.h \
+	fsoaudio-2.0.vapi \
+	$(NULL)
+
+EXTRA_DIST += $(BUILT_SOURCES)
+
 CLEANFILES =
 MAINTAINERCLEANFILES = \
 	fsoaudio.h \
