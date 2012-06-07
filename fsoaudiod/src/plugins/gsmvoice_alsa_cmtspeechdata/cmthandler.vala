@@ -148,7 +148,7 @@ public class CmtHandler : FsoFramework.AbstractObject
 
     /* record Thread */
     private unowned Thread<void *> recordThread = null;
-    private bool runRecordThread = false;
+    private int runRecordThread = 0;
     private Mutex recordMutex = new Mutex();
     private RingBuffer toModem;
     private int timing; // feed UL to the modem (in ms)
@@ -297,7 +297,7 @@ public class CmtHandler : FsoFramework.AbstractObject
 
     private void * recordThreadFunc()
     {
-        while ( runRecordThread == true )
+        while ( runRecordThread > 0 )
         {
             var buf = new uint8[ FCOUNT * FRAMESIZE ];
             Alsa.PcmSignedFrames frames;
@@ -412,7 +412,7 @@ public class CmtHandler : FsoFramework.AbstractObject
             {
                 logger.debug( "Thread already launched" );
             }
-            runRecordThread = true;
+            AtomicInt.set(ref runRecordThread,1);
         }
 
     }
@@ -429,7 +429,7 @@ public class CmtHandler : FsoFramework.AbstractObject
 
     private void alsaSrcCleanup()
     {
-        runRecordThread = false;
+        AtomicInt.set(ref runRecordThread,0);
         recordThread.join();
         recordThread = null;
         pcmin.close();
