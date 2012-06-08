@@ -26,6 +26,7 @@ namespace FsoAudio.GsmVoiceCmtspeechdata
 class FsoAudio.GsmVoiceCmtspeechdata.Plugin : FsoFramework.AbstractObject
 {
     private FsoFramework.Subsystem subsystem;
+    private CmtHandler cmthandler;
     private FreeSmartphone.GSM.Call gsmcallproxy;
 
     //
@@ -37,11 +38,11 @@ class FsoAudio.GsmVoiceCmtspeechdata.Plugin : FsoFramework.AbstractObject
         switch ( status )
         {
             case FreeSmartphone.GSM.CallStatus.OUTGOING:
-                setAudioStatus( true );
+                cmthandler.setAudioStatus( true );
                 break;
 
             case FreeSmartphone.GSM.CallStatus.RELEASE:
-                setAudioStatus( false );
+                cmthandler.setAudioStatus( false );
                 break;
 
             default:
@@ -56,7 +57,7 @@ class FsoAudio.GsmVoiceCmtspeechdata.Plugin : FsoFramework.AbstractObject
     public Plugin( FsoFramework.Subsystem subsystem )
     {
         this.subsystem = subsystem;
-		setup();
+        cmthandler = new CmtHandler();
         try
         {
             gsmcallproxy = Bus.get_proxy_sync<FreeSmartphone.GSM.Call>( BusType.SYSTEM, "org.freesmartphone.ogsmd", "/org/freesmartphone/GSM/Device", DBusProxyFlags.DO_NOT_AUTO_START );
