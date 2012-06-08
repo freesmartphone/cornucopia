@@ -103,13 +103,13 @@ public class CmtHandler : FsoFramework.AbstractObject
 			  break;
 		  }
 		  if (buffer != null)
-			  yield writeToFile (ref buffer);
+			  yield writeToFile (buffer);
 		  }
 	}
 
 
 
-    private static async void  writeToFile(ref Buffer buffer)
+    private static async void  writeToFile(Buffer buffer)
     {
             long written = 0;
 
