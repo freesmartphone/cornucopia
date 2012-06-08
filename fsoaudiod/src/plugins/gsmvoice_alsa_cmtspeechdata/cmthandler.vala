@@ -78,7 +78,7 @@ public class CmtHandler : FsoFramework.AbstractObject
         }
 
 		
-		// channel = UnixInputStream(fd,true);
+		channel = new UnixInputStream(fd,true);
 		// yield channel.read_async(buffer,Priority.HIGH,null);
 		// onImputFromChannel();
 		
