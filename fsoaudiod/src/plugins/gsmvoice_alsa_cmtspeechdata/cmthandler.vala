@@ -33,7 +33,6 @@ struct Buffer {
 public class CmtHandler : FsoFramework.AbstractObject
 {
 	UnixInputStream channel;
-	uint8[] buffer = new uint8[MAX];
 
     //
     // Constructor
@@ -79,17 +78,38 @@ public class CmtHandler : FsoFramework.AbstractObject
         }
 
 		
-		channel = UnixInputStream(fd,true);
-		yield channel.read_async(buffer,Priority.HIGH,null);
-		onImputFromChannel();
-
+		// channel = UnixInputStream(fd,true);
+		// yield channel.read_async(buffer,Priority.HIGH,null);
+		// onImputFromChannel();
+		
 /*
         channel = new IOChannel.unix_new( fd );
         channel.add_watch( IOCondition.IN | IOCondition.HUP, onInputFromChannel );
 */
+		read_from_modem_and_write_to_file.begin();
     }
 
-    private static async void  writeToFile(Buffer buffer)
+    private async void read_from_modem_and_write_to_file () {
+          while (true) {
+          var source = channel.create_source ();
+		  source.set_callback (() => {
+				  read_from_modem_and_write_to_file.callback ();
+				  return false;
+			  });
+		  uint id = source.attach (null);
+		  yield;
+		  Buffer? buffer = null;
+		  if (!onInputFromChannel (out buffer)) {
+			  break;
+		  }
+		  if (buffer != null)
+			  yield writeToFile (ref buffer);
+		  }
+	}
+
+
+
+    private static async void  writeToFile(ref Buffer buffer)
     {
             long written = 0;
 
@@ -105,13 +125,13 @@ public class CmtHandler : FsoFramework.AbstractObject
             }
     }
 
-    private static void handleDataEvent()
+    private static void handleDataEvent(out Buffer buffer)
     {
         debug( @"handleDataEvent during protocol state $(connection.protocol_state())" );
 
         CmtSpeech.FrameBuffer dlbuf = null;
         CmtSpeech.FrameBuffer ulbuf = null;
-        Buffer buffer = Buffer();
+        buffer = Buffer();
 
         var ok = connection.dl_buffer_acquire( out dlbuf );
         if ( ok == 0 )
@@ -131,7 +151,6 @@ public class CmtHandler : FsoFramework.AbstractObject
                 connection.ul_buffer_release( ulbuf );
             }
             connection.dl_buffer_release( dlbuf );
-			writeToFile.begin(buffer);
         }
     }
 
@@ -178,7 +197,7 @@ public class CmtHandler : FsoFramework.AbstractObject
     }
 
     //===========================================================================
-    private static bool onInputFromChannel()
+    private static bool onInputFromChannel(out Buffer buffer)
     {
         // debug( "onInputFromChannel, condition = %d", condition );
 
@@ -206,7 +225,7 @@ public class CmtHandler : FsoFramework.AbstractObject
 
             if ( ( flags & CmtSpeech.EventType.DL_DATA ) == CmtSpeech.EventType.DL_DATA )
             {
-                handleDataEvent();
+                handleDataEvent(out buffer);
             }
             else if ( ( flags & CmtSpeech.EventType.CONTROL ) == CmtSpeech.EventType.CONTROL )
             {
