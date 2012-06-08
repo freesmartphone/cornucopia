@@ -79,13 +79,7 @@ public class CmtHandler : FsoFramework.AbstractObject
 
 		
 		channel = new UnixInputStream(fd,true);
-		// yield channel.read_async(buffer,Priority.HIGH,null);
-		// onImputFromChannel();
-		
-/*
-        channel = new IOChannel.unix_new( fd );
-        channel.add_watch( IOCondition.IN | IOCondition.HUP, onInputFromChannel );
-*/
+
 		read_from_modem_and_write_to_file.begin();
     }
 
@@ -106,8 +100,6 @@ public class CmtHandler : FsoFramework.AbstractObject
 			  yield writeToFile (buffer);
 		  }
 	}
-
-
 
     private static async void  writeToFile(Buffer buffer)
     {
@@ -199,16 +191,6 @@ public class CmtHandler : FsoFramework.AbstractObject
     //===========================================================================
     private static bool onInputFromChannel(out Buffer buffer)
     {
-        // debug( "onInputFromChannel, condition = %d", condition );
-
-        // assert( condition == IOCondition.HUP || condition == IOCondition.IN );
-
-        // if ( condition == IOCondition.HUP )
-        // {
-        //     debug( "HUP, closing" );
-        //     return false;
-        // }
-
         CmtSpeech.EventType flags = 0;
         var ok = connection.check_pending( out flags );
         if ( ok < 0 )
