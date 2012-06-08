@@ -34,7 +34,6 @@ struct Buffer {
 public class CmtHandler : FsoFramework.AbstractObject
 {
 
-
     //
     // Constructor
     //
@@ -43,14 +42,15 @@ public class CmtHandler : FsoFramework.AbstractObject
 
         CmtSpeech.init();
         var file = File.new_for_path ("/home/root/out.wav");
-        if (file.query_exists ()) {
+        if (file.query_exists ())
+        {
             try
             {
                 file.delete ();
             }
             catch (GLib.Error e)
             {
-                error( @"Could not delete existing file: $(e.message)" );
+                logger.error( @"Could not delete existing file: $(e.message)" );
             }
         }
         try
@@ -59,26 +59,42 @@ public class CmtHandler : FsoFramework.AbstractObject
         }
         catch (GLib.Error e)
         {
-             error( @"Could not create file: $(e.message)" );
+             logger.error( @"Could not create file: $(e.message)" );
         }
-    CmtSpeech.trace_toggle( CmtSpeech.TraceType.STATE_CHANGE, true );
-    CmtSpeech.trace_toggle( CmtSpeech.TraceType.IO, true );
+        CmtSpeech.trace_toggle( CmtSpeech.TraceType.STATE_CHANGE, true );
+        CmtSpeech.trace_toggle( CmtSpeech.TraceType.IO, true );
         CmtSpeech.trace_toggle( CmtSpeech.TraceType.DEBUG, true );
-    connection = new CmtSpeech.Connection();
-            if ( connection == null )
-            {
-                error( "Can't instanciate connection" );
-                return;
-            }
+        connection = new CmtSpeech.Connection();
+        if ( connection == null )
+        {
+            logger.error( "Can't instanciate connection" );
+            return;
+        }
 
-            var fd = connection.descriptor();
+        var fd = connection.descriptor();
 
-            if ( fd == -1 )
-            {
-                error( "Cmtspeech file descriptor invalid" );
+        if ( fd == -1 )
+        {
+            error( "Cmtspeech file descriptor invalid" );
+        }
+        channel = new IOChannel.unix_new( fd );
+        channel.add_watch( IOCondition.IN | IOCondition.HUP, onInputFromChannel );
+    }
+
+    private static async void  writeToFile(Buffer buffer)
+    {
+            long written = 0;
+
+            while (written < buffer.length ) {
+                try
+                {
+                    written += yield output.write_async((uint8[])buffer.content[written:buffer.length], Priority.HIGH, null);
+                }
+                catch (GLib.IOError e)
+                {
+                    stderr.printf( @"Could not write to file: $(e.message)\n" );
+                }
             }
-            channel = new IOChannel.unix_new( fd );
-            channel.add_watch( IOCondition.IN | IOCondition.HUP, onInputFromChannel );
     }
 
     public static void handleDataEvent()
@@ -88,7 +104,6 @@ public class CmtHandler : FsoFramework.AbstractObject
         CmtSpeech.FrameBuffer dlbuf = null;
         CmtSpeech.FrameBuffer ulbuf = null;
         Buffer buffer = Buffer();
-        long written = 0;
 
         var ok = connection.dl_buffer_acquire( out dlbuf );
         if ( ok == 0 )
@@ -108,17 +123,7 @@ public class CmtHandler : FsoFramework.AbstractObject
                 connection.ul_buffer_release( ulbuf );
             }
             connection.dl_buffer_release( dlbuf );
-
-            while (written < buffer.length ) {
-                try
-                {
-                    written += output.write (buffer.content[written:buffer.length]);
-                }
-                catch (GLib.IOError e)
-                {
-                    error( @"Could not write to file: $(e.message)" );
-                }
-            }
+			writeToFile.begin(buffer);
         }
     }
 
