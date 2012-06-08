@@ -16,7 +16,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-IOChannel channel;
 CmtSpeech.Connection connection;
 DataOutputStream output;
 public bool status = false;
@@ -33,13 +32,14 @@ struct Buffer {
  **/
 public class CmtHandler : FsoFramework.AbstractObject
 {
+	UnixInputStream channel;
+	uint8[] buffer = new uint8[MAX];
 
     //
     // Constructor
     //
     public CmtHandler()
     {
-
         CmtSpeech.init();
         var file = File.new_for_path ("/home/root/out.wav");
         if (file.query_exists ())
@@ -77,8 +77,16 @@ public class CmtHandler : FsoFramework.AbstractObject
         {
             error( "Cmtspeech file descriptor invalid" );
         }
+
+		
+		channel = UnixInputStream(fd,true);
+		yield channel.read_async(buffer,Priority.HIGH,null);
+		onImputFromChannel();
+
+/*
         channel = new IOChannel.unix_new( fd );
         channel.add_watch( IOCondition.IN | IOCondition.HUP, onInputFromChannel );
+*/
     }
 
     private static async void  writeToFile(Buffer buffer)
@@ -170,17 +178,17 @@ public class CmtHandler : FsoFramework.AbstractObject
     }
 
     //===========================================================================
-    private static bool onInputFromChannel( IOChannel source, IOCondition condition )
+    private static bool onInputFromChannel()
     {
-        debug( "onInputFromChannel, condition = %d", condition );
+        // debug( "onInputFromChannel, condition = %d", condition );
 
-        assert( condition == IOCondition.HUP || condition == IOCondition.IN );
+        // assert( condition == IOCondition.HUP || condition == IOCondition.IN );
 
-        if ( condition == IOCondition.HUP )
-        {
-            debug( "HUP, closing" );
-            return false;
-        }
+        // if ( condition == IOCondition.HUP )
+        // {
+        //     debug( "HUP, closing" );
+        //     return false;
+        // }
 
         CmtSpeech.EventType flags = 0;
         var ok = connection.check_pending( out flags );
