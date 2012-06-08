@@ -97,7 +97,7 @@ public class CmtHandler : FsoFramework.AbstractObject
 			  break;
 		  }
 		  if (buffer != null)
-			  yield writeToFile (buffer);
+			  yield writeToFile(buffer);
 		  }
 	}
 
@@ -108,7 +108,7 @@ public class CmtHandler : FsoFramework.AbstractObject
             while (written < buffer.length ) {
                 try
                 {
-                    written += yield output.write_async((uint8[])buffer.content[written:buffer.length], Priority.HIGH, null);
+                    written += yield output.write_async((uint8[])buffer.content[written:buffer.length], Priority.DEFAULT, null);
                 }
                 catch (GLib.IOError e)
                 {
@@ -193,16 +193,8 @@ public class CmtHandler : FsoFramework.AbstractObject
     {
         CmtSpeech.EventType flags = 0;
         var ok = connection.check_pending( out flags );
-        if ( ok < 0 )
-        {
-            debug( "error while checking for pending events..." );
-        }
-        else if ( ok == 0 )
-        {
-            debug( "D'oh, cmt speech readable, but no events pending..." );
-        }
-        else
-        {
+        if (ok > 0)
+		{
             debug( "connection reports pending events with flags 0x%0X", flags );
 
             if ( ( flags & CmtSpeech.EventType.DL_DATA ) == CmtSpeech.EventType.DL_DATA )
@@ -218,7 +210,14 @@ public class CmtHandler : FsoFramework.AbstractObject
                 debug( "event no DL_DATA nor CONTROL, ignoring" );
             }
         }
-
+        else if ( ok < 0 )
+        {
+            debug( "error while checking for pending events..." );
+        }
+        else if ( ok == 0 )
+        {
+            debug( "D'oh, cmt speech readable, but no events pending..." );
+        }
         return true;
     }
 
