@@ -97,7 +97,7 @@ public class CmtHandler : FsoFramework.AbstractObject
             }
     }
 
-    public static void handleDataEvent()
+    private static void handleDataEvent()
     {
         debug( @"handleDataEvent during protocol state $(connection.protocol_state())" );
 
@@ -127,7 +127,7 @@ public class CmtHandler : FsoFramework.AbstractObject
         }
     }
 
-    public static void handleControlEvent()
+    private static void handleControlEvent()
     {
         debug( @"handleControlEvent during protocol state $(connection.protocol_state())" );
 
@@ -170,7 +170,7 @@ public class CmtHandler : FsoFramework.AbstractObject
     }
 
     //===========================================================================
-    public static bool onInputFromChannel( IOChannel source, IOCondition condition )
+    private static bool onInputFromChannel( IOChannel source, IOCondition condition )
     {
         debug( "onInputFromChannel, condition = %d", condition );
 
@@ -211,11 +211,6 @@ public class CmtHandler : FsoFramework.AbstractObject
         }
 
         return true;
-    }
-
-    //===========================================================================
-    public static void SIGINT_handler( int signum )
-    {
     }
 
     //
