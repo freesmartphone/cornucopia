@@ -1,3 +1,8 @@
+2012-06-09  Simon Busch  <morphis@gravedo.de>
+
+	Revert "fsotdld: adjust for recent changes to libfsotransport about delegate handling"
+	This reverts commit f288df980d58445968f850a596e1e55067051667.
+
 2012-05-24  Simon Busch  <morphis@gravedo.de>
 
 	Update changelogs of all components for 0.11 release
