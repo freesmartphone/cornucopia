@@ -1,4 +1,11 @@
+2012-06-09  Simon Busch  <morphis@gravedo.de>
+
+	Revert "fsogsmd: adjust for recent changes to libfsotransport about delegate handling"
+	This reverts commit 81876db2cbe9fc7a73618ae7d1ddb72b9c4d7878.
+
 2012-05-28  Simon Busch  <morphis@gravedo.de>
+
+	fsogsmd: release version 0.11.2
 
 	fsogsmd: lib: pack fsogsm-2.0.deps file into our distribution package too
 
