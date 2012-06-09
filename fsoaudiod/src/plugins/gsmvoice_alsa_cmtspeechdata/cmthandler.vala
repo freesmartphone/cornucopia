@@ -40,7 +40,31 @@ public class CmtHandler : FsoFramework.AbstractObject
     public CmtHandler()
     {
         CmtSpeech.init();
-        var file = File.new_for_path ("/home/root/out.wav");
+        CmtSpeech.trace_toggle( CmtSpeech.TraceType.STATE_CHANGE, true );
+        CmtSpeech.trace_toggle( CmtSpeech.TraceType.IO, true );
+        CmtSpeech.trace_toggle( CmtSpeech.TraceType.DEBUG, true );
+        connection = new CmtSpeech.Connection();
+        if ( connection == null )
+        {
+            logger.error( "Can't instanciate connection" );
+            return;
+        }
+
+        var fd = connection.descriptor();
+
+        if ( fd == -1 )
+        {
+            error( "Cmtspeech file descriptor invalid" );
+        }
+		
+		channel = new UnixInputStream(fd,true);
+
+		read_from_modem_and_write_to_file.begin();
+    }
+
+	private File  setup_file_sink(string filepath)
+	{
+        var file = File.new_for_path (filepath);
         if (file.query_exists ())
         {
             try
@@ -60,28 +84,8 @@ public class CmtHandler : FsoFramework.AbstractObject
         {
              logger.error( @"Could not create file: $(e.message)" );
         }
-        CmtSpeech.trace_toggle( CmtSpeech.TraceType.STATE_CHANGE, true );
-        CmtSpeech.trace_toggle( CmtSpeech.TraceType.IO, true );
-        CmtSpeech.trace_toggle( CmtSpeech.TraceType.DEBUG, true );
-        connection = new CmtSpeech.Connection();
-        if ( connection == null )
-        {
-            logger.error( "Can't instanciate connection" );
-            return;
-        }
-
-        var fd = connection.descriptor();
-
-        if ( fd == -1 )
-        {
-            error( "Cmtspeech file descriptor invalid" );
-        }
-
-		
-		channel = new UnixInputStream(fd,true);
-
-		read_from_modem_and_write_to_file.begin();
-    }
+		return file;
+	}
 
     private async void read_from_modem_and_write_to_file () {
           while (true) {
@@ -242,6 +246,9 @@ public class CmtHandler : FsoFramework.AbstractObject
         debug( @"Setting call status to $enabled");
         connection.state_change_call_status( enabled );
         status = enabled;
+
+		if (enabled)
+			setup_file_sink("/home/root/out.wav");
     }
 
 } /* End CmtHandler */
