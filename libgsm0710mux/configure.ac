@@ -1,5 +1,5 @@
 m4_define([gsm0710mux_released], [1])
-m4_define([gsm0710mux_base_version], [0.11.1])
+m4_define([gsm0710mux_base_version], [0.11.2])
 m4_define([gsm0710mux_maybe_gitrev], m4_if(gsm0710mux_released, [1], [], [m4_esyscmd([git show-ref --hash=5 HEAD | tr -d '\n\r'])]))
 m4_define([gsm0710mux_version], m4_if(gsm0710mux_released, [1], [gsm0710mux_base_version], [gsm0710mux_base_version-gsm0710mux_maybe_gitrev]))
 
@@ -8,7 +8,7 @@ m4_define([gsm0710mux_version], m4_if(gsm0710mux_released, [1], [gsm0710mux_base
 #  increment current and set revision to 0
 # If public symbols have been added since last release, increment age
 # If public symbols have been removed since last release, set age to 0
-m4_define([gsm0710mux_lt_current], [1])
+m4_define([gsm0710mux_lt_current], [2])
 m4_define([gsm0710mux_lt_revision], [0])
 m4_define([gsm0710mux_lt_age], [0])
 
