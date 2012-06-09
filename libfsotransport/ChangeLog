@@ -1,3 +1,11 @@
+2012-06-09  Simon Busch  <morphis@gravedo.de>
+
+	Revert "libfsotransport: parser: don't use delegates but a delegate class instead"
+	This reverts commit 891af7a3a5f981c95d799ecb8370897e9b1c4fd9.
+
+	Revert "libfsotransport: transport: don't use delegates but a delegate class instead"
+	This reverts commit 7bb0a199af18876174b64b38000dfa0c5ef01439.
+
 2012-05-24  Simon Busch  <morphis@gravedo.de>
 
 	Update changelogs of all components for 0.11 release

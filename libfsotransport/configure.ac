@@ -1,5 +1,5 @@
 m4_define([fsotransport_released], [1])
-m4_define([fsotransport_base_version], [0.11.0])
+m4_define([fsotransport_base_version], [0.11.1])
 m4_define([fsotransport_maybe_gitrev], m4_if(fsotransport_released, [1], [], [m4_esyscmd([git show-ref --hash=5 HEAD | tr -d '\n\r'])]))
 m4_define([fsotransport_version], m4_if(fsotransport_released, [1], [fsotransport_base_version], [fsotransport_base_version-fsotransport_maybe_gitrev]))
 
@@ -8,7 +8,7 @@ m4_define([fsotransport_version], m4_if(fsotransport_released, [1], [fsotranspor
 #  increment current and set revision to 0
 # If public symbols have been added since last release, increment age
 # If public symbols have been removed since last release, set age to 0
-m4_define([fsotransport_lt_current], [2])
+m4_define([fsotransport_lt_current], [3])
 m4_define([fsotransport_lt_revision], [0])
 m4_define([fsotransport_lt_age], [0])
 
