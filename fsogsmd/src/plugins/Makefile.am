@@ -17,6 +17,7 @@ SUBDIRS = \
 	modem_option_gtm601 \
 	modem_freescale_neptune \
 	modem_phonesim \
+	modem_hfp_hf \
 	\
 	pdp_qmi \
 	$(NULL)

@@ -57,6 +57,9 @@ public class FsoGsm.ModemFactory : GLib.Object
             case "phonesim":
                 typename = "PhonesimModem";
                 break;
+            case "hfp_hf":
+                typename = "HfpHfModem";
+                break;
             default:
                 FsoFramework.theLogger.error( @"Unsupported modem_type $modemtype" );
                 return Type.INVALID;

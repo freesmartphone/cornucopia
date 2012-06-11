@@ -14,6 +14,7 @@ SUBDIRS = \
 	herring \
 	GTA04 \
 	phonesim \
+	hfp_hf \
 	$(NULL)
 
 MAINTAINERCLEANFILES = Makefile.in
