@@ -64,6 +64,33 @@ namespace Bluez
         [DBus (name = "PropertyChanged")]
         public signal void property_changed( string name, GLib.Variant value );
     }
+
+    [DBus (name = "org.bluez.HandsfreeGateway")]
+    public interface IHandsfreeGateway : GLib.Object
+    {
+        [DBus (name = "Connect")]
+        public abstract async void connect() throws DBusError, IOError;
+        [DBus (name = "Disconnect")]
+        public abstract async void disconnect() throws DBusError, IOError;
+        [DBus (name = "GetProperties")]
+        public abstract async GLib.HashTable<string,Variant> get_properties() throws DBusError, IOError;
+        [DBus (name = "RegisterAgent")]
+        public abstract async void register_agent( GLib.ObjectPath path ) throws DBusError, IOError;
+        [DBus (name = "UnregisterAgent")]
+        public abstract async void unregister_agent( GLib.ObjectPath path ) throws DBusError, IOError;
+
+        [DBus (name = "PropertyChanged")]
+        public signal void property_changed( string name, Variant value );
+    }
+
+    [DBus (name = "org.bluez.HandsfreeAgent")]
+    public interface IHandsfreeAgent : GLib.Object
+    {
+        [DBus (name = "NewConnection")]
+        public abstract async void new_connection( int fd, uint16 version ) throws DBusError, IOError;
+        [DBus (name = "Release")]
+        public abstract async void release() throws DBusError, IOError;
+    }
 }
 
 public interface FsoGsm.IBluetoothProfile : GLib.Object
