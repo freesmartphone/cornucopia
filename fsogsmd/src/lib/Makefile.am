@@ -48,6 +48,7 @@ libfsogsm_la_SOURCES = \
 	smsstorage.vala \
 	watchdog.vala \
 	serviceprovider.vala \
+	bluetooth.vala \
 	\
 	$(top_srcdir)/src/3rdparty/conversions.c \
 	$(top_srcdir)/src/3rdparty/smsutil.c \
