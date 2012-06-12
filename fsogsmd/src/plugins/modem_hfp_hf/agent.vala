@@ -24,18 +24,50 @@ class HfpHf.Agent : Bluez.IHandsfreeAgent, FsoGsm.Service
 {
     public string device_path { get; private set; }
 
+    //
+    // private
+    //
+
+    private async void register_agent()
+    {
+        var hf_gateway = yield Bus.get_proxy<Bluez.IHandsfreeGateway>( BusType.SYSTEM, "org.bluez", device_path );
+
+        // HACK !!! object path should be determined somehow else ...
+        yield hf_gateway.register_agent( (ObjectPath) "/org/freesmartphone/GSM/Device" );
+    }
+
+    private async void unregister_agent()
+    {
+        var hf_gateway = yield Bus.get_proxy<Bluez.IHandsfreeGateway>( BusType.SYSTEM, "org.bluez", device_path );
+
+        // HACK !!! object path should be determined somehow else ...
+        yield hf_gateway.unregister_agent( (ObjectPath) "/org/freesmartphone/GSM/Device" );
+    }
+
+    //
+    // public API
+    //
+
     public Agent( string device_path )
     {
         this.device_path = device_path;
         theModem.parent.registerService<Bluez.IHandsfreeAgent>( this );
+        register_agent();
+    }
+
+    ~Agent()
+    {
+        unregister_agent();
     }
 
     public async void new_connection( int fd, uint16 version ) throws DBusError, IOError
     {
+        assert( logger.debug( @"New HFP HF connection" ) );
     }
 
     public async void release() throws DBusError, IOError
     {
+        assert( logger.debug( @"HFP HF connection released" ) );
     }
 }
 
