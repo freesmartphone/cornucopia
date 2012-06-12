@@ -8,7 +8,11 @@ AM_VALAFLAGS =
 
 modlibexecdir = $(libdir)/cornucopia/modules/fsogsm
 modlibexec_LTLIBRARIES = modem_hfp_hf.la
-modem_hfp_hf_la_SOURCES = plugin.vala
+modem_hfp_hf_la_SOURCES = \
+	plugin.vala \
+	profile.vala \
+	agent.vala \
+	$(NULL)
 modem_hfp_hf_la_VALAFLAGS = \
 	--basedir $(top_srcdir) \
 	--vapidir $(top_srcdir)/src/lib \

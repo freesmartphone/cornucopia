@@ -20,18 +20,36 @@
 using GLib;
 using FsoGsm;
 
-class HfpHf.Modem : FsoGsm.AbstractModem
+namespace HfpHf
 {
-    private const string CHANNEL_NAME = "main";
-
-    public override string repr()
+    class Modem : FsoGsm.AbstractModem
     {
-        return "<>";
-    }
+        private const string CHANNEL_NAME = "main";
+        private HfpHf.Profile _profile = new HfpHf.Profile();
+        private FsoGsm.BluetoothManager _bt_manager = new FsoGsm.BluetoothManager();
 
-    protected override FsoGsm.Channel channelForCommand( FsoGsm.AtCommand command, string query )
-    {
-        return null;
+        private const string HFP_AG_UUID = "0000111f-0000-1000-8000-00805f9b34fb";
+
+        public async override bool open()
+        {
+            yield _bt_manager.register_profile( HFP_AG_UUID, _profile );
+            return true;
+        }
+
+        public async override void close()
+        {
+            yield _bt_manager.unregister_profile( HFP_AG_UUID );
+        }
+
+        public override string repr()
+        {
+            return "<>";
+        }
+
+        protected override FsoGsm.Channel channelForCommand( FsoGsm.AtCommand command, string query )
+        {
+            return null;
+        }
     }
 }
 
