@@ -44,7 +44,7 @@ public abstract class FsoGsm.ServiceManager : FsoFramework.AbstractObject, FsoGs
         this.servicePath = servicePath;
     }
 
-    protected void registerService<T>( Service serviceObject )
+    public void registerService<T>( Service serviceObject )
     {
         services[typeof(T)] = serviceObject;
         subsystem.registerObjectForService<T>( serviceName, servicePath, serviceObject );

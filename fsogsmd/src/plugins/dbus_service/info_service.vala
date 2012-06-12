@@ -19,7 +19,7 @@
 
 using GLib;
 
-public class FsoGsm.InfoService : FreeSmartphone.Info, Service
+public class FsoGsm.InfoService : FreeSmartphone.Info, FsoGsm.Service
 {
     //
     // DBUS (org.freesmartphone.Info)

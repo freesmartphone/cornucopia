@@ -20,6 +20,7 @@
 public interface FsoGsm.IServiceProvider : GLib.Object
 {
     public abstract T retrieveService<T>();
+    public abstract void registerService<T>( FsoGsm.Service serviceObject );
 }
 
 // vim:ts=4:sw=4:expandtab

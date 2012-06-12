@@ -10,7 +10,6 @@ modlibexecdir = $(libdir)/cornucopia/modules/fsogsm
 modlibexec_LTLIBRARIES = dbus_service.la
 dbus_service_la_SOURCES = \
 	plugin.vala \
-	service.vala \
 	servicemanager.vala \
 	device_servicemanager.vala \
 	modemfactory.vala \
