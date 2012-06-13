@@ -60,7 +60,7 @@ class HfpHf.Agent : Bluez.IHandsfreeAgent, FsoGsm.Service
         unregister_agent();
     }
 
-    public async void new_connection( int fd, uint16 version ) throws DBusError, IOError
+    public async void new_connection( GLib.Socket fd, uint16 version ) throws DBusError, IOError
     {
         assert( logger.debug( @"New HFP HF connection" ) );
     }

@@ -87,7 +87,7 @@ namespace Bluez
     public interface IHandsfreeAgent : GLib.Object
     {
         [DBus (name = "NewConnection")]
-        public abstract async void new_connection( int fd, uint16 version ) throws DBusError, IOError;
+        public abstract async void new_connection( GLib.Socket fd, uint16 version ) throws DBusError, IOError;
         [DBus (name = "Release")]
         public abstract async void release() throws DBusError, IOError;
     }
