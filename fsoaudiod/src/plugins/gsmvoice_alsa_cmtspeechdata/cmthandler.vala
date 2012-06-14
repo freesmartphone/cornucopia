@@ -25,6 +25,16 @@ struct Buffer {
     public long length;
 }
 
+struct PCM {
+	int channels;
+	int rate;
+	Alsa.PcmAccess access;
+	Alsa.PcmFormat format;
+	FsoAudio.PcmDevice device;
+}
+
+PCM PCMout;
+
 /**
  * @class CmtHandler
  *
@@ -73,29 +83,44 @@ public class CmtHandler : FsoFramework.AbstractObject
 		// }
     }
 
-	private File setup_file_sink(string filepath)
+	private void setup_file_sink(string filepath)
 	{
-        var file = File.new_for_path (filepath);
-        if (file.query_exists ())
-        {
-            try
-            {
-                file.delete ();
-            }
-            catch (GLib.Error e)
-            {
-                logger.error( @"Could not delete existing file: $(e.message)" );
-            }
-        }
-        try
-        {
-            output = new DataOutputStream (file.create (FileCreateFlags.REPLACE_DESTINATION));
-        }
-        catch (GLib.Error e)
-        {
-             logger.error( @"Could not create file: $(e.message)" );
-        }
-		return file;
+		try{
+			PCMout = PCM();
+			PCMout.rate = 8000;
+			PCMout.channels = 1;
+			PCMout.device = new FsoAudio.PcmDevice();
+			PCMout.access = Alsa.PcmAccess.RW_INTERLEAVED;
+			PCMout.format = Alsa.PcmFormat.S16_LE;
+			PCMout.device.open("plug:dmix");
+			PCMout.device.setFormat( PCMout.access, PCMout.format, PCMout.rate, PCMout.channels );
+		}catch (Error e)
+		{
+			stderr.printf(@"Error: $(e.message)");
+		}
+
+
+        // var file = File.new_for_path (filepath);
+        // if (file.query_exists ())
+        // {
+        //     try
+        //     {
+        //         file.delete ();
+        //     }
+        //     catch (GLib.Error e)
+        //     {
+        //         logger.error( @"Could not delete existing file: $(e.message)" );
+        //     }
+        // }
+        // try
+        // {
+        //     output = new DataOutputStream (file.create (FileCreateFlags.REPLACE_DESTINATION));
+        // }
+        // catch (GLib.Error e)
+        // {
+        //      logger.error( @"Could not create file: $(e.message)" );
+        // }
+		// return file;
 	}
 	
 	void* read_from_modem_and_write_to_file () {
@@ -126,18 +151,37 @@ public class CmtHandler : FsoFramework.AbstractObject
 
     private static async void  writeToFile(Buffer buffer)
     {
-            long written = 0;
+            long frames = 0;
+			/*TODO: autodetect the divider*/
+			try
+			{
+				frames = PCMout.device.writei( (uint8[])buffer.content,buffer.length / 2 );
+			}
+			catch(FsoAudio.SoundError e)
+			{
+				stderr.printf(e.message);
+			}
+            // while (written < buffer.length ) {
+            //     try
+            //     {
+            //         written += yield output.write_async((uint8[])buffer.content[written:buffer.length], Priority.DEFAULT, null);
+            //     }
+            //     catch (GLib.IOError e)
+            //     {
+            //         stderr.printf( @"Could not write to file: $(e.message)\n" );
+            //     }
+            // }
 
-            while (written < buffer.length ) {
-                try
-                {
-                    written += yield output.write_async((uint8[])buffer.content[written:buffer.length], Priority.DEFAULT, null);
-                }
-                catch (GLib.IOError e)
-                {
-                    stderr.printf( @"Could not write to file: $(e.message)\n" );
-                }
-            }
+			// while (written < buffer.length ) {
+            //     try
+            //     {
+            //         written += yield output.write_async((uint8[])buffer.content[written:buffer.length], Priority.DEFAULT, null);
+            //     }
+            //     catch (GLib.IOError e)
+            //     {
+            //         stderr.printf( @"Could not write to file: $(e.message)\n" );
+            //     }
+            // }
     }
 
     private static void handleDataEvent(out Buffer buffer)
@@ -262,12 +306,12 @@ public class CmtHandler : FsoFramework.AbstractObject
             return;
         }
 
+		if (enabled)
+			setup_file_sink("/home/root/out.wav");
+
         debug( @"Setting call status to $enabled");
         connection.state_change_call_status( enabled );
         status = enabled;
-
-		if (enabled)
-			setup_file_sink("/home/root/out.wav");
     }
 
 } /* End CmtHandler */
