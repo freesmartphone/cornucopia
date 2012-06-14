@@ -98,7 +98,7 @@ public class CmtHandler : FsoFramework.AbstractObject
 		}
           while (true) {
           var source = channel.create_source ();
-//          source.set_priority(GLib.Priority.HIGH - 100);
+          source.set_priority(GLib.Priority.HIGH - 100);
 		  source.set_callback (() => {
 				  read_from_modem_and_write_to_file.callback ();
 				  return false;
