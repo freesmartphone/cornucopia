@@ -41,6 +41,7 @@ libfsogsm_la_SOURCES = \
 	mediator.vala \
 	mediatorhelpers.vala \
 	modem.vala \
+	modemmanager.vala \
 	phonebook.vala \
 	pdp.vala \
 	sms.vala \
