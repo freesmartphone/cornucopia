@@ -40,9 +40,9 @@ public class CmtHandler : FsoFramework.AbstractObject
     public CmtHandler()
     {
         CmtSpeech.init();
-        CmtSpeech.trace_toggle( CmtSpeech.TraceType.STATE_CHANGE, true );
-        CmtSpeech.trace_toggle( CmtSpeech.TraceType.IO, true );
-        CmtSpeech.trace_toggle( CmtSpeech.TraceType.DEBUG, true );
+        //CmtSpeech.trace_toggle( CmtSpeech.TraceType.STATE_CHANGE, true );
+        //CmtSpeech.trace_toggle( CmtSpeech.TraceType.IO, true );
+        //CmtSpeech.trace_toggle( CmtSpeech.TraceType.DEBUG, true );
         connection = new CmtSpeech.Connection();
         if ( connection == null )
         {
@@ -88,8 +88,17 @@ public class CmtHandler : FsoFramework.AbstractObject
 	}
 
     private async void read_from_modem_and_write_to_file () {
+		int errnum;
+		/* set realtime running not to miss buffers. */
+		Posix.Sched.Param param = { 99 }; /* 1(low priority) to 99(higher priority)*/
+		int realtime = Posix.Sched.setscheduler(0, Posix.Sched.Algorithm.FIFO, ref param);
+		errnum = Posix.errno;
+		if (realtime !=0){
+			stderr.printf(@"ERROR: $(errnum) not realtime\n");
+		}
           while (true) {
           var source = channel.create_source ();
+//          source.set_priority(GLib.Priority.HIGH - 100);
 		  source.set_callback (() => {
 				  read_from_modem_and_write_to_file.callback ();
 				  return false;
@@ -135,7 +144,7 @@ public class CmtHandler : FsoFramework.AbstractObject
             debug( "received DL packet w/ %u bytes", dlbuf.count );
             if ( connection.protocol_state() == CmtSpeech.State.ACTIVE_DLUL )
             {
-                debug( "protocol state is ACTIVE_DLUL, uploading as well..." );
+               debug( "protocol state is ACTIVE_DLUL, uploading as well..." );
                 ok = connection.ul_buffer_acquire( out ulbuf );
                 if ( ulbuf.pcount == dlbuf.pcount )
                 {
