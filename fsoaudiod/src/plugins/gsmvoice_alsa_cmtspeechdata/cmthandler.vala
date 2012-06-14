@@ -32,7 +32,8 @@ struct Buffer {
  **/
 public class CmtHandler : FsoFramework.AbstractObject
 {
-	UnixInputStream channel;
+//	UnixInputStream channel;
+	int fd;
 
     //
     // Constructor
@@ -50,19 +51,29 @@ public class CmtHandler : FsoFramework.AbstractObject
             return;
         }
 
-        var fd = connection.descriptor();
+        fd = connection.descriptor();
 
         if ( fd == -1 )
         {
             error( "Cmtspeech file descriptor invalid" );
         }
 		
-		channel = new UnixInputStream(fd,true);
+//		channel = new UnixInputStream(fd,true);
+		try{
+			unowned Thread<void*> cmtspeech_loop =  Thread.create<void*>(read_from_modem_and_write_to_file,true);
+		}catch (ThreadError e){
+			stderr.printf(e.message);
+		}
+		
+		// try{
+		// 	//	Thread.create(read_from_modem_and_write_to_file,true);
 
-		read_from_modem_and_write_to_file.begin();
+		// }catch(ThreadError e){
+		// 	stderr.printf(e.message);
+		// }
     }
 
-	private File  setup_file_sink(string filepath)
+	private File setup_file_sink(string filepath)
 	{
         var file = File.new_for_path (filepath);
         if (file.query_exists ())
@@ -86,9 +97,14 @@ public class CmtHandler : FsoFramework.AbstractObject
         }
 		return file;
 	}
-
-    private async void read_from_modem_and_write_to_file () {
+	
+	void* read_from_modem_and_write_to_file () {
 		int errnum;
+		Posix.pollfd fds[1];
+		fds[0] = Posix.pollfd();
+		fds[0].fd = this.fd;
+		fds[0].events = (IOCondition.IN | IOCondition.HUP);
+
 		/* set realtime running not to miss buffers. */
 		Posix.Sched.Param param = { 99 }; /* 1(low priority) to 99(higher priority)*/
 		int realtime = Posix.Sched.setscheduler(0, Posix.Sched.Algorithm.FIFO, ref param);
@@ -96,22 +112,16 @@ public class CmtHandler : FsoFramework.AbstractObject
 		if (realtime !=0){
 			stderr.printf(@"ERROR: $(errnum) not realtime\n");
 		}
-          while (true) {
-          var source = channel.create_source ();
-          source.set_priority(GLib.Priority.HIGH - 100);
-		  source.set_callback (() => {
-				  read_from_modem_and_write_to_file.callback ();
-				  return false;
-			  });
-		  uint id = source.attach (null);
-		  yield;
-		  Buffer? buffer = null;
-		  if (!onInputFromChannel (out buffer)) {
-			  break;
-		  }
-		  if (buffer != null)
-			  yield writeToFile(buffer);
-		  }
+		while (true) {
+			Buffer? buffer = null;
+			Posix.poll(fds,500000);
+			if (!onInputFromChannel (out buffer)) {
+				break;
+			}
+			if (buffer != null)
+				writeToFile(buffer);
+		}
+		return null;
 	}
 
     private static async void  writeToFile(Buffer buffer)
