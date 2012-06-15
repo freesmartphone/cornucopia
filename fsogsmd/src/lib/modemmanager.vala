@@ -21,42 +21,13 @@ using GLib;
 
 namespace FsoGsm
 {
-    public abstract class ModemManager : FsoFramework.AbstractObject
+    public IModemManager theModemManager = null;
+
+    public interface IModemManager : GLib.Object
     {
-        private Gee.ArrayList<Modem> _modems;
-
-        //
-        // protected
-        //
-
-        protected abstract void on_modem_registration( Modem modem );
-        protected abstract void on_modem_deregistration( Modem modem );
-
-        //
-        // public API
-        //
-
-        public ModemManager()
-        {
-            _modems = new Gee.ArrayList<Modem>();
-        }
-
-        public async void register_modem( FsoGsm.Modem modem )
-        {
-            _modems.add( modem );
-            on_modem_registration( modem );
-        }
-
-        public async void unregister_modem( FsoGsm.Modem modem )
-        {
-            _modems.remove( modem );
-            on_modem_deregistration( modem );
-        }
-
-        public override string repr()
-        {
-            return @"<>";
-        }
+        public abstract async void register_modem( FsoGsm.Modem modem );
+        public abstract async void unregister_modem( FsoGsm.Modem modem );
+        public abstract async void shutdown();
     }
 }
 

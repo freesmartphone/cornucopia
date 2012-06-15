@@ -21,7 +21,7 @@ using GLib;
 
 public class FsoGsm.DeviceServiceManager : FsoGsm.ServiceManager
 {
-    private FsoGsm.Modem modem;
+    public FsoGsm.Modem modem { get; private set; }
 
     public bool initialized { get; private set; default = false; }
 
@@ -51,9 +51,10 @@ public class FsoGsm.DeviceServiceManager : FsoGsm.ServiceManager
     // public API
     //
 
-    public DeviceServiceManager( FsoGsm.Modem modem, FsoFramework.Subsystem subsystem )
+    public DeviceServiceManager( int num, FsoGsm.Modem modem, FsoFramework.Subsystem subsystem )
     {
-        base( subsystem, FsoFramework.GSM.ServiceDBusName, FsoFramework.GSM.DeviceServicePath );
+        var path = "%s/%i".printf( FsoFramework.GSM.DeviceServicePath, num );
+        base( subsystem, FsoFramework.GSM.ServiceDBusName, path );
 
         base.registerService<FreeSmartphone.Info>( new FsoGsm.InfoService() );
         base.registerService<FreeSmartphone.Device.RealtimeClock>( new FsoGsm.DeviceRtcService() );
@@ -82,6 +83,25 @@ public class FsoGsm.DeviceServiceManager : FsoGsm.ServiceManager
         logger.info( @"Ready. Configured for modem $modemtype" );
     }
 
+    public void unregister_services()
+    {
+        unregisterService<FreeSmartphone.Info>();
+        unregisterService<FreeSmartphone.Device.RealtimeClock>();
+        unregisterService<FreeSmartphone.Device.PowerSupply>();
+        unregisterService<FreeSmartphone.GSM.Device>();
+        unregisterService<FreeSmartphone.GSM.Debug>();
+        unregisterService<FreeSmartphone.GSM.Call>();
+        unregisterService<FreeSmartphone.GSM.CallForwarding>();
+        unregisterService<FreeSmartphone.GSM.CB>();
+        unregisterService<FreeSmartphone.GSM.HZ>();
+        unregisterService<FreeSmartphone.GSM.Monitor>();
+        unregisterService<FreeSmartphone.GSM.Network>();
+        unregisterService<FreeSmartphone.GSM.PDP>();
+        unregisterService<FreeSmartphone.GSM.SIM>();
+        unregisterService<FreeSmartphone.GSM.SMS>();
+        unregisterService<FreeSmartphone.GSM.VoiceMail>();
+    }
+
     public override async bool enable()
     {
         var ok = yield modem.open();
@@ -93,6 +113,7 @@ public class FsoGsm.DeviceServiceManager : FsoGsm.ServiceManager
         else
         {
             logger.info( "Modem opened successfully" );
+            state = ServiceState.ENABLED;
             return true;
         }
     }
@@ -101,6 +122,7 @@ public class FsoGsm.DeviceServiceManager : FsoGsm.ServiceManager
     {
         yield modem.close();
         logger.info( "Modem closed successfully" );
+        state = ServiceState.DISABLED;
     }
 
     public override async void suspend()
@@ -109,6 +131,7 @@ public class FsoGsm.DeviceServiceManager : FsoGsm.ServiceManager
         if ( ok )
         {
             logger.info( "Modem suspended successfully" );
+            state = ServiceState.SUSPENDED;
         }
         else
         {
@@ -122,6 +145,7 @@ public class FsoGsm.DeviceServiceManager : FsoGsm.ServiceManager
         if ( ok )
         {
             logger.info( "Modem resumed successfully" );
+            state = ServiceState.ENABLED;
         }
         else
         {

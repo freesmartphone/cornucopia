@@ -20,16 +20,25 @@
 
 using GLib;
 
+public enum FsoGsm.ServiceState
+{
+    DISABLED,
+    ENABLED,
+    SUSPENDED
+}
+
 public abstract class FsoGsm.ServiceManager : FsoFramework.AbstractObject, FsoGsm.IServiceProvider
 {
-    private GLib.HashTable<Type,Service> services;
+    private Gee.HashMap<Type,Service> services;
     private FsoFramework.Subsystem subsystem;
     private string serviceName;
     private string servicePath;
 
+    public ServiceState state { get; protected set; default = ServiceState.DISABLED; }
+
     protected ServiceManager( FsoFramework.Subsystem subsystem, string serviceName, string servicePath )
     {
-        this.services = new GLib.HashTable<Type,Service>( null, null );
+        this.services = new Gee.HashMap<Type,Service>();
         this.subsystem = subsystem;
         this.serviceName = serviceName;
         this.servicePath = servicePath;
@@ -41,15 +50,22 @@ public abstract class FsoGsm.ServiceManager : FsoFramework.AbstractObject, FsoGs
         subsystem.registerObjectForService<T>( serviceName, servicePath, serviceObject );
     }
 
+    protected void unregisterService<T>()
+    {
+        if ( !services.contains( typeof(T) ) )
+            return;
+        subsystem.unregisterObjectForService<T>( serviceName, servicePath );
+    }
+
     public T retrieveService<T>()
     {
-        assert( services.lookup( typeof(T) ) != null );
+        assert( services.contains( typeof(T) ) );
         return services[typeof(T)];
     }
 
     public void assignModem( FsoGsm.Modem modem )
     {
-        foreach ( var service in services.get_values() )
+        foreach ( var service in services.values )
             service.assignModem( modem );
     }
 
