@@ -10,8 +10,7 @@ modlibexecdir = $(libdir)/cornucopia/modules/fsogsm
 modlibexec_LTLIBRARIES = modem_hfp_hf.la
 modem_hfp_hf_la_SOURCES = \
 	plugin.vala \
-	profile.vala \
-	agent.vala \
+	modem.vala \
 	$(NULL)
 modem_hfp_hf_la_VALAFLAGS = \
 	--basedir $(top_srcdir) \

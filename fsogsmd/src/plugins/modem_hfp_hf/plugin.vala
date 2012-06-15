@@ -22,35 +22,69 @@ using FsoGsm;
 
 namespace HfpHf
 {
-    class Modem : FsoGsm.AbstractModem
+    public class Manager : FsoFramework.AbstractObject, FsoGsm.IBluetoothProfile
     {
-        private const string CHANNEL_NAME = "main";
-        private HfpHf.Profile _profile = new HfpHf.Profile();
         private FsoGsm.BluetoothManager _bt_manager = new FsoGsm.BluetoothManager();
-
         private const string HFP_AG_UUID = "0000111f-0000-1000-8000-00805f9b34fb";
+        private Gee.HashMap<string,HfpHf.Modem> _modems;
 
-        public async override bool open()
+        //
+        // private
+        //
+
+        private async void initialize()
         {
-            yield _bt_manager.register_profile( HFP_AG_UUID, _profile );
+            assert( logger.debug( @"Registering for HFP AG bluetooth profile" ) );
+            yield _bt_manager.register_profile( HFP_AG_UUID, this );
+        }
+
+        //
+        // public
+        //
+
+        public Manager()
+        {
+            _modems = new Gee.HashMap<string,HfpHf.Modem>();
+            Idle.add( () => { initialize(); return false; } );
+        }
+
+        //
+        // FsoGsm.IBluetoothProfile
+        //
+
+        public async bool probe( string device_path )
+        {
+            assert( logger.debug( @"HFP HF profile is active on device $device_path now" ) );
+
+            var modem = new HfpHf.Modem( device_path );
+            theModemManager.register_modem( modem );
+
+            _modems.set( device_path, modem );
+
             return true;
         }
 
-        public async override void close()
+        public async void remove( string device_path )
         {
-            yield _bt_manager.unregister_profile( HFP_AG_UUID );
+            assert( logger.debug( @"HFP HF profile was disabled on device $device_path" ) );
+
+            var modem = _modems.get( device_path );
+            if ( modem == null )
+            {
+                logger.error( @"Bluetooth device $device_path was removed but we don't have a modem for it" );
+                return;
+            }
+
+            theModemManager.unregister_modem( modem );
         }
 
         public override string repr()
         {
-            return "<>";
-        }
-
-        protected override FsoGsm.Channel channelForCommand( FsoGsm.AtCommand command, string query )
-        {
-            return null;
+            return @"<>";
         }
     }
+
+    Manager manager = null;
 }
 
 /**
@@ -62,6 +96,7 @@ namespace HfpHf
 public static string fso_factory_function( FsoFramework.Subsystem subsystem ) throws Error
 {
     FsoFramework.theLogger.debug( "fsogsm.modem_hfp_hf fso_factory_function" );
+    HfpHf.manager = new HfpHf.Manager();
     return "fsogsmd.modem_hfp_hf";
 }
 
