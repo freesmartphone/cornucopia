@@ -56,21 +56,21 @@ public class FsoGsm.DeviceServiceManager : FsoGsm.ServiceManager
         var path = "%s/%i".printf( FsoFramework.GSM.DeviceServicePath, num );
         base( subsystem, FsoFramework.GSM.ServiceDBusName, path );
 
-        base.registerService<FreeSmartphone.Info>( new FsoGsm.InfoService() );
-        base.registerService<FreeSmartphone.Device.RealtimeClock>( new FsoGsm.DeviceRtcService() );
-        base.registerService<FreeSmartphone.Device.PowerSupply>( new FsoGsm.DevicePowerSupplyService() );
-        base.registerService<FreeSmartphone.GSM.Device>( new FsoGsm.GsmDeviceService() );
-        base.registerService<FreeSmartphone.GSM.Debug>( new FsoGsm.GsmDebugService() );
-        base.registerService<FreeSmartphone.GSM.Call>(new FsoGsm.GsmCallService() );
-        base.registerService<FreeSmartphone.GSM.CallForwarding>( new FsoGsm.GsmCallForwardingService() );
-        base.registerService<FreeSmartphone.GSM.CB>( new FsoGsm.GsmCbService() );
-        base.registerService<FreeSmartphone.GSM.HZ>( new FsoGsm.GsmHzService() );
-        base.registerService<FreeSmartphone.GSM.Monitor>( new FsoGsm.GsmMonitorService() );
-        base.registerService<FreeSmartphone.GSM.Network>( new FsoGsm.GsmNetworkService() );
-        base.registerService<FreeSmartphone.GSM.PDP>( new FsoGsm.GsmPdpService() );
-        base.registerService<FreeSmartphone.GSM.SIM>( new FsoGsm.GsmSimService() );
-        base.registerService<FreeSmartphone.GSM.SMS>( new FsoGsm.GsmSmsService() );
-        base.registerService<FreeSmartphone.GSM.VoiceMail>( new FsoGsm.GsmVoiceMailService() );
+        registerService<FreeSmartphone.Info>( new FsoGsm.InfoService() );
+        registerService<FreeSmartphone.Device.RealtimeClock>( new FsoGsm.DeviceRtcService() );
+        registerService<FreeSmartphone.Device.PowerSupply>( new FsoGsm.DevicePowerSupplyService() );
+        registerService<FreeSmartphone.GSM.Device>( new FsoGsm.GsmDeviceService() );
+        registerService<FreeSmartphone.GSM.Debug>( new FsoGsm.GsmDebugService() );
+        registerService<FreeSmartphone.GSM.Call>(new FsoGsm.GsmCallService() );
+        registerService<FreeSmartphone.GSM.CallForwarding>( new FsoGsm.GsmCallForwardingService() );
+        registerService<FreeSmartphone.GSM.CB>( new FsoGsm.GsmCbService() );
+        registerService<FreeSmartphone.GSM.HZ>( new FsoGsm.GsmHzService() );
+        registerService<FreeSmartphone.GSM.Monitor>( new FsoGsm.GsmMonitorService() );
+        registerService<FreeSmartphone.GSM.Network>( new FsoGsm.GsmNetworkService() );
+        registerService<FreeSmartphone.GSM.PDP>( new FsoGsm.GsmPdpService() );
+        registerService<FreeSmartphone.GSM.SIM>( new FsoGsm.GsmSimService() );
+        registerService<FreeSmartphone.GSM.SMS>( new FsoGsm.GsmSmsService() );
+        registerService<FreeSmartphone.GSM.VoiceMail>( new FsoGsm.GsmVoiceMailService() );
 
         this.modem = modem;
         modem.parent = this;
