@@ -22,26 +22,36 @@ using FsoGsm;
 
 namespace HfpHf
 {
+    private class DelegateAgent : FsoGsm.Service, Bluez.IHandsfreeAgent
+    {
+        private Bluez.IHandsfreeAgent other;
+
+        public DelegateAgent( Bluez.IHandsfreeAgent other )
+        {
+            this.other = other;
+        }
+
+        //
+        // Bluez.IHandsfreeAgent
+        //
+
+        public async void new_connection( GLib.Socket fd, uint16 version ) throws DBusError, IOError
+        {
+            yield other.new_connection( fd, version );
+        }
+
+        public async void release() throws DBusError, IOError
+        {
+            yield other.release();
+        }
+    }
+
     class Modem : FsoGsm.AbstractModem, Bluez.IHandsfreeAgent
     {
         private const string CHANNEL_NAME = "main";
         private string device_path;
-
-        //
-        // private
-        //
-
-        private async void register_agent()
-        {
-            var hf_gateway = yield Bus.get_proxy<Bluez.IHandsfreeGateway>( BusType.SYSTEM, "org.bluez", device_path );
-            yield hf_gateway.register_agent( (ObjectPath) "/org/freesmartphone/GSM/Device" );
-        }
-
-        private async void unregister_agent()
-        {
-            var hf_gateway = yield Bus.get_proxy<Bluez.IHandsfreeGateway>( BusType.SYSTEM, "org.bluez", device_path );
-            yield hf_gateway.unregister_agent( (ObjectPath) "/org/freesmartphone/GSM/Device" );
-        }
+        private Bluez.IHandsfreeGateway hf_gateway;
+        private DelegateAgent agent;
 
         //
         // public API
@@ -50,15 +60,46 @@ namespace HfpHf
         public Modem( string device_path )
         {
             this.device_path = device_path;
+            this.agent = new DelegateAgent( this );
         }
 
         public async override bool open()
         {
+            try
+            {
+                hf_gateway = yield Bus.get_proxy<Bluez.IHandsfreeGateway>( BusType.SYSTEM, "org.bluez", device_path );
+
+                assert( logger.debug( @"Registering agent for bluetooth device [$device_path] ..." ) );
+                parent.registerService<Bluez.IHandsfreeAgent>( agent );
+                yield hf_gateway.register_agent( (ObjectPath) parent.service_path );
+
+                assert( logger.debug( @"Connecting with bluez device [$device_path] ..." ) );
+                yield hf_gateway.connect();
+            }
+            catch ( GLib.Error e )
+            {
+                logger.error( @"Can't connect to HFP AG: $(e.message)" );
+                return false;
+            }
+
             return true;
         }
 
         public async override void close()
         {
+            try
+            {
+                assert( logger.debug( @"Disconnecting from bluez device [$device_path] ..." ) );
+                yield hf_gateway.disconnect();
+
+                assert( logger.debug( @"Unregistering agent from bluetooth device [$device_path] ..." ) );
+                yield hf_gateway.unregister_agent( (ObjectPath) parent.service_path );
+                parent.unregisterService<Bluez.IHandsfreeAgent>();
+            }
+            catch ( GLib.Error e )
+            {
+                logger.error( @"Failed to disconnect from HFP AG: $(e.message)" );
+            }
         }
 
         public override string repr()
