@@ -51,7 +51,7 @@ public abstract class FsoGsm.ServiceManager : FsoFramework.AbstractObject, FsoGs
         subsystem.registerObjectForService<T>( serviceName, servicePath, serviceObject );
     }
 
-    protected void unregisterService<T>()
+    public void unregisterService<T>()
     {
         if ( !services.contains( typeof(T) ) )
             return;
