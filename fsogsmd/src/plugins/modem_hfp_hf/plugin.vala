@@ -56,6 +56,12 @@ namespace HfpHf
         {
             assert( logger.debug( @"HFP HF profile is active on device $device_path now" ) );
 
+            if ( _modems.contains( device_path ) )
+            {
+                logger.warning( @"Device $device_path is already controlled by us!" );
+                return false;
+            }
+
             var modem = new HfpHf.Modem( device_path );
             theModemManager.register_modem( modem );
 
