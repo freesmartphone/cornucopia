@@ -82,6 +82,7 @@ namespace HfpHf
             }
 
             theModemManager.unregister_modem( modem );
+            _modems.unset( device_path );
         }
 
         public override string repr()
