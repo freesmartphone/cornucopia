@@ -34,6 +34,7 @@ public abstract class FsoGsm.ServiceManager : FsoFramework.AbstractObject, FsoGs
     private string serviceName;
     private string servicePath;
 
+    public string service_path { get { return servicePath; } }
     public ServiceState state { get; protected set; default = ServiceState.DISABLED; }
 
     protected ServiceManager( FsoFramework.Subsystem subsystem, string serviceName, string servicePath )
