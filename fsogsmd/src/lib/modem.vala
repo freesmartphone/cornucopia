@@ -657,7 +657,7 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
      * Override this to power on external components before the maintransport
      * will be opened
      **/
-    protected virtual bool powerOn()
+    protected virtual async bool powerOn()
     {
         return true;
     }
@@ -666,7 +666,7 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
      * Override this to power off external components before the maintransport
      * will be closed
      **/
-    protected virtual void powerOff()
+    protected virtual async void powerOff()
     {
     }
 
@@ -694,6 +694,8 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
     //
     public virtual async bool open()
     {
+        bool ok = false;
+
         assert( logger.debug( "Opening the modem device..." ) );
 
         if ( !lowlevel.poweron() )
@@ -701,7 +703,8 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
             return false;
         }
 
-        if ( !powerOn() )
+        ok = yield powerOn();
+        if ( !ok )
         {
             return false;
         }
@@ -716,7 +719,7 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
 
         var mainchannel = channels["main"];
 
-        var ok = yield mainchannel.open();
+        ok = yield mainchannel.open();
         if ( !ok )
         {
             logger.error( "Can't open main channel; open returned false" );
@@ -779,7 +782,7 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
 
         lowlevel.poweroff();
 
-        powerOff();
+        yield powerOff();
 
         advanceToState( Modem.Status.CLOSED, true ); // force wraparound
 
