@@ -54,6 +54,27 @@ namespace HfpHf
         private DelegateAgent agent;
 
         //
+        // protected
+        //
+
+        protected async override void powerOff()
+        {
+            try
+            {
+                assert( logger.debug( @"Disconnecting from bluez device [$device_path] ..." ) );
+                yield hf_gateway.disconnect();
+
+                assert( logger.debug( @"Unregistering agent from bluetooth device [$device_path] ..." ) );
+                yield hf_gateway.unregister_agent( (ObjectPath) parent.service_path );
+                parent.unregisterService<Bluez.IHandsfreeAgent>();
+            }
+            catch ( GLib.Error e )
+            {
+                logger.error( @"Failed to disconnect from HFP AG: $(e.message)" );
+            }
+        }
+
+        //
         // public API
         //
 
@@ -63,6 +84,12 @@ namespace HfpHf
             this.agent = new DelegateAgent( this );
         }
 
+        /**
+         * We're completely replacing the base class behavior in open here because we
+         * don't need any channel setup procedure at this time. Our channel is created a
+         * little bit later after we're connected to the HFP AG. See new_connection(...)
+         * for implementation details.
+         **/
         public async override bool open()
         {
             try
@@ -82,24 +109,9 @@ namespace HfpHf
                 return false;
             }
 
+            assert( logger.debug( @"Successfully connected with bluetooth service." ) );
+
             return true;
-        }
-
-        public async override void close()
-        {
-            try
-            {
-                assert( logger.debug( @"Disconnecting from bluez device [$device_path] ..." ) );
-                yield hf_gateway.disconnect();
-
-                assert( logger.debug( @"Unregistering agent from bluetooth device [$device_path] ..." ) );
-                yield hf_gateway.unregister_agent( (ObjectPath) parent.service_path );
-                parent.unregisterService<Bluez.IHandsfreeAgent>();
-            }
-            catch ( GLib.Error e )
-            {
-                logger.error( @"Failed to disconnect from HFP AG: $(e.message)" );
-            }
         }
 
         public override string repr()
@@ -109,16 +121,31 @@ namespace HfpHf
 
         protected override FsoGsm.Channel channelForCommand( FsoGsm.AtCommand command, string query )
         {
-            return null;
+            return channels[ CHANNEL_NAME ];
         }
 
         //
         // Bluez.IHandsfreeAgent
         //
 
-        public async void new_connection( GLib.Socket fd, uint16 version ) throws DBusError, IOError
+        public async void new_connection( GLib.Socket socket, uint16 version ) throws DBusError, IOError
         {
             assert( logger.debug( @"New HFP HF connection" ) );
+
+            assert( logger.debug( @"socket.fd = $(socket.fd)" ) );
+            var transport = new FsoFramework.UnixTransport( socket.fd );
+            var parser = new FsoGsm.StateBasedAtParser();
+            var channel = new HfpHf.AtChannel( this, CHANNEL_NAME, transport, parser );
+
+            var success = yield channel.open();
+            if ( !success )
+            {
+                logger.error( @"Can't open main channel; closing modem ... " );
+                yield this.close();
+                return;
+            }
+
+            advanceToState( FsoGsm.Modem.Status.INITIALIZING );
         }
 
         public async void release() throws DBusError, IOError

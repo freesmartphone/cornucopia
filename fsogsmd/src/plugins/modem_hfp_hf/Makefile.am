@@ -11,6 +11,7 @@ modlibexec_LTLIBRARIES = modem_hfp_hf.la
 modem_hfp_hf_la_SOURCES = \
 	plugin.vala \
 	modem.vala \
+	channel.vala \
 	$(NULL)
 modem_hfp_hf_la_VALAFLAGS = \
 	--basedir $(top_srcdir) \
