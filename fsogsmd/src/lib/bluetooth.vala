@@ -127,7 +127,9 @@ public class FsoGsm.BluetoothManager : FsoFramework.AbstractObject
     private GLib.HashTable<string,Bluez.IAdapter> _adapters;
     private bool _initialized = false;
     private DBusConnection _connection;
-    private int ref_count = 0;
+    private int _ref_count = 0;
+    private uint _service_watch = 0;
+    private uint _property_changed_watch = 0;
 
     //
     // private
@@ -140,7 +142,7 @@ public class FsoGsm.BluetoothManager : FsoFramework.AbstractObject
             ph.devices.add( (ObjectPath) device_path );
     }
 
-    private async void check_adapter_for_device_profiles( ProfileHandler ph, string adapter_path )
+    private async void check_adapter_for_device_profile( ProfileHandler ph, string adapter_path )
     {
         try
         {
@@ -192,7 +194,7 @@ public class FsoGsm.BluetoothManager : FsoFramework.AbstractObject
             for ( var n = 0; n < adapters.n_children(); n++ )
             {
                 var adapter_path = adapters.get_child_value( n ).get_string();
-                check_adapter_for_device_profiles( ph, adapter_path );
+                check_adapter_for_device_profile( ph, adapter_path );
             }
         }
         catch ( GLib.Error e )
@@ -335,18 +337,32 @@ public class FsoGsm.BluetoothManager : FsoFramework.AbstractObject
     {
         if ( _initialized )
         {
-            ref_count++;
+            _ref_count++;
             return;
         }
 
+        _service_watch = Bus.watch_name( BusType.SYSTEM, "org.bluez", BusNameWatcherFlags.NONE,
+            ( connection, name, owner ) => { on_service_connect(); },
+            ( connection, name ) => { on_service_disconnect(); } );
+
+        _ref_count++;
+    }
+
+    private async void check_adapter_for_device_profiles( string adapter_path )
+    {
+        foreach ( var ph in _profiles )
+            check_adapter_for_device_profile( ph, adapter_path );
+    }
+
+    private async void on_service_connect()
+    {
         try
         {
             _manager = yield Bus.get_proxy<Bluez.IManager>( BusType.SYSTEM, "org.bluez", "/" );
             _manager.adapter_removed.connect( path => on_adapter_removed( path ) );
             _manager.adapter_added.connect( path => {
                 on_adapter_added( path );
-                foreach ( var ph in _profiles )
-                    check_adapter_for_device_profiles( ph, path );
+                check_adapter_for_device_profiles( path );
             } );
 
             var mprops = yield _manager.get_properties();
@@ -358,10 +374,11 @@ public class FsoGsm.BluetoothManager : FsoFramework.AbstractObject
             {
                 var adapter_path = adapters.get_child_value( n ).get_string();
                 on_adapter_added( (ObjectPath) adapter_path );
+                check_adapter_for_device_profiles( adapter_path );
             }
 
             _connection = yield Bus.get( BusType.SYSTEM );
-            _connection.signal_subscribe( "org.bluez", "org.bluez.Device", "PropertyChanged",
+            _property_changed_watch =  _connection.signal_subscribe( "org.bluez", "org.bluez.Device", "PropertyChanged",
                 null, null, DBusSignalFlags.NONE, on_device_property_changed);
 
             _initialized = true;
@@ -370,8 +387,18 @@ public class FsoGsm.BluetoothManager : FsoFramework.AbstractObject
         {
             logger.error( @"Could not initialize: $(e.message)" );
         }
+    }
 
-        ref_count++;
+    private async void on_service_disconnect()
+    {
+        foreach ( var ph in _profiles )
+        {
+            foreach ( var device_path in ph.devices )
+                yield ph.client.remove( device_path );
+            ph.devices = new Gee.ArrayList<string>();
+        }
+
+        _adapters = new GLib.HashTable<string,Bluez.IAdapter>( null, null );
     }
 
     /**
@@ -382,19 +409,21 @@ public class FsoGsm.BluetoothManager : FsoFramework.AbstractObject
         if ( !_initialized )
             return;
 
-        ref_count--;
+        _ref_count--;
 
-        if (ref_count > 0 )
+        if ( _ref_count > 0 )
             return;
 
-        foreach ( var ph in _profiles )
-        {
-            foreach ( var device_path in ph.devices )
-                yield ph.client.remove( device_path );
-        }
+        Bus.unwatch_name( _service_watch );
+        _connection.signal_unsubscribe( _property_changed_watch );
 
-        // FIXME dirty recreating the object to loose all profiles ...
+        _manager = null;
+        _connection = null;
+
         _profiles = new GLib.List<ProfileHandler>();
+        _adapters = new GLib.HashTable<string,Bluez.IAdapter>( null, null );
+
+        _initialized = false;
     }
 
     //
@@ -425,14 +454,19 @@ public class FsoGsm.BluetoothManager : FsoFramework.AbstractObject
 
         var ph = new ProfileHandler( id, profile );
         _profiles.append( ph );
-        yield check_devices_for_profile( ph );
+
+        // if we're not yet initialized checking possible devices for the profile will we
+        // done when the bluetooth service is available.
+        if ( _initialized )
+            yield check_devices_for_profile( ph );
+
         return true;
     }
 
-    public async bool unregister_profile( string id )
+    public async void unregister_profile( string id )
     {
         if ( !_initialized )
-            return false;
+            return;
 
         foreach ( var ph in _profiles )
         {
@@ -443,7 +477,7 @@ public class FsoGsm.BluetoothManager : FsoFramework.AbstractObject
             }
         }
 
-        return true;
+        shutdown();
     }
 
     public override string repr()
