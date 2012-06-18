@@ -26,10 +26,24 @@ using GLib;
  **/
 public class FsoFramework.UnixTransport : FsoFramework.BaseTransport
 {
+    private bool _open;
+
     public UnixTransport( int fd )
     {
         base( "" );
         this.fd = fd;
+        _open = false;
+    }
+
+    public override bool isOpen()
+    {
+        return _open;
+    }
+
+    public override bool open()
+    {
+        _open = base.open();
+        return _open;
     }
 
     public override void configure()
