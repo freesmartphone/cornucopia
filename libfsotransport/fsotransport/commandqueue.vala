@@ -189,11 +189,13 @@ public abstract class FsoFramework.AbstractCommandQueue : FsoFramework.CommandQu
 
     public virtual async bool open()
     {
-        // open transport
-        assert( !transport.isOpen() );
+        if ( transport.isOpen() )
+        {
+            transport.logger.warning( @"While opening the command queue the transport was already open" );
+            return true;
+        }
 
         var opened = yield transport.openAsync();
-
         return opened;
     }
 
