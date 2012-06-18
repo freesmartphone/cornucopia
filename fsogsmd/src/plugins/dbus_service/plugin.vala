@@ -84,6 +84,8 @@ public class ModemManager : FsoFramework.AbstractDBusResource, FsoGsm.IModemMana
 
     public async void register_modem( FsoGsm.Modem modem )
     {
+        assert( logger.debug( @"Registering modem $(modem.repr()) ..." ) );
+
         var service_manager = new FsoGsm.DeviceServiceManager( next_id, modem, _subsystem );
         _modemServices.add( service_manager );
 
@@ -95,6 +97,8 @@ public class ModemManager : FsoFramework.AbstractDBusResource, FsoGsm.IModemMana
 
     public async void unregister_modem( FsoGsm.Modem modem )
     {
+        assert( logger.debug( @"Removing modem $(modem.repr()) ..." ) );
+
         FsoGsm.DeviceServiceManager? modemServiceToRemove = null;
 
         foreach ( var service in _modemServices )
