@@ -30,6 +30,7 @@ libfsotransport_la_SOURCES = \
 	transport.vala \
 	raw.vala \
 	combined.vala \
+	unix.vala \
 	$(NULL)
 
 libfsotransport_la_VALAFLAGS = \
