@@ -228,7 +228,7 @@ public class FsoGsm.AtCommandSequence
         }
     }
 
-    public async void performOnChannel( AtChannel channel )
+    public async void performOnChannel( AtCommandQueue channel )
     {
         foreach( var element in commands )
         {
