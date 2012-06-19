@@ -26,28 +26,31 @@ using GLib;
  **/
 public class FsoFramework.UnixTransport : FsoFramework.BaseTransport
 {
-    private bool _open;
+    private int _real_fd = -1;
 
     public UnixTransport( int fd )
     {
         base( "" );
-        this.fd = fd;
-        _open = false;
-    }
-
-    public override bool isOpen()
-    {
-        return _open;
+        _real_fd = fd;
     }
 
     public override bool open()
     {
-        _open = base.open();
-        return _open;
+        fd = _real_fd;
+        return base.open();
     }
 
-    public override void configure()
+    public override void close()
     {
+        assert( logger.debug( "Closing..." ) );
+
+        if ( readwatch != 0 )
+            Source.remove( readwatch );
+
+        channel = null;
+        fd = -1;
+
+        assert( logger.debug( "Closed" ) );
     }
 }
 
