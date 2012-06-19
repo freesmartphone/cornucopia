@@ -284,6 +284,7 @@ void test_atcommand_PlusCTFR()
     assert( cmd.issue( "+0987654321", 149 ) == "+CTFR=+0987654321,149" );
 }
 
+<<<<<<< HEAD
 void test_atcommand_PlusCSMS()
 {
     FsoGsm.PlusCSMS cmd = (FsoGsm.PlusCSMS) atCommandFactory( "+CSMS" );
@@ -391,6 +392,39 @@ void test_atcommand_PlusCNMI()
     }
 }
 
+void test_atcommand_PlusCIND()
+{
+    FsoGsm.PlusCIND cmd = (FsoGsm.PlusCIND) atCommandFactory( "+CIND" );
+
+    assert( cmd.query() == "+CIND?" );
+    assert( cmd.test() == "+CIND=?" );
+    assert( cmd.issue( new int[] { 0, 1, 2, 3, 6, 0, 1 } ) == "+CIND=0,1,2,3,6,0,1" );
+
+    cmd = (FsoGsm.PlusCIND) atCommandFactory( "+CIND" );
+    cmd.parse( "+CIND: 0,1,2,5,6,7,0,1,5" );
+    assert( cmd.status.length == 9 );
+    int[] expected = { 0, 1, 2, 5, 6, 7, 0, 1, 5 };
+    int n = 0;
+    foreach ( var s in cmd.status )
+    {
+        assert( cmd.status[n] == expected[n] );
+        n++;
+    }
+
+    cmd = (FsoGsm.PlusCIND) atCommandFactory( "+CIND" );
+    cmd.parseTest( """"+CIND: ("service",(0-1)),("call",(1-2)),("test",(2-5))""" );
+    assert( cmd.indicators.length == 3 );
+    assert( cmd.indicators[0].name == "service" );
+    assert( cmd.indicators[0].min == 0 );
+    assert( cmd.indicators[0].max == 1 );
+    assert( cmd.indicators[1].name == "call" );
+    assert( cmd.indicators[1].min == 1 );
+    assert( cmd.indicators[1].max == 2 );
+    assert( cmd.indicators[2].name == "test" );
+    assert( cmd.indicators[2].min == 2 );
+    assert( cmd.indicators[2].max == 5 );
+}
+
 //===========================================================================
 void main( string[] args )
 //===========================================================================
@@ -411,6 +445,7 @@ void main( string[] args )
     Test.add_func( "/AtCommand/+CSMS", test_atcommand_PlusCSMS );
     Test.add_func( "/AtCommand/+CMGF", test_atcommand_PlusCMGF );
     Test.add_func( "/AtCommand/+CNMI", test_atcommand_PlusCNMI );
+    Test.add_func( "/AtCommand/+CIND", test_atcommand_PlusCIND );
     Test.run();
 }
 

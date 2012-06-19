@@ -1775,6 +1775,86 @@ public class PlusCSMS : AbstractAtCommand
     }
 }
 
+public class PlusCIND : AbstractAtCommand
+{
+    public IndicatorInfo[] indicators = { };
+    public int[] status = { };
+
+    public PlusCIND()
+    {
+        try
+        {
+            // Query: +CIND: 1,0,0,0,4,0,0
+            re = new GLib.Regex( """(?P<status>[0-9])""" );
+            // Test: +CIND: ("service",(0-1)),("call",(0-1)),("callsetup",(0-3)),("callheld",(0-2)),("signal",(0-5)),("roam",(0-1)),("battchg",(0-5))
+            tere = new GLib.Regex( """\("(?P<name>[A-Za-z]*)",\((?P<min>\d)-(?P<max>\d)\)\)""" );
+        }
+        catch ( GLib.RegexError e )
+        {
+            assert_not_reached();
+        }
+
+        prefix = { "+CIND" };
+    }
+
+    public string query()
+    {
+        return "+CIND?";
+    }
+
+    public string test()
+    {
+        return @"+CIND=?";
+    }
+
+    public string issue( int[] status )
+    {
+        var request = "+CIND=";
+
+        for ( var n = 0; n < status.length; n++ )
+        {
+            if ( n > 0 )
+                request += ",";
+            request += "%d".printf( status[n] );
+        }
+
+        return request;
+    }
+
+    public override void parse( string response ) throws AtCommandError
+    {
+        base.parse( response );
+        int[] status = { };
+
+        do
+        {
+            status += to_int( "status" );
+        }
+        while( mi.next() );
+
+        this.status = status;
+    }
+
+    public override void parseTest( string response ) throws AtCommandError
+    {
+        base.parseTest( response );
+
+        IndicatorInfo[] indicators = { };
+
+        do
+        {
+            indicators += IndicatorInfo() {
+                name = to_string( "name" ),
+                min = to_int( "min" ),
+                max = to_int( "max" )
+            };
+        }
+        while ( mi.next() );
+
+        this.indicators = indicators;
+    }
+}
+
 public class PlusCMGF : AbstractAtCommand
 {
     public int mode { get; private set; }
@@ -1866,6 +1946,9 @@ public void registerGenericAtCommands( HashMap<string,AtCommand> table )
     table[ "+CFUN" ]             = new FsoGsm.PlusCFUN();
     table[ "+CLVL" ]             = new FsoGsm.PlusCLVL();
     table[ "+CMUT" ]             = new FsoGsm.PlusCMUT();
+
+    // mobile termination and status control
+    table[ "+CIND" ]             = new FsoGsm.PlusCIND();
 
     // time and date related
     table[ "+CALA" ]             = new FsoGsm.PlusCALA();

@@ -1039,6 +1039,14 @@ namespace FsoGsm.Constants
         NOT_ACTIVE = 0,
         ACTIVE = 1,
     }
+
+    /* For +CIND; 27.007 Section 8.09 */
+    public struct IndicatorInfo
+    {
+        public string name;
+        public int min;
+        public int max;
+    }
 }
 
 // vim:ts=4:sw=4:expandtab
