@@ -35,9 +35,9 @@ namespace HfpHf
         // Bluez.IHandsfreeAgent
         //
 
-        public async void new_connection( GLib.Socket fd, uint16 version ) throws DBusError, IOError
+        public async void new_connection( GLib.Socket socket, uint16 version ) throws DBusError, IOError
         {
-            yield other.new_connection( fd, version );
+            yield other.new_connection( socket, version );
         }
 
         public async void release() throws DBusError, IOError
@@ -52,6 +52,7 @@ namespace HfpHf
         private string device_path;
         private Bluez.IHandsfreeGateway hf_gateway;
         private DelegateAgent agent;
+        private GLib.Socket _socket;
 
         //
         // protected
@@ -132,7 +133,9 @@ namespace HfpHf
         {
             assert( logger.debug( @"New HFP HF connection" ) );
 
-            assert( logger.debug( @"socket.fd = $(socket.fd)" ) );
+            // keep a reference to the socket otherwise our file descriptor will be closed
+            _socket = socket;
+
             var transport = new FsoFramework.UnixTransport( socket.fd );
             var parser = new FsoGsm.StateBasedAtParser();
             var channel = new HfpHf.AtChannel( this, CHANNEL_NAME, transport, parser );
