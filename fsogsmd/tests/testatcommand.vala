@@ -425,6 +425,21 @@ void test_atcommand_PlusCIND()
     assert( cmd.indicators[2].max == 5 );
 }
 
+void test_atcommand_PlusCMER()
+{
+    FsoGsm.PlusCMER cmd = (FsoGsm.PlusCMER) atCommandFactory( "+CMER" );
+
+    assert( cmd.issue( 1, 2, 3, 4, 5 ) == "+CMER=1,2,3,4,5" );
+
+    cmd = (FsoGsm.PlusCMER) atCommandFactory( "+CMER" );
+    cmd.parse( """"+CMER: 6,7,8,9,1""" );
+    assert( cmd.mode == 6 );
+    assert( cmd.keyp == 7 );
+    assert( cmd.disp == 8 );
+    assert( cmd.ind == 9 );
+    assert( cmd.bfr == 1 );
+}
+
 //===========================================================================
 void main( string[] args )
 //===========================================================================
@@ -446,6 +461,7 @@ void main( string[] args )
     Test.add_func( "/AtCommand/+CMGF", test_atcommand_PlusCMGF );
     Test.add_func( "/AtCommand/+CNMI", test_atcommand_PlusCNMI );
     Test.add_func( "/AtCommand/+CIND", test_atcommand_PlusCIND );
+    Test.add_func( "/AtCommand/+CMER", test_atcommand_PlusCMER );
     Test.run();
 }
 

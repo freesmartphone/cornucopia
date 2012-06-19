@@ -1855,6 +1855,44 @@ public class PlusCIND : AbstractAtCommand
     }
 }
 
+public class PlusCMER : AbstractAtCommand
+{
+    public int mode { get; private set; }
+    public int keyp { get; private set; }
+    public int disp { get; private set; }
+    public int ind { get; private set; }
+    public int bfr { get; private set; }
+
+    public PlusCMER()
+    {
+        try
+        {
+            // Query: +CMER: <mode>,<keyp>,<disp>,<ind>,<bfr>
+            re = new GLib.Regex( """\+CMER: (?P<mode>\d),(?P<keyp>\d),(?P<disp>\d),(?P<ind>\d),(?P<bfr>\d)""" );
+        }
+        catch ( GLib.RegexError e )
+        {
+            assert_not_reached();
+        }
+
+        prefix = { "+CMER" };
+
+    public override void parse( string response ) throws AtCommandError
+    {
+        base.parse( response );
+        mode = to_int( "mode" );
+        keyp = to_int( "keyp" );
+        disp = to_int( "disp" );
+        ind = to_int( "ind" );
+        bfr = to_int( "bfr" );
+    }
+
+    public string issue( int mode, int keyp, int disp, int ind, int bfr )
+    {
+        return @"+CMER=$mode,$keyp,$disp,$ind,$bfr";
+    }
+}
+
 public class PlusCMGF : AbstractAtCommand
 {
     public int mode { get; private set; }
@@ -1949,6 +1987,7 @@ public void registerGenericAtCommands( HashMap<string,AtCommand> table )
 
     // mobile termination and status control
     table[ "+CIND" ]             = new FsoGsm.PlusCIND();
+    table[ "+CMER" ]             = new FsoGsm.PlusCMER();
 
     // time and date related
     table[ "+CALA" ]             = new FsoGsm.PlusCALA();
