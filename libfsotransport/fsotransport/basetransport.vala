@@ -32,14 +32,14 @@ public class FsoFramework.BaseTransport : FsoFramework.Transport
     protected bool hard;
     protected int fd = -1;
 
-    private bool buffered;
+    protected bool buffered;
 
-    private IOChannel channel;
+    protected IOChannel channel;
 
-    private uint readwatch;
-    private int readpriority;
-    private uint writewatch;
-    private int writepriority;
+    protected uint readwatch;
+    protected int readpriority;
+    protected uint writewatch;
+    protected int writepriority;
 
     protected TransportFunc hupfunc;
     protected TransportFunc readfunc;
