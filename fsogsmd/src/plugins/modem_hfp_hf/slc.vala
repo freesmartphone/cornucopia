@@ -37,22 +37,6 @@ public class HfpHf.ServiceLevelConnection : FsoFramework.AbstractObject
     public int supported_features_hf { get; private set; default = 0; }
     public int supported_features_ag { get; private set; default = 0; }
     public int[] supported_features_ag_mpty { get; private set; default = { }; }
-    public IndicatorInfo[] indicators { get; private set; default = { }; }
-
-    //
-    // private
-    //
-
-    private void setup_indicators( FsoGsm.Constants.IndicatorInfo[] indicators, int[] status )
-    {
-        if ( indicators.length != status.length )
-            return;
-
-        this.indicators = indicators;
-
-        for ( var n = 0; n < status.length; n++ )
-            this.indicators[n].value = status[n];
-    }
 
     //
     // public API
@@ -78,7 +62,7 @@ public class HfpHf.ServiceLevelConnection : FsoFramework.AbstractObject
     /**
      * See Bluetooth HFP 1.6 spec chapter 4.2.1 on page 17 for more details.
      **/
-    public async bool initialize()
+    public async bool initialize( Indicators indicators )
     {
         string[] response = { };
 
@@ -107,7 +91,12 @@ public class HfpHf.ServiceLevelConnection : FsoFramework.AbstractObject
             response = yield channel.enqueueAsync( cmd_cind2, cmd_cind2.query() );
             checkResponseValid( cmd_cind2, response );
 
-            setup_indicators( cmd_cind.indicators, cmd_cind2.status );
+            for ( var n = 0; n < cmd_cind.indicators.length; n++ )
+            {
+                var type = Bluetooth.HFP.indicator_from_string( cmd_cind.indicators[n] );
+                indicators.set_index( type, n );
+                indicators.update( type, cmd_cind2.status[n] );
+            }
 
             var cmd_cmer = _modem.createAtCommand<PlusCMER>( "+CMER" ) as PlusCMER;
             response = yield channel.enqueueAsync( cmd_cmer, cmd_cmer.issue( 3, 0, 0, 1, 0 ) );

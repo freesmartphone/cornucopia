@@ -54,6 +54,7 @@ namespace HfpHf
         private DelegateAgent agent;
         private GLib.Socket _socket;
         private ServiceLevelConnection _slc;
+        private Indicators _indicators;
 
         //
         // protected
@@ -94,6 +95,7 @@ namespace HfpHf
         {
             this.device_path = device_path;
             this.agent = new DelegateAgent( this );
+            _indicators = new Indicators();
         }
 
         /**
@@ -191,7 +193,7 @@ namespace HfpHf
             }
 
             _slc = new ServiceLevelConnection( this, version );
-            success = yield _slc.initialize();
+            success = yield _slc.initialize( _indicators );
             if ( !success )
             {
                 logger.error( @"Failed to establish service level connection" );

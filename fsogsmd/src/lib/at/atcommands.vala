@@ -1813,7 +1813,7 @@ public class PlusCSMS : AbstractAtCommand
 
 public class PlusCIND : AbstractAtCommand
 {
-    public IndicatorInfo[] indicators = { };
+    public string[] indicators = { };
     public int[] status = { };
 
     public PlusCIND()
@@ -1875,15 +1875,11 @@ public class PlusCIND : AbstractAtCommand
     {
         base.parseTest( response );
 
-        IndicatorInfo[] indicators = { };
+        string[] indicators = { };
 
         do
         {
-            indicators += IndicatorInfo() {
-                name = to_string( "name" ),
-                min = to_int( "min" ),
-                max = to_int( "max" )
-            };
+            indicators += to_string( "name" );
         }
         while ( mi.next() );
 

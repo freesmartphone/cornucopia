@@ -16,6 +16,7 @@ modem_hfp_hf_la_SOURCES = \
 	const.vala \
 	slc.vala \
 	unsolicited.vala \
+	indicators.vala \
 	$(NULL)
 modem_hfp_hf_la_VALAFLAGS = \
 	--basedir $(top_srcdir) \

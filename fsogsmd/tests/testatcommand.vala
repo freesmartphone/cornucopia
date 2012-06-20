@@ -414,15 +414,9 @@ void test_atcommand_PlusCIND()
     cmd = (FsoGsm.PlusCIND) atCommandFactory( "+CIND" );
     cmd.parseTest( """"+CIND: ("service",(0-1)),("call",(1-2)),("test",(2-5))""" );
     assert( cmd.indicators.length == 3 );
-    assert( cmd.indicators[0].name == "service" );
-    assert( cmd.indicators[0].min == 0 );
-    assert( cmd.indicators[0].max == 1 );
-    assert( cmd.indicators[1].name == "call" );
-    assert( cmd.indicators[1].min == 1 );
-    assert( cmd.indicators[1].max == 2 );
-    assert( cmd.indicators[2].name == "test" );
-    assert( cmd.indicators[2].min == 2 );
-    assert( cmd.indicators[2].max == 5 );
+    assert( cmd.indicators[0] == "service" );
+    assert( cmd.indicators[1] == "call" );
+    assert( cmd.indicators[2] == "test" );
 }
 
 void test_atcommand_PlusCMER()
