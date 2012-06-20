@@ -189,7 +189,7 @@ namespace HfpHf
             {
                 logger.error( @"Can't open main channel; closing modem ... " );
                 yield this.close();
-                return;
+                throw new Bluez.Error.FAILED( "Failed to open channel" );
             }
 
             _slc = new ServiceLevelConnection( this, version );
@@ -198,7 +198,7 @@ namespace HfpHf
             {
                 logger.error( @"Failed to establish service level connection" );
                 yield close();
-                throw new DBusError.FAILED( "Failed to establish service level connection" );
+                throw new Bluez.Error.FAILED( "Failed to establish service level connection" );
             }
 
             advanceToState( FsoGsm.Modem.Status.ALIVE_SIM_READY );
