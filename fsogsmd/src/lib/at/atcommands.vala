@@ -1953,6 +1953,14 @@ public class PlusCMGF : AbstractAtCommand
     }
 }
 
+public class PlusCMEE : SimpleAtCommand<int>
+{
+    public PlusCMEE()
+    {
+        base( "+CMEE", false );
+    }
+}
+
 public void registerGenericAtCommands( HashMap<string,AtCommand> table )
 {
     // low level access (SIM, charset, etc.)
@@ -1988,6 +1996,7 @@ public void registerGenericAtCommands( HashMap<string,AtCommand> table )
     // mobile termination and status control
     table[ "+CIND" ]             = new FsoGsm.PlusCIND();
     table[ "+CMER" ]             = new FsoGsm.PlusCMER();
+    table[ "+CMEE" ]             = new FsoGsm.PlusCMEE();
 
     // time and date related
     table[ "+CALA" ]             = new FsoGsm.PlusCALA();
