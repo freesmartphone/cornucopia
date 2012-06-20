@@ -75,6 +75,11 @@ namespace HfpHf
             }
         }
 
+        protected override void registerCustomAtCommands( Gee.HashMap<string,FsoGsm.AtCommand> commands )
+        {
+            HfpHf.registerCustomAtCommands( commands );
+        }
+
         //
         // public API
         //
@@ -138,7 +143,7 @@ namespace HfpHf
 
             var transport = new FsoFramework.UnixTransport( socket.fd );
             var parser = new FsoGsm.StateBasedAtParser();
-            var channel = new HfpHf.AtChannel( this, CHANNEL_NAME, transport, parser );
+            var channel = new HfpHf.AtChannel( this, CHANNEL_NAME, transport, parser, version );
 
             var success = yield channel.open();
             if ( !success )

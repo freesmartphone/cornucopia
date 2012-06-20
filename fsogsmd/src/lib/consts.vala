@@ -1046,6 +1046,7 @@ namespace FsoGsm.Constants
         public string name;
         public int min;
         public int max;
+        public int value;
     }
 }
 
