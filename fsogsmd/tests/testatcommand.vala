@@ -440,6 +440,29 @@ void test_atcommand_PlusCMER()
     assert( cmd.bfr == 1 );
 }
 
+void test_atcommand_PlusCHLD()
+{
+    FsoGsm.PlusCHLD cmd = (FsoGsm.PlusCHLD) atCommandFactory( "+CHLD" );
+
+    assert( cmd.issue( FsoGsm.PlusCHLD.Action.DROP_ALL_OR_SEND_BUSY, 4 ) == "+CHLD=04" );
+    assert( cmd.issue( FsoGsm.PlusCHLD.Action.ACTIVATE_HELD ) == "+CHLD=3" );
+    assert( cmd.test() == "+CHLD=?" );
+
+    cmd.parseTest( "+CHLD: (1x,2,3x,4)" );
+    assert( cmd.features.length == 4 );
+    assert( cmd.features[0] == 1 );
+    assert( cmd.features[1] == 2 );
+    assert( cmd.features[2] == 3 );
+    assert( cmd.features[3] == 4 );
+
+    cmd.parseTest( "+CHLD: (1,2,3,4)" );
+    assert( cmd.features.length == 4 );
+    assert( cmd.features[0] == 1 );
+    assert( cmd.features[1] == 2 );
+    assert( cmd.features[2] == 3 );
+    assert( cmd.features[3] == 4 );
+}
+
 //===========================================================================
 void main( string[] args )
 //===========================================================================
@@ -462,6 +485,7 @@ void main( string[] args )
     Test.add_func( "/AtCommand/+CNMI", test_atcommand_PlusCNMI );
     Test.add_func( "/AtCommand/+CIND", test_atcommand_PlusCIND );
     Test.add_func( "/AtCommand/+CMER", test_atcommand_PlusCMER );
+    Test.add_func( "/AtCommand/+CHLD", test_atcommand_PlusCHLD );
     Test.run();
 }
 

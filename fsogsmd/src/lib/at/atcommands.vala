@@ -411,6 +411,42 @@ public class PlusCHLD : AbstractAtCommand
         DROP_SELF_AND_CONNECT_ACTIVE = 4
     }
 
+    public int[] features { get; private set; }
+
+    public PlusCHLD()
+    {
+        try
+        {
+            tere = new Regex( """(?P<feature>\d)(:?[x])?""" );
+        }
+        catch ( GLib.RegexError e )
+        {
+            assert_not_reached(); // fail here if Regex is broken
+        }
+
+        prefix = { "+CHLD" };
+    }
+
+    public override void parseTest( string response ) throws AtCommandError
+    {
+        base.parseTest( response );
+
+        int[] features = { };
+
+        do
+        {
+            features += to_int( "feature" );
+        }
+        while ( mi.next() );
+
+        this.features = features;
+    }
+
+    public string test()
+    {
+        return "+CHLD=?";
+    }
+
     public string issue( Action action, int cid = 0 )
     {
         if ( cid > 0 )
