@@ -22,6 +22,15 @@ using FsoGsm;
 
 namespace Bluez
 {
+    [DBus (name = "org.bluez")]
+    public errordomain Error
+    {
+        [DBus (name = "InvalidArguments")]
+        INVALID_ARGUMENTS,
+        [DBus (name = "Failed")]
+        FAILED,
+    }
+
     [DBus (name = "org.bluez.Manager", timeout = 120000)]
     public interface IManager : GLib.Object
     {
@@ -77,7 +86,7 @@ namespace Bluez
         [DBus (name = "RegisterAgent")]
         public abstract async void register_agent( GLib.ObjectPath path ) throws DBusError, IOError;
         [DBus (name = "UnregisterAgent")]
-        public abstract async void unregister_agent( GLib.ObjectPath path ) throws DBusError, IOError;
+        public abstract async void unregister_agent( GLib.ObjectPath path ) throws Bluez.Error, DBusError, IOError;
 
         [DBus (name = "PropertyChanged")]
         public signal void property_changed( string name, Variant value );
@@ -87,7 +96,7 @@ namespace Bluez
     public interface IHandsfreeAgent : GLib.Object
     {
         [DBus (name = "NewConnection")]
-        public abstract async void new_connection( GLib.Socket fd, uint16 version ) throws DBusError, IOError;
+        public abstract async void new_connection( GLib.Socket fd, uint16 version ) throws Bluez.Error, DBusError, IOError;
         [DBus (name = "Release")]
         public abstract async void release() throws DBusError, IOError;
     }
