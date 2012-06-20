@@ -1039,6 +1039,65 @@ namespace FsoGsm.Constants
         NOT_ACTIVE = 0,
         ACTIVE = 1,
     }
+
+    /* 27.007 Section 7.09 */
+    public enum Indicator
+    {
+        UNKNOWN = -1,
+        SERVICE = 0,
+        CALL = 1,
+        CALLSETUP = 2,
+        CALLHELD = 3,
+        SIGNAL = 4,
+        ROAM = 5,
+        BATTCHG = 6,
+        SOUNDER = 7,
+        MESSAGE = 8,
+        VOX = 9,
+        SMSFULL = 10,
+        LAST = 11
+    }
+
+    public Indicator indicator_from_string( string str )
+    {
+        var result = Indicator.UNKNOWN;
+
+        switch ( str )
+        {
+            case "service":
+                result = Indicator.SERVICE;
+                break;
+            case "call":
+                result = Indicator.CALL;
+                break;
+            case "callsetup":
+                result = Indicator.CALLSETUP;
+                break;
+            case "callheld":
+                result = Indicator.CALLHELD;
+                break;
+            case "signal":
+                result = Indicator.SIGNAL;
+                break;
+            case "battchg":
+                result = Indicator.BATTCHG;
+                break;
+            case "sounder":
+                result = Indicator.SOUNDER;
+                break;
+            case "message":
+                result = Indicator.MESSAGE;
+                break;
+            case "vox":
+                result = Indicator.VOX;
+                break;
+            case "smsfull":
+                result = Indicator.SMSFULL;
+                break;
+        }
+
+        return result;
+    }
 }
 
 // vim:ts=4:sw=4:expandtab

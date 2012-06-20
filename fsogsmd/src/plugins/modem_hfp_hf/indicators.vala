@@ -22,20 +22,20 @@ using FsoGsm;
 
 public class Indicators : FsoFramework.AbstractObject
 {
-    private int[] indexes = new int[Bluetooth.HFP.Indicator.LAST];
-    private int[] values = new int[Bluetooth.HFP.Indicator.LAST];
+    private int[] indexes = new int[Constants.Indicator.LAST];
+    private int[] values = new int[Constants.Indicator.LAST];
 
-    public bool validate_index( int index, Bluetooth.HFP.Indicator type )
+    public bool validate_index( int index, Constants.Indicator type )
     {
         return indexes[type] == index;
     }
 
-    public void set_index( Bluetooth.HFP.Indicator type, int index )
+    public void set_index( Constants.Indicator type, int index )
     {
         indexes[type] = index;
     }
 
-    public void update( Bluetooth.HFP.Indicator type, int value )
+    public void update( Constants.Indicator type, int value )
     {
         if ( values[type] != value )
             values[type] = value;

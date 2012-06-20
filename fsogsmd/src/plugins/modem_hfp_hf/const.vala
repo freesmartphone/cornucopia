@@ -27,48 +27,6 @@ namespace Bluetooth.HFP
         VERSION_LATEST = 0x0105,
     }
 
-    public enum Indicator
-    {
-        UNKNOWN = -1,
-        SERVICE = 0,
-        CALL = 1,
-        CALLSETUP = 2,
-        CALLHELD = 3,
-        SIGNAL = 4,
-        ROAM = 5,
-        BATTCHG = 6,
-        LAST = 7
-    }
-
-    public Indicator indicator_from_string( string str )
-    {
-        var result = Indicator.UNKNOWN;
-
-        switch ( str )
-        {
-            case "service":
-                result = Indicator.SERVICE;
-                break;
-            case "call":
-                result = Indicator.CALL;
-                break;
-            case "callsetup":
-                result = Indicator.CALLSETUP;
-                break;
-            case "callheld":
-                result = Indicator.CALLHELD;
-                break;
-            case "signal":
-                result = Indicator.SIGNAL;
-                break;
-            case "battchg":
-                result = Indicator.BATTCHG;
-                break;
-        }
-
-        return result;
-    }
-
     /* HFP HF/AG supported features bitmap. Bluetooth HFP 1.6 spec page 88 */
     public enum Feature
     {

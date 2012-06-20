@@ -93,7 +93,7 @@ public class HfpHf.ServiceLevelConnection : FsoFramework.AbstractObject
 
             for ( var n = 0; n < cmd_cind.indicators.length; n++ )
             {
-                var type = Bluetooth.HFP.indicator_from_string( cmd_cind.indicators[n] );
+                var type = Constants.indicator_from_string( cmd_cind.indicators[n] );
                 indicators.set_index( type, n );
                 indicators.update( type, cmd_cind2.status[n] );
             }
