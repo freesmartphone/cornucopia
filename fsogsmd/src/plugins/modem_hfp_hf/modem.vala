@@ -180,6 +180,7 @@ namespace HfpHf
             var parser = new FsoGsm.StateBasedAtParser();
             var channel = new HfpHf.AtChannel( CHANNEL_NAME, transport, parser );
             registerChannel( CHANNEL_NAME, channel );
+            channel.registerUnsolicitedHandler( this.processUnsolicitedResponse );
 
             var success = yield channel.open();
             if ( !success )
