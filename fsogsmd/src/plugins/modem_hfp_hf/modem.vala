@@ -57,6 +57,27 @@ namespace HfpHf
         private Indicators _indicators;
 
         //
+        // private
+        //
+
+        private void on_indicator_changed( Constants.Indicator type, int value )
+        {
+            switch ( type )
+            {
+                case Constants.Indicator.SERVICE:
+                    break;
+                case Constants.Indicator.SIGNAL:
+                    break;
+                case Constants.Indicator.CALL:
+                    break;
+                case Constants.Indicator.CALLSETUP:
+                    break;
+                case Constants.Indicator.CALLHELD:
+                    break;
+            }
+        }
+
+        //
         // protected
         //
 
@@ -84,7 +105,7 @@ namespace HfpHf
 
         protected override FsoGsm.UnsolicitedResponseHandler createUnsolicitedHandler()
         {
-            return new HfpHf.UnsolicitedResponseHandler( this );
+            return new HfpHf.UnsolicitedResponseHandler( this, _indicators );
         }
 
         //
@@ -96,6 +117,7 @@ namespace HfpHf
             this.device_path = device_path;
             this.agent = new DelegateAgent( this );
             _indicators = new Indicators();
+            _indicators.indicator_changed.connect( on_indicator_changed );
         }
 
         /**
@@ -171,7 +193,7 @@ namespace HfpHf
 
         public async void new_connection( GLib.Socket socket, uint16 version ) throws DBusError, IOError
         {
-            assert( logger.debug( @"New HFP HF connection" ) );
+            assert( logger.debug( @"Initializing new connection ..." ) );
 
             advanceToState( FsoGsm.Modem.Status.INITIALIZING );
 
@@ -201,7 +223,11 @@ namespace HfpHf
                 throw new Bluez.Error.FAILED( "Failed to establish service level connection" );
             }
 
-            advanceToState( FsoGsm.Modem.Status.ALIVE_SIM_READY );
+            var next_status = FsoGsm.Modem.Status.ALIVE_SIM_READY;
+            if ( _indicators.get_value( Constants.Indicator.SERVICE ) == 1 )
+                next_status = FsoGsm.Modem.Status.ALIVE_REGISTERED;
+
+            advanceToState( next_status );
         }
 
         public async void release() throws DBusError, IOError

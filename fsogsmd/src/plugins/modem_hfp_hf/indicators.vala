@@ -35,14 +35,38 @@ public class Indicators : FsoFramework.AbstractObject
         indexes[type] = index;
     }
 
-    public void update( Constants.Indicator type, int value )
+    public int get_value( Constants.Indicator type )
     {
+        return values[type];
+    }
+
+    public void update( int index, int value )
+    {
+        var type = Constants.Indicator.UNKNOWN;
+
+        for ( var n = 0; n < indexes.length; n++ )
+        {
+            if ( indexes[n] == index )
+            {
+                type = (Constants.Indicator) n;
+                break;
+            }
+        }
+
+        if ( type == Constants.Indicator.UNKNOWN || type == Constants.Indicator.LAST )
+            return;
+
         if ( values[type] != value )
+        {
             values[type] = value;
+            indicator_changed( type, values[type] );
+        }
     }
 
     public override string repr()
     {
         return @"<>";
     }
+
+    public signal void indicator_changed( Constants.Indicator type, int value );
 }

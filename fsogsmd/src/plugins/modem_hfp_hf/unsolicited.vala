@@ -22,9 +22,25 @@ using FsoGsm;
 
 public class HfpHf.UnsolicitedResponseHandler : FsoGsm.AtUnsolicitedResponseHandler
 {
-    public UnsolicitedResponseHandler( FsoGsm.Modem modem )
+    private Indicators _indicators;
+
+    public UnsolicitedResponseHandler( FsoGsm.Modem modem, Indicators indicators )
     {
         base( modem );
+        _indicators = indicators;
+    }
+
+    public virtual void plusCIEV( string prefix, string rhs )
+    {
+        var cmd = modem.createAtCommand<PlusCIEV>( "+CIEV" );
+
+        if ( cmd.validateUrc( @"$prefix: $rhs" ) != Constants.AtResponse.VALID )
+        {
+            logger.warning( @"Received invalid +cmd message $rhs. Please report" );
+            return;
+        }
+
+        _indicators.update( cmd.value1, cmd.value2 );
     }
 }
 
