@@ -80,6 +80,11 @@ namespace HfpHf
             HfpHf.registerCustomAtCommands( commands );
         }
 
+        protected override FsoGsm.UnsolicitedResponseHandler createUnsolicitedHandler()
+        {
+            return new HfpHf.UnsolicitedResponseHandler( this );
+        }
+
         //
         // public API
         //
