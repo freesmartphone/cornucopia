@@ -24,7 +24,6 @@ using FsoGsm.Constants;
 public class HfpHf.ServiceLevelConnection : FsoFramework.AbstractObject
 {
     private FsoGsm.Modem _modem;
-    private FsoGsm.AtCommandQueue _channel;
     private int _version;
 
     public enum Status
@@ -59,10 +58,9 @@ public class HfpHf.ServiceLevelConnection : FsoFramework.AbstractObject
     // public API
     //
 
-    public ServiceLevelConnection( FsoGsm.Modem modem, FsoGsm.AtCommandQueue channel, int version )
+    public ServiceLevelConnection( FsoGsm.Modem modem, int version )
     {
         _modem = modem;
-        _channel = channel;
         _version = version;
 
         supported_features_ag = 0;
@@ -91,36 +89,38 @@ public class HfpHf.ServiceLevelConnection : FsoFramework.AbstractObject
 
         try
         {
+            var channel = _modem.channel( "main" ) as AtCommandQueue;
+
             // tell AG about our supported features and retrieve its supported features
             var cmd_brsf = _modem.createAtCommand<PlusBRSF>( "+BRSF" ) as PlusBRSF;
-            response = yield _channel.enqueueAsync( cmd_brsf, cmd_brsf.issue( supported_features_hf ) );
+            response = yield channel.enqueueAsync( cmd_brsf, cmd_brsf.issue( supported_features_hf ) );
             checkResponseValid( cmd_brsf, response );
             supported_features_ag = cmd_brsf.value;
 
             // retrieve supported indicators
             var cmd_cind = _modem.createAtCommand<PlusCIND>( "+CIND" ) as PlusCIND;
-            response = yield _channel.enqueueAsync( cmd_cind, cmd_cind.test() );
+            response = yield channel.enqueueAsync( cmd_cind, cmd_cind.test() );
             checkTestResponseValid( cmd_cind, response );
 
             // retrieve status of the indicators
             var cmd_cind2 = _modem.createAtCommand<PlusCIND>( "+CIND" ) as PlusCIND;
-            response = yield _channel.enqueueAsync( cmd_cind2, cmd_cind2.query() );
+            response = yield channel.enqueueAsync( cmd_cind2, cmd_cind2.query() );
             checkResponseValid( cmd_cind2, response );
 
             setup_indicators( cmd_cind.indicators, cmd_cind2.status );
 
             var cmd_cmer = _modem.createAtCommand<PlusCMER>( "+CMER" ) as PlusCMER;
-            response = yield _channel.enqueueAsync( cmd_cmer, cmd_cmer.issue( 3, 0, 0, 1, 0 ) );
+            response = yield channel.enqueueAsync( cmd_cmer, cmd_cmer.issue( 3, 0, 0, 1, 0 ) );
             checkResponseOk( cmd_cmer, response );
 
             var cmd_cmee = _modem.createAtCommand<PlusCMEE>( "+CMEE" ) as PlusCMEE;
-            response = yield _channel.enqueueAsync( cmd_cmee, cmd_cmee.issue( 1 ) );
+            response = yield channel.enqueueAsync( cmd_cmee, cmd_cmee.issue( 1 ) );
             checkResponseOk( cmd_cmee, response );
 
             if ( ( supported_features_ag & Bluetooth.HFP.Feature.AG_3WAY ) == Bluetooth.HFP.Feature.AG_3WAY )
             {
                 var cmd_chld = _modem.createAtCommand<PlusCHLD>( "+CHLD" ) as PlusCHLD;
-                response = yield _channel.enqueueAsync( cmd_chld, cmd_chld.test() );
+                response = yield channel.enqueueAsync( cmd_chld, cmd_chld.test() );
                 checkTestResponseValid( cmd_chld, response );
                 supported_features_ag_mpty = cmd_chld.features;
             }
@@ -139,14 +139,9 @@ public class HfpHf.ServiceLevelConnection : FsoFramework.AbstractObject
         return true;
     }
 
-    public async bool release()
+    public async void release()
     {
-        if ( status != Status.ACTIVE )
-            return false;
-
         status = Status.CLOSED;
-
-        return true;
     }
 
     public override string repr()

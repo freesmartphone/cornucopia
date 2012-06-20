@@ -23,57 +23,11 @@ using FsoGsm;
 public class HfpHf.AtChannel : FsoGsm.AtCommandQueue, FsoGsm.Channel
 {
     protected string name;
-    private bool initialized;
-    private FsoGsm.Modem modem;
-    private ServiceLevelConnection slc;
-    private int supported_features;
-    private int version;
 
-    public AtChannel( FsoGsm.Modem modem, string? name, FsoFramework.Transport transport, FsoFramework.Parser parser, int version )
+    public AtChannel( string? name, FsoFramework.Transport transport, FsoFramework.Parser parser )
     {
         base( transport, parser );
-
         this.name = name;
-        this.modem = modem;
-        this.version = version;
-        // FIXME providing both modem and channel to the slc is rather unpleasant ...
-        this.slc = new ServiceLevelConnection( modem, this, version );
-
-        modem.registerChannel( name, this );
-        modem.signalStatusChanged.connect( onModemStatusChanged );
-
-        assert( modem.logger.debug( @"Created AT channel for HFP version 0x%04x".printf( version ) ) );
-    }
-
-    public void onModemStatusChanged( FsoGsm.Modem modem, FsoGsm.Modem.Status status )
-    {
-        switch ( status )
-        {
-            case FsoGsm.Modem.Status.INITIALIZING:
-                initialize();
-                break;
-            case FsoGsm.Modem.Status.CLOSING:
-                shutdown();
-                break;
-            default:
-                break;
-        }
-    }
-
-    private async void initialize()
-    {
-        assert( modem.logger.debug( @"Initializing channel $name ..." ) );
-
-        var result = yield slc.initialize();
-
-        this.initialized = true;
-    }
-
-    private async void shutdown()
-    {
-        assert( modem.logger.debug( @"Shutting down channel $name ..." ) );
-
-        var result = yield slc.release();
     }
 
     public void injectResponse( string response )

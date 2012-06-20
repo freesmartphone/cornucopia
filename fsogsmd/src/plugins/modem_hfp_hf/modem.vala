@@ -53,6 +53,7 @@ namespace HfpHf
         private Bluez.IHandsfreeGateway hf_gateway;
         private DelegateAgent agent;
         private GLib.Socket _socket;
+        private ServiceLevelConnection _slc;
 
         //
         // protected
@@ -125,6 +126,13 @@ namespace HfpHf
             return true;
         }
 
+        public async override void close()
+        {
+            yield _slc.release();
+            base.close();
+            _socket = null;
+        }
+
         public override string repr()
         {
             return "<>";
@@ -143,12 +151,15 @@ namespace HfpHf
         {
             assert( logger.debug( @"New HFP HF connection" ) );
 
+            advanceToState( FsoGsm.Modem.Status.INITIALIZING );
+
             // keep a reference to the socket otherwise our file descriptor will be closed
             _socket = socket;
 
             var transport = new FsoFramework.UnixTransport( socket.fd );
             var parser = new FsoGsm.StateBasedAtParser();
-            var channel = new HfpHf.AtChannel( this, CHANNEL_NAME, transport, parser, version );
+            var channel = new HfpHf.AtChannel( CHANNEL_NAME, transport, parser );
+            registerChannel( CHANNEL_NAME, channel );
 
             var success = yield channel.open();
             if ( !success )
@@ -158,11 +169,21 @@ namespace HfpHf
                 return;
             }
 
-            advanceToState( FsoGsm.Modem.Status.INITIALIZING );
+            _slc = new ServiceLevelConnection( this, version );
+            success = yield _slc.initialize();
+            if ( !success )
+            {
+                logger.error( @"Failed to establish service level connection" );
+                yield close();
+                throw new DBusError.FAILED( "Failed to establish service level connection" );
+            }
+
+            advanceToState( FsoGsm.Modem.Status.ALIVE_SIM_READY );
         }
 
         public async void release() throws DBusError, IOError
         {
+            close();
             assert( logger.debug( @"HFP HF connection released" ) );
         }
     }
