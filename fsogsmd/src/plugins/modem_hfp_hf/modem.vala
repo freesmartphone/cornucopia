@@ -143,6 +143,26 @@ namespace HfpHf
             return channels[ CHANNEL_NAME ];
         }
 
+        protected override CallHandler createCallHandler()
+        {
+            return new NullCallHandler();
+        }
+
+        protected override SmsHandler createSmsHandler()
+        {
+            return new NullSmsHandler();
+        }
+
+        protected override PhonebookHandler createPhonebookHandler()
+        {
+            return null;
+        }
+
+        protected override WatchDog createWatchDog()
+        {
+            return new NullWatchDog();
+        }
+
         //
         // Bluez.IHandsfreeAgent
         //
