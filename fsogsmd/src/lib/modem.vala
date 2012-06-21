@@ -519,6 +519,15 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
         Idle.add( () => { checkChannelsForHangup(); return false; } );
     }
 
+    private bool isAliveStatus( FsoGsm.Modem.Status status )
+    {
+        return status == Status.ALIVE_NO_SIM ||
+               status == Status.ALIVE_SIM_LOCKED ||
+               status == Status.ALIVE_SIM_UNLOCKED ||
+               status == Status.ALIVE_SIM_READY ||
+               status == Status.ALIVE_REGISTERED;
+    }
+
     //
     // protected API
     //
@@ -987,16 +996,19 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
                 next = Modem.Status.ALIVE_SIM_READY;
             }
         }
+
+        bool should_update_external = !( isAlive() && isAliveStatus( next ) );
         modem_status = next;
 
         // update for internal listeners
         signalStatusChanged( modem_status );
         // update for external listeners
-        if ( parent != null )
+        if ( parent != null && should_update_external )
         {
             var obj = theDevice<FreeSmartphone.GSM.Device>();
             obj.device_status( externalStatus() );
         }
+
         logger.info( @"Modem Status changed to $modem_status" );
     }
 
@@ -1042,11 +1054,7 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
 
     public bool isAlive()
     {
-        return modem_status == Status.ALIVE_NO_SIM ||
-               modem_status == Status.ALIVE_SIM_LOCKED ||
-               modem_status == Status.ALIVE_SIM_UNLOCKED ||
-               modem_status == Status.ALIVE_SIM_READY ||
-               modem_status == Status.ALIVE_REGISTERED;
+        return isAliveStatus( modem_status );
     }
 }
 
