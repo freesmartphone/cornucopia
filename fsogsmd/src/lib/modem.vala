@@ -1022,15 +1022,11 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
             case Status.INITIALIZING:
                 return FreeSmartphone.GSM.DeviceStatus.INITIALIZING;
             case Status.ALIVE_NO_SIM:
-                return FreeSmartphone.GSM.DeviceStatus.ALIVE_NO_SIM;
             case Status.ALIVE_SIM_LOCKED:
-                return FreeSmartphone.GSM.DeviceStatus.ALIVE_SIM_LOCKED;
             case Status.ALIVE_SIM_UNLOCKED:
-                return FreeSmartphone.GSM.DeviceStatus.ALIVE_SIM_UNLOCKED;
             case Status.ALIVE_SIM_READY:
-                return FreeSmartphone.GSM.DeviceStatus.ALIVE_SIM_READY;
             case Status.ALIVE_REGISTERED:
-                return FreeSmartphone.GSM.DeviceStatus.ALIVE_REGISTERED;
+                return FreeSmartphone.GSM.DeviceStatus.ALIVE;
             case Status.SUSPENDING:
                 return FreeSmartphone.GSM.DeviceStatus.SUSPENDING;
             case Status.SUSPENDED:
