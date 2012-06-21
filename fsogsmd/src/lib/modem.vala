@@ -256,7 +256,7 @@ public abstract interface FsoGsm.Modem : FsoFramework.AbstractObject
 
     // Misc. Accessors
     public abstract Modem.Status status();
-    public abstract Modem.NetworkStatus network_status();
+    public abstract Modem.NetworkStatus networkStatus();
     public abstract FreeSmartphone.GSM.DeviceStatus externalStatus();
     public abstract FreeSmartphone.GSM.SIMAuthStatus simAuthStatus();
     public abstract FsoGsm.Modem.Data data();
@@ -796,7 +796,7 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
         return modem_status;
     }
 
-    public Modem.NetworkStatus network_status()
+    public Modem.NetworkStatus networkStatus()
     {
         return modem_network_status;
     }
