@@ -24,16 +24,11 @@ public void updateSimAuthStatus( FsoGsm.Modem modem, FreeSmartphone.GSM.SIMAuthS
 {
     modem.logger.info( @"SIM Auth status now $status" );
 
-    // send the dbus signal
-    var obj = modem.theDevice<FreeSmartphone.GSM.SIM>();
-    obj.auth_status( status );
+    modem.advanceSimAuthState( status );
 
     // check whether we need to advance the modem state
-    var data = modem.data();
-    if ( status != data.simAuthStatus )
+    if ( status != modem.simAuthStatus() )
     {
-        data.simAuthStatus = status;
-
         // advance global modem state
         var modemStatus = modem.status();
         if ( modemStatus == Modem.Status.INITIALIZING )

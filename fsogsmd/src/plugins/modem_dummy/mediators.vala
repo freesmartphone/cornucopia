@@ -172,8 +172,8 @@ public class DummyAtDeviceSetFunctionality : DeviceSetFunctionality
 
         if ( modem_pin != pin )
         {
-            var simiface = modem.theDevice<FreeSmartphone.GSM.SIM>();
-            simiface.auth_status( FreeSmartphone.GSM.SIMAuthStatus.PIN_REQUIRED );
+            var simiface = theModem.theDevice<FreeSmartphone.GSM.SIM>();
+            modem.advanceSimAuthState( FreeSmartphone.GSM.SIMAuthStatus.PIN_REQUIRED );
         }
     }
 }

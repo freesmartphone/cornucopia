@@ -194,15 +194,11 @@ public async void gatherSimStatusAndUpdate( FsoGsm.Modem modem ) throws FreeSmar
     if ( rcode == Constants.AtResponse.VALID )
     {
         modem.logger.info( @"SIM Auth status $(cmd.status)" );
-        // send the dbus signal
-        var obj = modem.theDevice<FreeSmartphone.GSM.SIM>();
-        obj.auth_status( cmd.status );
+        modem.advanceSimAuthState( cmd.status );
 
         // check whether we need to advance the modem state
-        if ( cmd.status != data.simAuthStatus )
+        if ( cmd.status != theModem.simAuthStatus() )
         {
-            data.simAuthStatus = cmd.status;
-
             // advance global modem state
             var modemStatus = modem.status();
             if ( modemStatus >= Modem.Status.INITIALIZING && modemStatus <= Modem.Status.ALIVE_REGISTERED )

@@ -27,8 +27,7 @@ public class SamsungSimGetAuthStatus : SimGetAuthStatus
         // NOTE: there is no command to gather the actual SIM auth status
         // we have to remember the last state and set it to the right value
         // whenever a command/response needs a modified sim auth state
-        var data = modem.data();
-        status = data.simAuthStatus;
+        status = modem.simAuthStatus();
     }
 }
 
@@ -39,7 +38,7 @@ public class SamsungSimSendAuthCode : SimSendAuthCode
         unowned SamsungIpc.Response? response;
         var channel = modem.channel( "main" ) as Samsung.IpcChannel;
 
-        if ( modem.data().simAuthStatus == FreeSmartphone.GSM.SIMAuthStatus.READY )
+        if ( modem.simAuthStatus() == FreeSmartphone.GSM.SIMAuthStatus.READY )
             return;
 
         if ( pin.length != 4 && pin.length != 8 )
