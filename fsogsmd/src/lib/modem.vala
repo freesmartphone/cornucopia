@@ -115,7 +115,6 @@ public abstract interface FsoGsm.Modem : FsoFramework.AbstractObject
         public int speakerVolumeMinimum;
         public int speakerVolumeMaximum;
 
-        public FreeSmartphone.GSM.SIMAuthStatus simAuthStatus;
         public bool simBuffersSms;
         public HashMap<string,PhonebookParams> simPhonebooks;
         public string charset;
@@ -222,6 +221,7 @@ public abstract interface FsoGsm.Modem : FsoFramework.AbstractObject
     public abstract void registerChannel( string name, FsoGsm.Channel channel );
     public abstract void advanceToState( Modem.Status status, bool force = false );
     public abstract void advanceNetworkState( Modem.NetworkStatus status );
+    public abstract void advanceSimAuthState( FreeSmartphone.GSM.SIMAuthStatus status );
     public abstract AtCommandSequence atCommandSequence( string channel, string purpose );
     public signal void signalStatusChanged( Modem.Status status );
 
@@ -258,6 +258,7 @@ public abstract interface FsoGsm.Modem : FsoFramework.AbstractObject
     public abstract Modem.Status status();
     public abstract Modem.NetworkStatus network_status();
     public abstract FreeSmartphone.GSM.DeviceStatus externalStatus();
+    public abstract FreeSmartphone.GSM.SIMAuthStatus simAuthStatus();
     public abstract FsoGsm.Modem.Data data();
     public abstract void registerAtCommandSequence( string channel, string purpose, AtCommandSequence sequence );
     public abstract bool isAlive();
@@ -273,6 +274,7 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
 
     protected FsoGsm.Modem.Status modem_status;
     protected FsoGsm.Modem.NetworkStatus modem_network_status;
+    protected FreeSmartphone.GSM.SIMAuthStatus sim_auth_status;
     protected FsoGsm.Modem.Data modem_data;
 
     protected HashMap<string,FsoGsm.Channel> channels;
@@ -361,7 +363,7 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
         modem_data.speakerVolumeMaximum = -1;
 
         modem_data.alarmCleared = 946684800; // 00/01/01,00:00:00 (default for SIEMENS mc75i)
-        modem_data.simAuthStatus = FreeSmartphone.GSM.SIMAuthStatus.UNKNOWN;
+        sim_auth_status = FreeSmartphone.GSM.SIMAuthStatus.UNKNOWN;
         modem_data.simBuffersSms = config.boolValue( CONFIG_SECTION, "sim_buffers_sms", true );
 
         modem_data.simPhonebooks = new HashMap<string,PhonebookParams>();
@@ -799,6 +801,11 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
         return modem_network_status;
     }
 
+    public FreeSmartphone.GSM.SIMAuthStatus simAuthStatus()
+    {
+        return sim_auth_status;
+    }
+
     public FsoGsm.Modem.Data data()
     {
         return modem_data;
@@ -1016,6 +1023,18 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
     {
         assert( logger.debug( @"Advancing network state to $state" ) );
         modem_network_status = state;
+    }
+
+    public void advanceSimAuthState( FreeSmartphone.GSM.SIMAuthStatus status )
+    {
+        if ( sim_auth_status == status )
+            return;
+
+        assert( logger.debug( @"Advancing SIM auth status to $status" ) );
+        sim_auth_status = status;
+
+        var obj = parent.retrieveService<FreeSmartphone.GSM.SIM>();
+        obj.auth_status( sim_auth_status );
     }
 
     public AtCommandSequence atCommandSequence( string channel, string purpose )
