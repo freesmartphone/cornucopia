@@ -85,7 +85,9 @@ public class FsoGsm.GsmSimService : FreeSmartphone.GSM.SIM, Service
 
     public async GLib.HashTable<string,GLib.Variant> get_sim_info() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_SIM_LOCKED ); // or READY?
+        // available already in ALIVE_NO_SIM as the information has an entry about the
+        // presence of the SIM card now
+        checkAvailability( FsoGsm.Modem.Status.ALIVE_NO_SIM );
         var m = modem.createMediator<FsoGsm.SimGetInformation>();
         yield m.run();
         return m.info;
