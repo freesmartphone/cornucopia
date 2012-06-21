@@ -94,6 +94,15 @@ public class DummyAtDeviceGetInformation : DeviceGetInformation
     public override async void run() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
     {
         info = new GLib.HashTable<string,Variant>( str_hash, str_equal );
+
+        if ( theModem.status() == FsoGsm.Modem.Status.ALIVE_NO_SIM )
+        {
+            info.insert( "present", false );
+            return;
+        }
+
+        info.insert( "present", true );
+
         info.insert( "model", "FSO2 Dummy Modem" );
         info.insert( "manufacturer", "freesmartphone.org" );
         info.insert( "revision", "V2" );

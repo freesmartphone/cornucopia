@@ -65,6 +65,14 @@ public class SamsungSimGetInformation : SimGetInformation
 
         info = new GLib.HashTable<string,Variant>( str_hash, str_equal );
 
+        if ( theModem.status() == FsoGsm.Modem.Status.ALIVE_NO_SIM )
+        {
+            info.insert( "present", false );
+            return;
+        }
+
+        info.insert( "present", true );
+
         // Read name of our SIM Card issuer from the modem
         var rsimreq = SamsungIpc.Security.RSimAccessRequestMessage();
         rsimreq.command = SamsungIpc.Security.RSimCommandType.READ_BINARY;

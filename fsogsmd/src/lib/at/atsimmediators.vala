@@ -102,11 +102,18 @@ public class AtSimGetInformation : SimGetInformation
     public override async void run() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
     {
         info = new GLib.HashTable<string,Variant>( str_hash, str_equal );
-
         Variant value;
 
-        var cimi = modem.createAtCommand<PlusCGMR>( "+CIMI" );
-        var response = yield modem.processAtCommandAsync( cimi, cimi.execute() );
+        if ( theModem.status() == FsoGsm.Modem.Status.ALIVE_NO_SIM )
+        {
+            info.insert( "present", false );
+            return;
+        }
+
+        info.insert( "present", true );
+
+        var cimi = theModem.createAtCommand<PlusCGMR>( "+CIMI" );
+        var response = yield theModem.processAtCommandAsync( cimi, cimi.execute() );
         if ( cimi.validate( response ) == Constants.AtResponse.VALID )
         {
             value = (string) cimi.value;
