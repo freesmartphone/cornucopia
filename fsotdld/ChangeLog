@@ -1,4 +1,137 @@
+2012-07-27  Simon Busch  <morphis@gravedo.de>
+
+	Bump required libfso-glib version of all components
+
+2012-07-25  Simon Busch  <morphis@gravedo.de>
+
+	fsotdld: correct dbus configuration so we're now allowed to own our bus names
+
+2012-07-25  Martin Jansa  <martin.jansa@gmail.com>
+
+	fsotdld: fix default fsotdld.conf
+	* providers should be separated by ; otherwise it's read as single provider:
+	  2012-07-25T12:45:41.154426Z [ERROR] ContextService <0>: Type LocationFreeGeoip, LocationCellidWifi, LocationGpsd is invalid
+	* LocationFreeGeoIp needs capital I otherwise also fails to find it
+	  2012-07-25T12:55:58.178759Z [ERROR] ContextService <0>: Type LocationFreegeoip is invalid
+	* even with those 2 changes fsotdld fails to claim dbus busname on qemu
+	  2012-07-25T12:56:38.237761Z [CRITICAL] subsystem : Can't claim busname org.freesmartphone.ocontextd
+
+2012-07-24  Simon Busch  <morphis@gravedo.de>
+
+	Update .gitignore files for test related files
+
+2012-07-19  Simon Busch  <morphis@gravedo.de>
+
+	Update copyright notice for all source files
+
+2012-07-17  Simon Busch  <morphis@gravedo.de>
+
+	fsotdld: add different command line options for testing and informational purpose
+
+2012-07-08  Simon Busch  <morphis@gravedo.de>
+
+	fsotdld: provider_location_cellidwifi: link against internal library; fixes #682
+
+2012-06-20  Simon Busch  <morphis@gravedo.de>
+
+	fsotdld: source_ntp: use owned variable instead of unowned due to binding updates in 0.16
+
+	Bump required vala version to 0.16.0
+
+2012-06-09  Simon Busch  <morphis@gravedo.de>
+
+	Revert "fsotdld: adjust for recent changes to libfsotransport about delegate handling"
+	This reverts commit f288df980d58445968f850a596e1e55067051667.
+
+2012-06-06  Simon Busch  <morphis@gravedo.de>
+
+	Bump required libfso-glib version to 2012.06.06.01
+
+2012-06-05  Simon Busch  <morphis@gravedo.de>
+
+	Use --debug instead of -g as Vala debug option and get back -D DEBUG
+	Using -g gives use some strange behaviour of automake. -g will end up in DIST_COMMON
+	variable where it should never be ...
+
+2012-06-04  Simon Busch  <morphis@gravedo.de>
+
+	Remove "-D DEBUG" from debug options as it gives us some trouble with automake/autoconf
+	Some how "-D DEBUG" ends up in the automake variable DIST_COMMON which has a list of files
+	should be included in distribution archive. make distcheck will fail this way. We need to
+	figure out why it ends up there ...
+
+	Update all Makefile.am files to use DEBUG_VALAFLAGS/DEBUG_CFLAGS
+
+	Update all Makefile.decl files to ship DEBUG_VALAFLAGS/DEBUG_CFLAGS
+
+	We're using CFLAGS instead of CPPFLAGS everywhere
+
+2012-05-30  Simon Busch  <morphis@gravedo.de>
+
+	Bump required libfso-glib version to 2012.05.30.1
+
+2012-05-25  Simon Busch  <morphis@gravedo.de>
+
+	Enable various configuration options of our components for distcheck
+
+2012-05-24  Simon Busch  <morphis@gravedo.de>
+
+	Bump version of all components to 0.12.0 for next development cycle
+
+	Bump required version of libfso-glib to 2012.05.24.1
+
+2012-05-11  Simon Busch  <morphis@gravedo.de>
+
+	fsotdld: bin: use correct vapi directory
+
+	Use ustar format for the distribution tar archive in all components of the stack
+	If we're not using ustar format for the tar archives we're getting problems when trying to
+	package files with a path longer than 99 characters which isn't supported by the default
+	tar format but by the ustart one.
+
+2012-05-10  Simon Busch  <morphis@gravedo.de>
+
+	fsotdld: adjust for recent changes to libfsotransport about delegate handling
+
+2012-05-09  Simon Busch  <morphis@gravedo.de>
+
+	Bump required FSO version of all components to 0.11.0
+
+2012-05-08  Simon Busch  <morphis@gravedo.de>
+
+	fsotdld: include missing vapi files in generate distribution archives
+
+2012-05-07  Rico Rommel  <rico@bierrommel.de>
+
+	fsotdld: plugins: add new time source plugin for gpsd
+
+2012-05-02  Simon Busch  <morphis@gravedo.de>
+
+	Fix checking for the wrong *_release variable when enabling vala source compilation
+
+	fsotdld: refactor automake configuration
+
+2012-04-25  Simon Busch  <morphis@gravedo.de>
+
+	Add --disable-datafiles configure option just for make distcheck target
+
+2012-04-23  Simon Busch  <morphis@gravedo.de>
+
+	fsotdld: in respect of SHR we're requiring 2.96 of libgps
+
+	fsotdld: require version 3.4 of libgps
+
+	fsotdld/fsodeviced/fsosystemd/fsoaudiod: include systemd services file in our release tarball
+
+2012-04-20  Simon Busch  <morphis@gravedo.de>
+
+	Make dbus system directories for all components configurable in the configure script
+
 2012-04-18  Simon Busch  <morphis@gravedo.de>
+
+	Bump version of all components for next development cycle
+
+	Release version 0.10.0
 
 	fsotdld: restructure autoconf configuration to be ready for a release
 

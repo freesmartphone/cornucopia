@@ -1,3 +1,215 @@
+2012-07-27  Simon Busch  <morphis@gravedo.de>
+
+	Bump required libfso-glib version of all components
+
+2012-07-19  Simon Busch  <morphis@gravedo.de>
+
+	Update copyright notice for all source files
+
+2012-07-17  Simon Busch  <morphis@gravedo.de>
+
+	fsoaudiod: add different command line options for testing and informational purpose
+
+2012-07-06  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsoaudiod: fix silent calls on the GTA04 side.
+	Without that fix, under the SHR distribution the GTA04 phone
+	  received a call, then it rang, and then the gta04 side didn't
+	  ear the remote while the remote could ear the person with the
+	  GTA04.
+
+	That was because the GTA04 alsaloop forwarder configuration
+	  was using the sound card directly, without the multiplexing
+	  (such as dmix or dsnoop), and so that failed because the ring process
+	  was already using the sound card.
+
+	The correct fix is to use the "default" device which, under SHR, handles
+	  multiplxing for playback and recording correctly(the ring process is
+	  already using the "default" device).
+
+	Note that using the default device has a performance cost( higher
+	  CPU usage).
+
+	Tested-by: Lukas Märdian <lukasmaerdian@gmail.com>
+
+2012-07-06  Lukas Märdian  <lukasmaerdian@gmail.com>
+
+	fsoaudiod: gsmvoice_alsa_forwarder: link against libasound
+	 * We need to link agains this library, to avoid errors like this one:
+	   /usr/lib/arm-linux-gnueabi/cornucopia/modules/fsoaudio/gsmvoice_alsa_forwarder.so: undefined symbol: snd_output_stdio_attach
+
+2012-06-20  Simon Busch  <morphis@gravedo.de>
+
+	Bump required vala version to 0.16.0
+
+2012-06-07  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsoaudiod: switch to fsodeviced scenario handling
+	The fsodeviced API is the one in use for switching scenario.
+	And the fsoaudiod one is incompatible...
+
+2012-06-06  Simon Busch  <morphis@gravedo.de>
+
+	Bump required libfso-glib version to 2012.06.06.01
+
+2012-06-05  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsoaudiod: alsaloop gsmvoice_alsa_forwarder plugin: fix high CPU usage before call.
+	Thanks a lot DocScrutinizer05 on #openmoko-cdevel FreeNode IRC Channel:
+	  Jun 04 23:26:42 <gnutoo>        there is a call incomming or outgoing
+	  Jun 04 23:26:48 <gnutoo>        fsogsmd knows it
+	  Jun 04 23:26:57 <gnutoo>        so it tells it on dbus
+	  Jun 04 23:27:06 <gnutoo>        fsoaudiod which is listenning on dbug get that message
+	  Jun 04 23:27:15 <gnutoo>        and activate the alsaloop based plugin
+	  Jun 04 23:27:17 <gnutoo>        however....
+	  [...]
+	  #Jun 04 23:27:17 *       backb0ne__ (~backb0ne@27.Red-88-26-71.staticIP.rima-tde.net) has joined #openmoko-cdevel
+	  Jun 04 23:27:28 <gnutoo>        there is a time between that activation and when the modem is ready
+	  Jun 04 23:27:39 <gnutoo>        because the modem is the one who is clock master
+	  Jun 04 23:27:53 <DocScrutinizer05>      ouch
+	  Jun 04 23:27:57 <gnutoo>        so then what happens in alsaloop is that poll() returns too fast
+	  Jun 04 23:28:18 <DocScrutinizer05>      instantly with -EAGAIN I guess
+	  Jun 04 23:28:48 <gnutoo>        like the asoc poll() is broken for our case where the clocks master are from the modem
+	  Jun 04 23:29:05 <DocScrutinizer05>      in which case alsaloop SHOULD call a usleep(1000)
+	  Jun 04 23:29:35 <gnutoo>        that poll() returning too fast (30us) instead of 30000000us or something big like that causes the 100% CPU usage
+	  Jun 04 23:29:51 <gnutoo>        and then the 100% CPU usage causes other problem once the modem is started
+	  Jun 04 23:29:55 <gnutoo>        because it doesn't sotp
+	  Jun 04 23:29:57 <gnutoo>        *stop
+	  [...]
+	  Jun 04 23:30:00 <DocScrutinizer05>      yep, that's why alsaloop needs a usleep()
+	  [...]
+	  Jun 04 23:33:21 <DocScrutinizer05>      not if you put it at the right location
+	  Jun 04 23:33:31 <DocScrutinizer05>      immediately *before* the poll()
+
+2012-06-05  Simon Busch  <morphis@gravedo.de>
+
+	Use --debug instead of -g as Vala debug option and get back -D DEBUG
+	Using -g gives use some strange behaviour of automake. -g will end up in DIST_COMMON
+	variable where it should never be ...
+
+2012-06-04  Simon Busch  <morphis@gravedo.de>
+
+	fsoaudiod: lib: add missing fsoaudio-2.0.vapi and fsoaudio.h files to EXTRA_DIST
+
+	Remove "-D DEBUG" from debug options as it gives us some trouble with automake/autoconf
+	Some how "-D DEBUG" ends up in the automake variable DIST_COMMON which has a list of files
+	should be included in distribution archive. make distcheck will fail this way. We need to
+	figure out why it ends up there ...
+
+	Update all Makefile.am files to use DEBUG_VALAFLAGS/DEBUG_CFLAGS
+
+	Update all Makefile.decl files to ship DEBUG_VALAFLAGS/DEBUG_CFLAGS
+
+	We're using CFLAGS instead of CPPFLAGS everywhere
+
+2012-05-30  Simon Busch  <morphis@gravedo.de>
+
+	Bump required libfso-glib version to 2012.05.30.1
+
+2012-05-29  Simon Busch  <morphis@gravedo.de>
+
+	Merge branch 'morphis/remove-palm-support'
+
+2012-05-25  Simon Busch  <morphis@gravedo.de>
+
+	Enable various configuration options of our components for distcheck
+
+	fsoaudiod/fsodeviced: remove some more palmpre device specific things
+
+	fsoaudiod: drop palm pre device suppport
+
+2012-05-24  Simon Busch  <morphis@gravedo.de>
+
+	Bump version of all components to 0.12.0 for next development cycle
+
+	Bump required version of libfso-glib to 2012.05.24.1
+
+2012-05-22  Simon Busch  <morphis@gravedo.de>
+
+	Set log level of all configurations for each component to INFO rather than DEBUG
+	We're trying to ship all time production ready software which should only log in INFO
+	level and not in debug mode.
+
+2012-05-09  Simon Busch  <morphis@gravedo.de>
+
+	Bump required FSO version of all components to 0.11.0
+
+2012-05-02  Simon Busch  <morphis@gravedo.de>
+
+	Fix checking for the wrong *_release variable when enabling vala source compilation
+
+2012-04-26  Simon Busch  <morphis@gravedo.de>
+
+	fsoaudiod: lib: don't install internal library to public libdir
+
+2012-04-25  Simon Busch  <morphis@gravedo.de>
+
+	Add --disable-datafiles configure option just for make distcheck target
+
+2012-04-23  Simon Busch  <morphis@gravedo.de>
+
+	fsoaudiod: gsmvoice_alsa_forwarder: include all sources for distribution
+
+	fsoaudiod: distribute all internal vapi files too
+
+	fsotdld/fsodeviced/fsosystemd/fsoaudiod: include systemd services file in our release tarball
+
+2012-04-20  Simon Busch  <morphis@gravedo.de>
+
+	Make dbus system directories for all components configurable in the configure script
+
+2012-04-18  Simon Busch  <morphis@gravedo.de>
+
+	Bump version of all components for next development cycle
+
+	Release version 0.10.0
+
+	Bump required version of libfso-glib to 2012.04.18.1
+
+2012-04-17  Simon Busch  <morphis@gravedo.de>
+
+	Remove unneeded stuff from all autogen.sh files
+
+2012-04-12  Simon Busch  <morphis@gravedo.de>
+
+	fsoaudiod: refactor automake infrastructure to use common vala automake bits
+
+	fsoaudiod: alsa_hooks: add missing alsa-wrapper source file
+
+2012-04-11  Simon Busch  <morphis@gravedo.de>
+
+	Update autotools bootstrap script for all components
+
+	fsoaudiod: restructure autoconf/automake configuration to be ready for a release
+
+2012-04-03  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsoaudiod: conf: asound.conf: fix recording when using the "default' sound card
+	Without that fix we have:
+	  root@om-gta04:~# arecord
+	  ALSA lib pcm_dmix.c:957:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+	  arecord: main:682: audio open error: Invalid argument
+
+2012-04-02  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsoaudiod: gsmvoice_alsa_cmtspeechdata: fix the fact that cmtspeech is activated twice.
+	The same fix was applied to the gta04 forwarder long time ago.
+
+	fsoaudiod: gsmvoice_alsa_cmtspeechdata: fix the absence of audio on nokia n900
+	Without that fix there is no audio during calls
+
+2012-04-01  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsoaudiod: gsmvoice_alsa_cmtspeechdata: change stderr/stdout printf in logger calls
+
+2012-03-23  Simon Busch  <morphis@gravedo.de>
+
+	fsoaudiod: prepare make infrastructure for release
+
+2012-03-14  Simon Busch  <morphis@gravedo.de>
+
+	Update ChangeLog of all components from git history
+
 2012-03-10  Simon Busch  <morphis@gravedo.de>
 
 	Bump version to 0.10.0 and for all FSO dependencies too

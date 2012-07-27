@@ -1,4 +1,246 @@
+2012-07-27  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: update README file
+
+	Bump required libfso-glib version of all components
+
+	fsodeviced: plugins: router_alsa: save only controls of the specified scenario
+	Until now we saved all available ALSA mixer controls ignoring that a scenario maybe just
+	contains a subset of this.
+
+	fsodeviced: plugins: router_alsa: check if scenario is available before trying to save it
+
+2012-07-24  Simon Busch  <morphis@gravedo.de>
+
+	Update .gitignore files for test related files
+
+2012-07-19  Simon Busch  <morphis@gravedo.de>
+
+	Update copyright notice for all source files
+
+2012-07-17  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: add different command line options for testing and informational purpose
+
+2012-07-16  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: herring_quirks: implement ALSA power control plugin
+
+	fsodeviced: n900_quirks: implement plugin with all quirks for the n900 device
+
+	fsodeviced: lib: a resource can specify it's default policy
+
+2012-07-15  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: lib: resource: respect specified exceptions by our base class
+
+	fsodeviced: herring_quirks: remove ALSA stream keeper
+	This will be replaced later with a ALSA related power control implementation.
+
+	fsodeviced: conf: herring: load alsa stream keeper and make sure the alsa router is initialized before
+
+2012-07-14  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsodeviced: fix the nokia N900 stereoout and headset scenarios.
+	Without that fix fsodeviced will refuses to start and fails with that message:
+	  fsodeviced: control.c:1680: snd_ctl_elem_list_get_id: Assertion `idx < obj->used' failed.
+
+	That is because the 'Media Volume' control is not a hardware control but a software one
+	  (created by /etc/asound.conf): it appears only after playing some sound.
+	And so when fsodeviced starts no sound has been played yet, so it's not there,
+	  and that makes fsodeviced fails to start.
+
+	Since the 'Media Volume' control was removed from the scenarios,
+	  I assumed that it would be at its maximum, and to avoid issues
+	  I had to ajust the volume of some control in the stereoout scenario.
+
+2012-07-12  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: herring_quirks: fix flaw with string formatting
+
+	fsodeviced: kernel26_rfkill: fix typo
+
+	fsodeviced: conf: herring: update configuration for latest changes
+
+	fsodeviced: herring_quirks: cleanup and make resume handler configurable
+
+	fsodeviced: herring_quirks: implement powercontrol for WiFi device
+
+2012-07-12  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsodeviced: fix the GTA04 stereoout and gsmhandset scenario.
+	Without that fix fsodeviced will refuses to start and fails with that message:
+	  fsodeviced: control.c:1680: snd_ctl_elem_list_get_id: Assertion `idx < obj->used' failed.
+
+	That is because the 'Media Volume' control is not a hardware control but a software one
+	  (created by /etc/asound.conf): it appears only after playing some sound.
+	And so when fsodeviced starts no sound has been played yet, so it's not there,
+	  and that makes fsodeviced fails to start.
+
+	Since the 'Media Volume' control was removed from the scenarios,
+	  I assumed that it would be at its maximum, and to avoid issues
+	  I had to ajust the volume of some control in the stereoout scenario.
+
+2012-07-09  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: kernel26_rfkill: add config option to ignore wifi rfkill
+
+	fsodeviced: conf: herring: enable smooth disabling of the display
+
+	fsodeviced: kernel26_rfkill: let our logger decide when to enable debug mode
+
+	fsodeviced: kernel26_rfkill: cleanup code / respect compiler warnings
+
+	fsodeviced: kernel26_rfkill: don't deal with network interface or bluetooth daemon
+
+	fsodeviced: herring_quirks: enable ALSA stream keeper only when config option is set
+
+2012-07-08  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsodeviced: complete the GTA04 stereoout scenario.
+
+2012-07-07  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsodeviced: complete the GTA04 gsmhandset scenario.
+
+2012-06-20  Simon Busch  <morphis@gravedo.de>
+
+	Bump required vala version to 0.16.0
+
+2012-06-08  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsodeviced: n900 scenarios fixing: fix main volume.
+
+	fsodeviced: n900 scenarios fixing: disable not-used Switch and Volume controls.
+
+2012-06-07  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsodeviced: fix n900 scenario
+	Alsa control number and names changed with the last kernel change
+	  and the scenarios weren't updated accordinly.
+
+	TODO:
+	 * The volume must be checked.
+	 * The non-used control should be disabled
+	 * No support yet for telephony: it's not usefull because the
+	   forwarder quality is not good enough
+	 * mic volume should be improved(mainly usefull for telephony and SIP)
+	 * A different scenario for headset and headphones must be made
+	   (for now only headphones scenario has been made),mainly usefull
+	   for telephony.
+
+2012-06-06  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: kernel26_rfkill: use AM_VALAFLAGS for compilation; fixes #687
+
+	Bump required libfso-glib version to 2012.06.06.01
+
+2012-06-06  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsodeviced: GTA04 alsa configurations: fix bad scenario syntax.
+	Without that fix we have:
+	  [WARN]  fsodeviced : Invalid line '9:'DAC2 Analog Playback Switch':2,1,1'. Ignoring.
+	  [WARN]  fsodeviced : Invalid line '9:'DAC2 Analog Playback Switch':2,1,1'. Ignoring.
+
+2012-06-05  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsodeviced: GTA04 ALSA configurations: move alsa-3.2 directory to alsa-3.4
+	Now the GTA04 has a 3.4 kernel disponible.
+	So we reflect that in the configurations,
+	however we keep a compatibility symlink for 3.2
+
+2012-06-05  Simon Busch  <morphis@gravedo.de>
+
+	Use --debug instead of -g as Vala debug option and get back -D DEBUG
+	Using -g gives use some strange behaviour of automake. -g will end up in DIST_COMMON
+	variable where it should never be ...
+
+2012-06-04  Simon Busch  <morphis@gravedo.de>
+
+	Remove "-D DEBUG" from debug options as it gives us some trouble with automake/autoconf
+	Some how "-D DEBUG" ends up in the automake variable DIST_COMMON which has a list of files
+	should be included in distribution archive. make distcheck will fail this way. We need to
+	figure out why it ends up there ...
+
+	Update all Makefile.am files to use DEBUG_VALAFLAGS/DEBUG_CFLAGS
+
+	Update all Makefile.decl files to ship DEBUG_VALAFLAGS/DEBUG_CFLAGS
+
+2012-05-31  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: kernel26_rfkill: $(AM_VALAFLAGS) should be used in kernel26_rfkill_la_VALAFLAGS
+
+2012-05-30  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: plugins: we need to pass WANT_FSO_RESOURCE to valac to get usage integration
+
+	Bump required libfso-glib version to 2012.05.30.1
+
+	fsodeviced: router_qdsp5: add missing playwav2.vapi file to distribution archive
+
+2012-05-29  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: lib: fsodevice-2.0.deps should be part of the distribution archive
+
+	Merge branch 'morphis/remove-palm-support'
+
+2012-05-25  Simon Busch  <morphis@gravedo.de>
+
+	Enable various configuration options of our components for distcheck
+
+	fsoaudiod/fsodeviced: remove some more palmpre device specific things
+
+	fsodeviced: drop support for the palmpre device
+
+2012-05-24  Simon Busch  <morphis@gravedo.de>
+
+	Bump version of all components to 0.12.0 for next development cycle
+
+	Bump required version of libfso-glib to 2012.05.24.1
+
+2012-05-22  Simon Busch  <morphis@gravedo.de>
+
+	Set log level of all configurations for each component to INFO rather than DEBUG
+	We're trying to ship all time production ready software which should only log in INFO
+	level and not in debug mode.
+
+2012-05-11  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: autoconf/automake fixes to get make distcheck working again
+
+2012-05-09  Simon Busch  <morphis@gravedo.de>
+
+	Bump required FSO version of all components to 0.11.0
+
+	fsodeviced: refactor automake configuration
+
+2012-05-08  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: include missing vapi files in generate distribution archives
+
+2012-05-02  Simon Busch  <morphis@gravedo.de>
+
+	Fix checking for the wrong *_release variable when enabling vala source compilation
+
+2012-04-25  Simon Busch  <morphis@gravedo.de>
+
+	Add --disable-datafiles configure option just for make distcheck target
+
+	fsodeviced: kernel26_rfkill: enable building by default
+
+2012-04-23  Simon Busch  <morphis@gravedo.de>
+
+	fsotdld/fsodeviced/fsosystemd/fsoaudiod: include systemd services file in our release tarball
+
+2012-04-20  Simon Busch  <morphis@gravedo.de>
+
+	Make dbus system directories for all components configurable in the configure script
+
 2012-04-18  Simon Busch  <morphis@gravedo.de>
+
+	Bump version of all components for next development cycle
+
+	Release version 0.10.0
 
 	Bump required version of libfso-glib to 2012.04.18.1
 

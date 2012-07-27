@@ -1,3 +1,133 @@
+2012-07-27  Simon Busch  <morphis@gravedo.de>
+
+	fsousaged/libfsoframework: adjust for recent changes to libfso-glib
+
+	Bump required libfso-glib version of all components
+
+	libfsoframework: tests: two more test cases for libfsosystem; but not executed automatically
+
+2012-07-26  Simon Busch  <morphis@gravedo.de>
+
+	libfsoframework: bump ABI for all libraries to 3.0.0
+	We are using the same ABI version for all our libraries for as this make things easier.
+	Maybe we will change that later.
+
+	libfsoframework: integrate sources + tests from libfsotest
+
+	libfsoframework: disable automatic execution of subsystem test cases
+
+	libfsoframework: tests: fsobasics: add missing configuration files
+
+2012-07-25  Simon Busch  <morphis@gravedo.de>
+
+	libfsoframework: integrate sources + tests from libgsm0710mux
+
+	libfsoframework: integrate sources + tests from libfsoresources
+
+	libfsoframework: add missing sources
+
+	libfsoframework: integrate sources + tests from libfsotransport
+
+	libfsoframework: make fsoframework compile again with linking against internal fsobasics library
+
+	libfsoframework: integrate sources + tests from libfsobasics
+
+	libfsoframework: integrate tests from libfsosystem
+
+	libfsoframework: move tests into own subdirectory
+
+	libfsoframework: integrate sources from libfsosystem
+
+	libfsoframework: move pkg-config file to subdirectory
+
+	libfsoframework: add all needed dependency detection parts to our configure script
+
+2012-07-24  Simon Busch  <morphis@gravedo.de>
+
+	Update .gitignore files for test related files
+
+2012-07-19  Simon Busch  <morphis@gravedo.de>
+
+	Update copyright notice for all source files
+
+2012-07-10  Simon Busch  <morphis@gravedo.de>
+
+	libfsoframework: tests: disable subsystem test with dbus objects for now
+
+	libfsoframework: tests: package test configuration as well
+
+	libfsoframework: subsystem: make the dbus bus to use configurable for a subsystem
+
+	libfsoframework: tests: enable tests again and make them at least compilable
+
+2012-07-06  Simon Busch  <morphis@gravedo.de>
+
+	libfsoframework: support deregistration of service objects
+
+2012-06-20  Simon Busch  <morphis@gravedo.de>
+
+	Bump required vala version to 0.16.0
+
+2012-06-05  Simon Busch  <morphis@gravedo.de>
+
+	Use --debug instead of -g as Vala debug option and get back -D DEBUG
+	Using -g gives use some strange behaviour of automake. -g will end up in DIST_COMMON
+	variable where it should never be ...
+
+2012-06-04  Simon Busch  <morphis@gravedo.de>
+
+	Remove "-D DEBUG" from debug options as it gives us some trouble with automake/autoconf
+	Some how "-D DEBUG" ends up in the automake variable DIST_COMMON which has a list of files
+	should be included in distribution archive. make distcheck will fail this way. We need to
+	figure out why it ends up there ...
+
+	Update all Makefile.am files to use DEBUG_VALAFLAGS/DEBUG_CFLAGS
+
+	Update all Makefile.decl files to ship DEBUG_VALAFLAGS/DEBUG_CFLAGS
+
+	We're using CFLAGS instead of CPPFLAGS everywhere
+
+2012-05-24  Simon Busch  <morphis@gravedo.de>
+
+	Bump version of all components to 0.12.0 for next development cycle
+
+2012-05-22  Simon Busch  <morphis@gravedo.de>
+
+	Set log level of all configurations for each component to INFO rather than DEBUG
+	We're trying to ship all time production ready software which should only log in INFO
+	level and not in debug mode.
+
+2012-05-11  Simon Busch  <morphis@gravedo.de>
+
+	Use ustar format for the distribution tar archive in all components of the stack
+	If we're not using ustar format for the tar archives we're getting problems when trying to
+	package files with a path longer than 99 characters which isn't supported by the default
+	tar format but by the ustart one.
+
+2012-05-09  Simon Busch  <morphis@gravedo.de>
+
+	Bump required FSO version of all components to 0.11.0
+
+2012-05-08  Simon Busch  <morphis@gravedo.de>
+
+	libfsoframework: remove libnl-2.0 from fsoframework-2.0.deps file
+
+	libfsoframework: include missing vapi files in generate distribution archives
+
+2012-05-03  Simon Busch  <morphis@gravedo.de>
+
+	libfsoframework: make library ABI version configurable
+
+2012-05-02  Simon Busch  <morphis@gravedo.de>
+
+	Fix checking for the wrong *_release variable when enabling vala source compilation
+
+2012-04-18  Simon Busch  <morphis@gravedo.de>
+
+	Bump version of all components for next development cycle
+
+	Release version 0.10.0
+
 2012-04-17  Simon Busch  <morphis@gravedo.de>
 
 	Remove unneeded stuff from all autogen.sh files
