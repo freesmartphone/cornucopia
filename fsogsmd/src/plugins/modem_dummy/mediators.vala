@@ -95,7 +95,7 @@ public class DummyAtDeviceGetInformation : DeviceGetInformation
     {
         info = new GLib.HashTable<string,Variant>( str_hash, str_equal );
 
-        if ( theModem.status() == FsoGsm.Modem.Status.ALIVE_NO_SIM )
+        if ( modem.status() == FsoGsm.Modem.Status.ALIVE_NO_SIM )
         {
             info.insert( "present", false );
             return;
@@ -172,7 +172,7 @@ public class DummyAtDeviceSetFunctionality : DeviceSetFunctionality
 
         if ( modem_pin != pin )
         {
-            var simiface = theModem.theDevice<FreeSmartphone.GSM.SIM>();
+            var simiface = modem.theDevice<FreeSmartphone.GSM.SIM>();
             modem.advanceSimAuthState( FreeSmartphone.GSM.SIMAuthStatus.PIN_REQUIRED );
         }
     }

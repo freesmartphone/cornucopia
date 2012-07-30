@@ -66,7 +66,7 @@ public class FsoGsm.GenericWatchDog : FsoGsm.WatchDog, FsoFramework.AbstractObje
         switch ( status )
         {
             case Modem.Status.ALIVE_SIM_LOCKED:
-                if ( theModem.simAuthStatus() == FreeSmartphone.GSM.SIMAuthStatus.PIN_REQUIRED &&
+                if ( modem.simAuthStatus() == FreeSmartphone.GSM.SIMAuthStatus.PIN_REQUIRED &&
                      data.simPin != "" &&
                      !unlockFailed )
                 {

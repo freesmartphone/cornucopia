@@ -104,7 +104,7 @@ public class AtSimGetInformation : SimGetInformation
         info = new GLib.HashTable<string,Variant>( str_hash, str_equal );
         Variant value;
 
-        if ( theModem.status() == FsoGsm.Modem.Status.ALIVE_NO_SIM )
+        if ( modem.status() == FsoGsm.Modem.Status.ALIVE_NO_SIM )
         {
             info.insert( "present", false );
             return;
@@ -112,8 +112,8 @@ public class AtSimGetInformation : SimGetInformation
 
         info.insert( "present", true );
 
-        var cimi = theModem.createAtCommand<PlusCGMR>( "+CIMI" );
-        var response = yield theModem.processAtCommandAsync( cimi, cimi.execute() );
+        var cimi = modem.createAtCommand<PlusCGMR>( "+CIMI" );
+        var response = yield modem.processAtCommandAsync( cimi, cimi.execute() );
         if ( cimi.validate( response ) == Constants.AtResponse.VALID )
         {
             value = (string) cimi.value;

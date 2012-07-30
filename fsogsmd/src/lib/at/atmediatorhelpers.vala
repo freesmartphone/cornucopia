@@ -196,9 +196,9 @@ public async void gatherSimStatusAndUpdate( FsoGsm.Modem modem ) throws FreeSmar
         modem.logger.info( @"SIM Auth status $(cmd.status)" );
 
         // check whether we need to advance the modem state
-        if ( cmd.status != theModem.simAuthStatus() )
+        if ( cmd.status != modem.simAuthStatus() )
         {
-            theModem.advanceSimAuthState( cmd.status );
+            modem.advanceSimAuthState( cmd.status );
 
             // advance global modem state
             var modemStatus = modem.status();
