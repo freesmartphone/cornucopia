@@ -27,7 +27,7 @@ public class FsoGsm.DevicePowerSupplyService : FreeSmartphone.Device.PowerSupply
 
     public async FreeSmartphone.Device.PowerStatus get_power_status() throws DBusError, IOError, FreeSmartphone.Error
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DeviceGetPowerStatus>();
         try
         {
@@ -42,7 +42,7 @@ public class FsoGsm.DevicePowerSupplyService : FreeSmartphone.Device.PowerSupply
 
     public async int get_capacity() throws DBusError, IOError, FreeSmartphone.Error
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DeviceGetPowerStatus>();
         try
         {
@@ -54,7 +54,6 @@ public class FsoGsm.DevicePowerSupplyService : FreeSmartphone.Device.PowerSupply
             return -1;
         }
     }
-
 }
 
 // vim:ts=4:sw=4:expandtab

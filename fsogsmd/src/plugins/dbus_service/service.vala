@@ -24,13 +24,29 @@ public class FsoGsm.Service : FsoFramework.AbstractObject
 {
     protected FsoGsm.Modem modem;
 
-    protected void checkAvailability( FsoGsm.Modem.Status required = FsoGsm.Modem.Status.ALIVE_NO_SIM ) throws FreeSmartphone.Error
+    protected void requireModemStatus( FsoGsm.Modem.Status required ) throws FreeSmartphone.Error
     {
         if ( modem == null )
             throw new FreeSmartphone.Error.UNAVAILABLE( "There is no underlying hardware present... stop talking to a vapourware modem!" );
 
         if ( ( modem.status() < required ) || ( modem.status() >= FsoGsm.Modem.Status.SUSPENDING ) )
             throw new FreeSmartphone.Error.UNAVAILABLE( @"This function is not available while modem is in state $(modem.status())" );
+    }
+
+    protected void requireSimStatus( FsoGsm.Modem.SimStatus required ) throws FreeSmartphone.Error
+    {
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
+
+        if ( modem.simStatus() >= required )
+            throw new FreeSmartphone.Error.UNAVAILABLE( @"This functon is not available while modem is in SIM status $(modem.simStatus())" );
+    }
+
+    protected void requireNetworkStatus( FsoGsm.Modem.NetworkStatus required ) throws FreeSmartphone.Error
+    {
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
+
+        if ( modem.networkStatus() >= required )
+            throw new FreeSmartphone.Error.UNAVAILABLE( @"This functon is not available while modem is in network status $(modem.networkStatus())" );
     }
 
     public void assignModem( FsoGsm.Modem modem )

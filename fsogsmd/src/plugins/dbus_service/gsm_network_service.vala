@@ -28,28 +28,28 @@ public class FsoGsm.GsmNetworkService : FreeSmartphone.GSM.Network, Service
     public async void disable_call_forwarding( string reason, string class_ )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
         throw new FreeSmartphone.Error.INTERNAL_ERROR( "Not yet implemented" );
     }
 
     public async void enable_call_forwarding( string reason, string class_, string number, int timeout )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
         throw new FreeSmartphone.Error.INTERNAL_ERROR( "Not yet implemented" );
     }
 
     public async GLib.HashTable<string,GLib.Variant> get_call_forwarding( string reason )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
         throw new FreeSmartphone.Error.INTERNAL_ERROR( "Not yet implemented" );
     }
 
     public async FreeSmartphone.GSM.CallingIdentificationStatus get_calling_identification()
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
         var m = modem.createMediator<FsoGsm.NetworkGetCallingId>();
         yield m.run();
         return m.status;
@@ -58,7 +58,7 @@ public class FsoGsm.GsmNetworkService : FreeSmartphone.GSM.Network, Service
     public async void get_time_report( out int time, out int timestamp, out int zone, out int zonestamp )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var ltr = modem.data().networkTimeReport;
         time = ltr.time;
         timestamp = ltr.timestamp;
@@ -68,7 +68,7 @@ public class FsoGsm.GsmNetworkService : FreeSmartphone.GSM.Network, Service
 
     public async int get_signal_strength() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
         var m = modem.createMediator<FsoGsm.NetworkGetSignalStrength>();
         yield m.run();
         return m.signal;
@@ -77,7 +77,7 @@ public class FsoGsm.GsmNetworkService : FreeSmartphone.GSM.Network, Service
     public async GLib.HashTable<string,GLib.Variant> get_status()
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.NetworkGetStatus>();
         yield m.run();
         return m.status;
@@ -86,7 +86,7 @@ public class FsoGsm.GsmNetworkService : FreeSmartphone.GSM.Network, Service
     public async FreeSmartphone.GSM.NetworkProvider[] list_providers()
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.NetworkListProviders>();
         yield m.run();
         return m.providers;
@@ -94,7 +94,7 @@ public class FsoGsm.GsmNetworkService : FreeSmartphone.GSM.Network, Service
 
     public async void register_() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.NetworkRegister>();
         yield m.run();
     }
@@ -102,7 +102,7 @@ public class FsoGsm.GsmNetworkService : FreeSmartphone.GSM.Network, Service
     public async void register_with_provider( string operator_code )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.NetworkRegisterWithProvider>();
         yield m.run( operator_code );
     }
@@ -110,7 +110,7 @@ public class FsoGsm.GsmNetworkService : FreeSmartphone.GSM.Network, Service
     public async void send_ussd_request( string request )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
         var m = modem.createMediator<FsoGsm.NetworkSendUssdRequest>();
         yield m.run( request );
     }
@@ -118,14 +118,14 @@ public class FsoGsm.GsmNetworkService : FreeSmartphone.GSM.Network, Service
     public async void set_calling_identification( FreeSmartphone.GSM.CallingIdentificationStatus status )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
         var m = modem.createMediator<FsoGsm.NetworkSetCallingId>();
         yield m.run( status );
     }
 
     public async void unregister() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
         var m = modem.createMediator<FsoGsm.NetworkUnregister>();
         yield m.run();
     }

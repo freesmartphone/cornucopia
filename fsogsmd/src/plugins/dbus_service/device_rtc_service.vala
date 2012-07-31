@@ -27,7 +27,7 @@ public class FsoGsm.DeviceRtcService : FreeSmartphone.Device.RealtimeClock, Serv
 
     public async int get_current_time() throws FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DeviceGetCurrentTime>();
         try
         {
@@ -42,7 +42,7 @@ public class FsoGsm.DeviceRtcService : FreeSmartphone.Device.RealtimeClock, Serv
 
     public async void set_current_time( int seconds_since_epoch ) throws FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DeviceSetCurrentTime>();
         try
         {
@@ -56,7 +56,7 @@ public class FsoGsm.DeviceRtcService : FreeSmartphone.Device.RealtimeClock, Serv
 
     public async int get_wakeup_time() throws FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DeviceGetAlarmTime>();
         try
         {
@@ -71,7 +71,7 @@ public class FsoGsm.DeviceRtcService : FreeSmartphone.Device.RealtimeClock, Serv
 
     public async void set_wakeup_time( int seconds_since_epoch ) throws FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DeviceSetAlarmTime>();
         try
         {

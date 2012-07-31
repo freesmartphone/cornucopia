@@ -27,13 +27,13 @@ public class FsoGsm.GsmHzService : FreeSmartphone.GSM.HZ, Service
 
     public async string get_home_zone_status() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
         throw new FreeSmartphone.Error.INTERNAL_ERROR( "Not yet implemented" );
     }
 
     public async string[] get_known_home_zones() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_SIM_READY );
+        requireSimStatus( FsoGsm.Modem.SimStatus.READY );
         throw new FreeSmartphone.Error.INTERNAL_ERROR( "Not yet implemented" );
     }
 }

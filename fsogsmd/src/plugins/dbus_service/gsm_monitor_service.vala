@@ -28,7 +28,7 @@ public class FsoGsm.GsmMonitorService : FreeSmartphone.GSM.Monitor, Service
     public async GLib.HashTable<string,GLib.Variant> get_serving_cell_information()
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.MonitorGetServingCellInformation>();
         yield m.run();
         return m.cell;
@@ -37,7 +37,7 @@ public class FsoGsm.GsmMonitorService : FreeSmartphone.GSM.Monitor, Service
     public async GLib.HashTable<string,GLib.Variant>[] get_neighbour_cell_information()
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.MonitorGetNeighbourCellInformation>();
         yield m.run();
         return m.cells;

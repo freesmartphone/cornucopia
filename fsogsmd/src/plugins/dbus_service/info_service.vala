@@ -27,7 +27,7 @@ public class FsoGsm.InfoService : FreeSmartphone.Info, Service
 
     public async GLib.HashTable<string,GLib.Variant> get_info() throws FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DeviceGetInformation>();
         try
         {

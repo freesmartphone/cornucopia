@@ -28,7 +28,7 @@ public class FsoGsm.GsmDebugService : FreeSmartphone.GSM.Debug, Service
     public async string debug_command( string command, string channel )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DebugCommand>();
         yield m.run( command, channel );
         return m.response;
@@ -37,7 +37,7 @@ public class FsoGsm.GsmDebugService : FreeSmartphone.GSM.Debug, Service
     public async void debug_inject_response( string response, string channel )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DebugInjectResponse>();
         yield m.run( response, channel );
     }
@@ -45,7 +45,7 @@ public class FsoGsm.GsmDebugService : FreeSmartphone.GSM.Debug, Service
     public async void debug_ping()
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DebugPing>();
         yield m.run();
     }

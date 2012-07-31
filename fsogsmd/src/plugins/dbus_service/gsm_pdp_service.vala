@@ -33,28 +33,32 @@ public class FsoGsm.GsmPdpService : FreeSmartphone.GSM.PDP, Service
 
     public async void activate_context() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
+
         var m = modem.createMediator<FsoGsm.PdpActivateContext>();
         yield m.run();
     }
 
     public async void deactivate_context() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
+
         var m = modem.createMediator<FsoGsm.PdpDeactivateContext>();
         yield m.run();
     }
 
     public async void get_context_status( out FreeSmartphone.GSM.ContextStatus status, out GLib.HashTable<string,GLib.Variant> properties ) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
+
         status = modem.pdphandler.status;
         properties = modem.pdphandler.properties;
     }
 
     public async void get_credentials( out string apn, out string username, out string password ) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
+
         var m = modem.createMediator<FsoGsm.PdpGetCredentials>();
         yield m.run();
         apn = m.apn;
@@ -64,13 +68,15 @@ public class FsoGsm.GsmPdpService : FreeSmartphone.GSM.PDP, Service
 
     public async void internal_status_update( string status, GLib.HashTable<string,GLib.Variant> properties ) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
+
         yield modem.pdphandler.statusUpdate( status, properties );
     }
 
     public async void set_credentials( string apn, string username, string password ) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
+
         var m = modem.createMediator<FsoGsm.PdpSetCredentials>();
         yield m.run( apn, username, password );
     }

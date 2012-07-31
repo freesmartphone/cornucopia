@@ -28,7 +28,8 @@ public class FsoGsm.GsmSmsService : FreeSmartphone.GSM.SMS, Service
     public async uint get_size_for_text_message( string contents )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
+
         var m = modem.createMediator<FsoGsm.SmsGetSizeForTextMessage>();
         yield m.run( contents );
         return m.size;
@@ -37,7 +38,8 @@ public class FsoGsm.GsmSmsService : FreeSmartphone.GSM.SMS, Service
     public async FreeSmartphone.GSM.SIMMessage[] retrieve_text_messages()
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_SIM_READY );
+        requireSimStatus( FsoGsm.Modem.SimStatus.READY );
+
         var m = modem.createMediator<FsoGsm.SmsRetrieveTextMessages>();
         yield m.run();
         return m.messagebook;
@@ -47,7 +49,8 @@ public class FsoGsm.GsmSmsService : FreeSmartphone.GSM.SMS, Service
         out int transaction_index, out string timestamp )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
+
         var m = modem.createMediator<FsoGsm.SmsSendTextMessage>();
         yield m.run( recipient_number, contents, want_report );
         transaction_index = m.transaction_index;

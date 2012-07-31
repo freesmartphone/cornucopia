@@ -32,7 +32,7 @@ public class FsoGsm.GsmDeviceService : FreeSmartphone.GSM.Device, Service
     public async void get_functionality( out string level, out bool autoregister, out string pin )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DeviceGetFunctionality>();
         yield m.run();
         level = m.level;
@@ -43,7 +43,7 @@ public class FsoGsm.GsmDeviceService : FreeSmartphone.GSM.Device, Service
     public async GLib.HashTable<string,GLib.Variant> get_features()
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DeviceGetFeatures>();
         yield m.run();
         return m.features;
@@ -52,7 +52,7 @@ public class FsoGsm.GsmDeviceService : FreeSmartphone.GSM.Device, Service
     public async bool get_microphone_muted()
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DeviceGetMicrophoneMuted>();
         yield m.run();
         return m.muted;
@@ -61,7 +61,7 @@ public class FsoGsm.GsmDeviceService : FreeSmartphone.GSM.Device, Service
     public async int get_speaker_volume()
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DeviceGetSpeakerVolume>();
         yield m.run();
         return m.volume;
@@ -70,14 +70,14 @@ public class FsoGsm.GsmDeviceService : FreeSmartphone.GSM.Device, Service
     public async void set_functionality( string level, bool autoregister, string pin )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         yield modem.setFunctionality( level, autoregister, pin );
     }
 
     public async void set_microphone_muted( bool muted )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DeviceSetMicrophoneMuted>();
         yield m.run( muted );
     }
@@ -85,7 +85,7 @@ public class FsoGsm.GsmDeviceService : FreeSmartphone.GSM.Device, Service
     public async void set_speaker_volume( int volume )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireModemStatus( FsoGsm.Modem.Status.ALIVE );
         var m = modem.createMediator<FsoGsm.DeviceSetSpeakerVolume>();
         yield m.run( volume );
     }

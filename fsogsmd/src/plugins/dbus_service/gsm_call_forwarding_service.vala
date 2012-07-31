@@ -69,7 +69,7 @@ public class FsoGsm.GsmCallForwardingService : FreeSmartphone.GSM.CallForwarding
     {
         var real_type = CallForwardingType.ALL;
 
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
 
         switch ( type )
         {
@@ -89,7 +89,7 @@ public class FsoGsm.GsmCallForwardingService : FreeSmartphone.GSM.CallForwarding
 
     public async void enable( string rule, string number, int timeout ) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
 
         var cls = class_from_rule_name( rule );
         var reason = reason_from_rule_name( rule );
@@ -107,7 +107,7 @@ public class FsoGsm.GsmCallForwardingService : FreeSmartphone.GSM.CallForwarding
 
     public async void disable( string rule ) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
 
         var cls = class_from_rule_name( rule );
         var reason = reason_from_rule_name( rule );

@@ -28,7 +28,7 @@ public class FsoGsm.GsmCbService : FreeSmartphone.GSM.CB, Service
     public async string get_cell_broadcast_subscriptions()
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
         var m = modem.createMediator<FsoGsm.CbGetCellBroadcastSubscriptions>();
         yield m.run();
         return m.subscriptions;
@@ -37,7 +37,7 @@ public class FsoGsm.GsmCbService : FreeSmartphone.GSM.CB, Service
     public async void set_cell_broadcast_subscriptions( string subscriptions )
         throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+        requireNetworkStatus( FsoGsm.Modem.NetworkStatus.REGISTERED );
         var m = modem.createMediator<FsoGsm.CbSetCellBroadcastSubscriptions>();
         yield m.run( subscriptions );
     }

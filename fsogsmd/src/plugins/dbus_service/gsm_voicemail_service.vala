@@ -27,7 +27,8 @@ public class FsoGsm.GsmVoiceMailService : FreeSmartphone.GSM.VoiceMail, Service
 
     public async string get_voice_mailbox_number() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireSimStatus( FsoGsm.Modem.SimStatus.READY );
+
         var m = modem.createMediator<FsoGsm.VoiceMailboxGetNumber>();
         yield m.run();
         return m.number;
@@ -35,14 +36,16 @@ public class FsoGsm.GsmVoiceMailService : FreeSmartphone.GSM.VoiceMail, Service
 
     public async void set_voice_mailbox_number( string number ) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireSimStatus( FsoGsm.Modem.SimStatus.READY );
+
         var m = modem.createMediator<FsoGsm.VoiceMailboxSetNumber>();
         yield m.run( number );
     }
 
     public async string[] get_stored_voice_mails() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error, DBusError, IOError
     {
-        checkAvailability();
+        requireSimStatus( FsoGsm.Modem.SimStatus.READY );
+
         var m = modem.createMediator<FsoGsm.VoiceMailboxGetRecordings>();
         yield m.run();
         return m.stored_mails;
