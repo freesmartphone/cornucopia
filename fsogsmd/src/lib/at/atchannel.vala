@@ -38,22 +38,18 @@ public class FsoGsm.AtChannel : FsoGsm.AtCommandQueue, FsoGsm.Channel
         {
             modem.registerChannel( name, this );
             modem.signalStatusChanged.connect( onModemStatusChanged );
+            modem.signalSimStatusChanged.connect( onModemSimStatusChanged );
+            modem.signalNetworkStatusChanged.connect( onModemNetworkStatusChanged );
             this.isMainChannel = ( name == "main" );
         }
     }
 
-    public void onModemStatusChanged( FsoGsm.Modem modem, FsoGsm.Modem.Status status )
+    public void onModemStatusChanged( FsoGsm.Modem.Status status )
     {
         switch ( status )
         {
             case Modem.Status.INITIALIZING:
                 initialize();
-                break;
-            case Modem.Status.ALIVE_SIM_READY:
-                simIsReady();
-                break;
-            case Modem.Status.ALIVE_REGISTERED:
-                simHasRegistered();
                 break;
             case Modem.Status.CLOSING:
                 shutdown();
@@ -61,6 +57,18 @@ public class FsoGsm.AtChannel : FsoGsm.AtCommandQueue, FsoGsm.Channel
             default:
                 break;
         }
+    }
+
+    public void onModemSimStatusChanged( FsoGsm.Modem.SimStatus status )
+    {
+        if ( status == Modem.SimStatus.READY )
+            simIsReady();
+    }
+
+    public void onModemNetworkStatusChanged( FsoGsm.Modem.NetworkStatus status )
+    {
+        if ( status == Modem.NetworkStatus.REGISTERED )
+            simHasRegistered();
     }
 
     private async void initialize()
@@ -83,7 +91,7 @@ public class FsoGsm.AtChannel : FsoGsm.AtCommandQueue, FsoGsm.Channel
                 return;
             }
             // check wether the main channel successfully initialized the modem
-            else if ( modem.status() == Modem.Status.ALIVE_SIM_READY )
+            else if ( modem.simStatus() == Modem.SimStatus.READY )
             {
                 isMainInitialized = true;
                 break;
@@ -121,6 +129,10 @@ public class FsoGsm.AtChannel : FsoGsm.AtCommandQueue, FsoGsm.Channel
         }
 
         this.isInitialized = true;
+
+        // Main channel is now ready for use so put it into ALIVE status
+        if ( isInitialized && this.isMainChannel )
+            modem.advanceToState( FsoGsm.Modem.Status.ALIVE );
     }
 
     private async void shutdown()

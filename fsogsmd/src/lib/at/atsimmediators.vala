@@ -104,7 +104,7 @@ public class AtSimGetInformation : SimGetInformation
         info = new GLib.HashTable<string,Variant>( str_hash, str_equal );
         Variant value;
 
-        if ( modem.status() == FsoGsm.Modem.Status.ALIVE_NO_SIM )
+        if ( modem.simStatus() == FsoGsm.Modem.SimStatus.NO_SIM )
         {
             info.insert( "present", false );
             return;

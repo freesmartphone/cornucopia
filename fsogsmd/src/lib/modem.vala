@@ -167,16 +167,8 @@ public abstract interface FsoGsm.Modem : FsoFramework.AbstractObject
         CLOSED,
         /** Transport open, initialization commands are being sent **/
         INITIALIZING,
-        /** Initialized, SIM status unknown **/
-        ALIVE_NO_SIM,
-        /** Initialized, SIM is locked **/
-        ALIVE_SIM_LOCKED,
-        /** Initialized, SIM is unlocked **/
-        ALIVE_SIM_UNLOCKED,
-        /** Initialized, SIM is ready for access **/
-        ALIVE_SIM_READY,
-        /** Initialized, SIM is booked into the network and reachable **/
-        ALIVE_REGISTERED,
+        /** Initialized, channel is now initialized **/
+        ALIVE,
         /** Suspend commands are being sent **/
         SUSPENDING,
         /** Suspended **/
@@ -185,6 +177,20 @@ public abstract interface FsoGsm.Modem : FsoFramework.AbstractObject
         RESUMING,
         /** Shutdown commands are being sent **/
         CLOSING,
+    }
+
+    public enum SimStatus
+    {
+        /** For error cases **/
+        UNKNOWN,
+        /** SIM card is not available **/
+        NO_SIM,
+        /** SIM is locked **/
+        LOCKED,
+        /** SIM is unlocked **/
+        UNLOCKED,
+        /** SIM ready for access **/
+        READY
     }
 
     /**
@@ -221,9 +227,12 @@ public abstract interface FsoGsm.Modem : FsoFramework.AbstractObject
     public abstract void registerChannel( string name, FsoGsm.Channel channel );
     public abstract void advanceToState( Modem.Status status, bool force = false );
     public abstract void advanceNetworkState( Modem.NetworkStatus status );
+    public abstract void advanceSimState( Modem.SimStatus status );
     public abstract void advanceSimAuthState( FreeSmartphone.GSM.SIMAuthStatus status );
     public abstract AtCommandSequence atCommandSequence( string channel, string purpose );
     public signal void signalStatusChanged( Modem.Status status );
+    public signal void signalNetworkStatusChanged( Modem.NetworkStatus status );
+    public signal void signalSimStatusChanged( Modem.SimStatus status );
 
     // Mediator API
     public abstract T createMediator<T>() throws FreeSmartphone.Error;
@@ -256,6 +265,7 @@ public abstract interface FsoGsm.Modem : FsoFramework.AbstractObject
 
     // Misc. Accessors
     public abstract Modem.Status status();
+    public abstract Modem.SimStatus simStatus();
     public abstract Modem.NetworkStatus networkStatus();
     public abstract FreeSmartphone.GSM.DeviceStatus externalStatus();
     public abstract FreeSmartphone.GSM.SIMAuthStatus simAuthStatus();
@@ -273,6 +283,7 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
     public FsoFramework.TransportSpec data_transport_spec { get; private set; }
 
     protected FsoGsm.Modem.Status modem_status;
+    protected FsoGsm.Modem.SimStatus modem_sim_status;
     protected FsoGsm.Modem.NetworkStatus modem_network_status;
     protected FreeSmartphone.GSM.SIMAuthStatus sim_auth_status;
     protected FsoGsm.Modem.Data modem_data;
@@ -519,15 +530,6 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
         }
 
         Idle.add( () => { checkChannelsForHangup(); return false; } );
-    }
-
-    private bool isAliveStatus( FsoGsm.Modem.Status status )
-    {
-        return status == Status.ALIVE_NO_SIM ||
-               status == Status.ALIVE_SIM_LOCKED ||
-               status == Status.ALIVE_SIM_UNLOCKED ||
-               status == Status.ALIVE_SIM_READY ||
-               status == Status.ALIVE_REGISTERED;
     }
 
     //
@@ -796,6 +798,11 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
         return modem_status;
     }
 
+    public Modem.SimStatus simStatus()
+    {
+        return modem_sim_status;
+    }
+
     public Modem.NetworkStatus networkStatus()
     {
         return modem_network_status;
@@ -973,17 +980,38 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
             return;
         }
 
-        // kill timeout, if next one is closing
+        // kill timeout, if next one is closing (see advanceSimState)
         if ( next == Modem.Status.CLOSING )
         {
             if ( modemSimTimeoutWatch > 0 )
-            {
                 GLib.Source.remove( modemSimTimeoutWatch );
-            }
+        }
+
+        modem_status = next;
+
+        // update for internal listeners
+        signalStatusChanged( modem_status );
+
+        // update for external listeners
+        if ( parent != null )
+        {
+            var obj = theDevice<FreeSmartphone.GSM.Device>();
+            obj.device_status( externalStatus() );
+        }
+
+        logger.info( @"Modem Status changed to $modem_status" );
+    }
+
+    public void advanceSimState( Modem.SimStatus next )
+    {
+        if ( next == modem_sim_status )
+        {
+            logger.debug( @"Already in status $next, not advancing modem SIM status" );
+            return;
         }
 
         // if there is no SIM readyness signal, assume it's ready NOW
-        if ( next == Modem.Status.ALIVE_SIM_UNLOCKED )
+        if ( next == Modem.SimStatus.UNLOCKED )
         {
             // if there is a SIM READY signal, launch a fallback timer, since these kinds of signals
             // are time criticle, i.e. there's a certain timeframe after
@@ -994,44 +1022,41 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
             {
                 modemSimTimeoutWatch = GLib.Timeout.add_seconds( modem_data.simReadyTimeout, () => {
                     modemSimTimeoutWatch = 0;
-                    advanceToState( Modem.Status.ALIVE_SIM_READY );
+                    advanceSimState( Modem.SimStatus.READY );
                     return false;
                 } );
             }
             else
             {
-                next = Modem.Status.ALIVE_SIM_READY;
+                next = Modem.SimStatus.READY;
             }
         }
 
-        bool should_update_external = !( isAlive() && isAliveStatus( next ) );
-        modem_status = next;
+        logger.debug( @"Advancing modem SIM status to $next" );
+        modem_sim_status = next;
+        signalSimStatusChanged( modem_sim_status );
+    }
 
-        // update for internal listeners
-        signalStatusChanged( modem_status );
-        // update for external listeners
-        if ( parent != null && should_update_external )
+    public void advanceNetworkState( Modem.NetworkStatus next )
+    {
+        if ( next == modem_network_status )
         {
-            var obj = theDevice<FreeSmartphone.GSM.Device>();
-            obj.device_status( externalStatus() );
+            logger.debug( @"Already in status $next, not advancing modem network status" );
+            return;
         }
 
-        logger.info( @"Modem Status changed to $modem_status" );
+        assert( logger.debug( @"Advancing network state to $next" ) );
+        modem_network_status = next;
+        signalNetworkStatusChanged( modem_network_status );
     }
 
-    public void advanceNetworkState( Modem.NetworkStatus state )
+    public void advanceSimAuthState( FreeSmartphone.GSM.SIMAuthStatus next )
     {
-        assert( logger.debug( @"Advancing network state to $state" ) );
-        modem_network_status = state;
-    }
-
-    public void advanceSimAuthState( FreeSmartphone.GSM.SIMAuthStatus status )
-    {
-        if ( sim_auth_status == status )
+        if ( sim_auth_status == next )
             return;
 
-        assert( logger.debug( @"Advancing SIM auth status to $status" ) );
-        sim_auth_status = status;
+        assert( logger.debug( @"Advancing SIM auth status to $next" ) );
+        sim_auth_status = next;
 
         var obj = parent.retrieveService<FreeSmartphone.GSM.SIM>();
         obj.auth_status( sim_auth_status );
@@ -1052,11 +1077,7 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
                 return FreeSmartphone.GSM.DeviceStatus.CLOSED;
             case Status.INITIALIZING:
                 return FreeSmartphone.GSM.DeviceStatus.INITIALIZING;
-            case Status.ALIVE_NO_SIM:
-            case Status.ALIVE_SIM_LOCKED:
-            case Status.ALIVE_SIM_UNLOCKED:
-            case Status.ALIVE_SIM_READY:
-            case Status.ALIVE_REGISTERED:
+            case Status.ALIVE:
                 return FreeSmartphone.GSM.DeviceStatus.ALIVE;
             case Status.SUSPENDING:
                 return FreeSmartphone.GSM.DeviceStatus.SUSPENDING;
@@ -1073,7 +1094,7 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
 
     public bool isAlive()
     {
-        return isAliveStatus( modem_status );
+        return modem_status == Modem.Status.ALIVE;
     }
 }
 

@@ -182,6 +182,7 @@ public async void gatherSimStatusAndUpdate( FsoGsm.Modem modem ) throws FreeSmar
         assert( modem.logger.debug( "already gathering sim status... ignoring additional trigger" ) );
         return;
     }
+
     inGatherSimStatusAndUpdate = true;
 
     yield gatherSimOperators( modem );
@@ -200,18 +201,13 @@ public async void gatherSimStatusAndUpdate( FsoGsm.Modem modem ) throws FreeSmar
         {
             modem.advanceSimAuthState( cmd.status );
 
-            // advance global modem state
-            var modemStatus = modem.status();
-            if ( modemStatus >= Modem.Status.INITIALIZING && modemStatus <= Modem.Status.ALIVE_REGISTERED )
+            if ( cmd.status == FreeSmartphone.GSM.SIMAuthStatus.READY )
             {
-                if ( cmd.status == FreeSmartphone.GSM.SIMAuthStatus.READY )
-                {
-                    modem.advanceToState( Modem.Status.ALIVE_SIM_UNLOCKED, true );
-                }
-                else
-                {
-                    modem.advanceToState( Modem.Status.ALIVE_SIM_LOCKED, true );
-                }
+                modem.advanceSimState( Modem.SimStatus.UNLOCKED );
+            }
+            else
+            {
+                modem.advanceSimState( Modem.SimStatus.LOCKED );
             }
         }
     }
@@ -219,7 +215,7 @@ public async void gatherSimStatusAndUpdate( FsoGsm.Modem modem ) throws FreeSmar
               rcode == Constants.AtResponse.CME_ERROR_013_SIM_FAILURE )
     {
         modem.logger.info( "SIM not inserted or broken" );
-        modem.advanceToState( Modem.Status.ALIVE_NO_SIM );
+        modem.advanceSimState( Modem.SimStatus.NO_SIM );
     }
     else
     {

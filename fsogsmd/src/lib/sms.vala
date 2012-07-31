@@ -173,9 +173,9 @@ public abstract class FsoGsm.AbstractSmsHandler : FsoGsm.SmsHandler, FsoFramewor
     // private
     //
 
-    private void onModemStatusChanged( FsoGsm.Modem modem, FsoGsm.Modem.Status status )
+    private void onModemSimStatusChanged( FsoGsm.Modem.SimStatus status )
     {
-        if ( status == Modem.Status.ALIVE_SIM_READY )
+        if ( status == Modem.SimStatus.READY )
             simIsReady();
     }
 
@@ -255,7 +255,7 @@ public abstract class FsoGsm.AbstractSmsHandler : FsoGsm.SmsHandler, FsoFramewor
     protected AbstractSmsHandler( FsoGsm.Modem modem )
     {
         this.modem = modem;
-        this.modem.signalStatusChanged.connect( onModemStatusChanged );
+        this.modem.signalSimStatusChanged.connect( onModemSimStatusChanged );
     }
 
     //

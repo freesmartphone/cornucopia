@@ -34,14 +34,15 @@ namespace FsoGsm
             assert( modem.logger.debug( "already gathering network status... ignoring additional trigger" ) );
             return;
         }
+
         inTriggerUpdateNetworkStatus = true;
 
-        var mstat = modem.status();
-
         // ignore, if we don't have proper status to issue networking commands yet
-        if ( mstat != Modem.Status.ALIVE_SIM_READY && mstat != Modem.Status.ALIVE_REGISTERED )
+        if ( modem.simStatus() != Modem.SimStatus.READY &&
+             modem.networkStatus() != Modem.NetworkStatus.REGISTERED )
         {
-            assert( modem.logger.debug( @"triggerUpdateNetworkStatus() ignored while modem is in status $mstat" ) );
+            assert( modem.logger.debug( @"triggerUpdateNetworkStatus() ignored while modem is in status " +
+                                        @"sim = $(modem.simStatus()) / network = $(modem.networkStatus())" ) );
             inTriggerUpdateNetworkStatus = false;
             return;
         }
@@ -59,17 +60,14 @@ namespace FsoGsm
             {
                 case "home":
                 case "roaming":
-                    modem.advanceToState( Modem.Status.ALIVE_REGISTERED );
                     modem.advanceNetworkState( Modem.NetworkStatus.REGISTERED );
                     break;
                 case "searching":
-                    modem.advanceToState( Modem.Status.ALIVE_SIM_READY, true );
                     modem.advanceNetworkState( Modem.NetworkStatus.SEARCHING );
                     break;
                 case "denied":
                 case "unregistered":
                 case "unknown":
-                    modem.advanceToState( Modem.Status.ALIVE_SIM_READY, true );
                     modem.advanceNetworkState( Modem.NetworkStatus.UNREGISTERED );
                     break;
             }
@@ -149,14 +147,14 @@ namespace FsoGsm
 
     public async void updateNetworkSignalStrength( FsoGsm.Modem modem, int strength )
     {
-        if ( modem.status() == FsoGsm.Modem.Status.ALIVE_REGISTERED )
+        if ( modem.networkStatus() == FsoGsm.Modem.NetworkStatus.REGISTERED )
         {
             var obj = modem.theDevice<FreeSmartphone.GSM.Network>();
             obj.signal_strength( strength );
         }
         else
         {
-            assert( FsoFramework.theLogger.debug( @"Ignoring signal strength update while not in ALIVE_REGISTERED state" ) );
+            assert( FsoFramework.theLogger.debug( @"Ignoring signal strength update while not in REGISTERED network state" ) );
         }
     }
 }

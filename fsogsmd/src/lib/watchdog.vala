@@ -48,7 +48,6 @@ public class FsoGsm.NullWatchDog : GLib.Object, FsoGsm.WatchDog
 public class FsoGsm.GenericWatchDog : FsoGsm.WatchDog, FsoFramework.AbstractObject
 {
     private bool unlockFailed;
-    private Modem.Status lastStatus;
     private bool inCampNetwork = false;
 
     private FsoGsm.Modem modem;
@@ -58,41 +57,41 @@ public class FsoGsm.GenericWatchDog : FsoGsm.WatchDog, FsoFramework.AbstractObje
         return @"<>";
     }
 
-    private void onModemStatusChange( Modem.Status status )
+    private void onModemSimStatusChange( Modem.SimStatus status )
     {
-        assert( logger.debug( @"onModemStatusChange $lastStatus -> $status" ) );
-        var data = modem.data();
+        logger.debug( @"onModemSimStatusChange $status" );
 
         switch ( status )
         {
-            case Modem.Status.ALIVE_SIM_LOCKED:
+            case Modem.SimStatus.LOCKED:
                 if ( modem.simAuthStatus() == FreeSmartphone.GSM.SIMAuthStatus.PIN_REQUIRED &&
-                     data.simPin != "" &&
-                     !unlockFailed )
+                     modem.data().simPin != "" && !unlockFailed )
                 {
                     unlockModem();
                 }
                 break;
 
-            case Modem.Status.ALIVE_SIM_READY:
+            case Modem.SimStatus.READY:
                 if ( modem.data().keepRegistration )
-                {
                     campNetwork();
-                }
                 break;
+        }
+    }
 
-            case Modem.Status.ALIVE_REGISTERED:
-                if ( lastStatus == Modem.Status.RESUMING )
-                {
+    private void onModemNetworkStatusChange( Modem.NetworkStatus status )
+    {
+        logger.debug( @"onModemNetworkStatusChange $status" );
+
+        switch ( status )
+        {
+            case Modem.NetworkStatus.REGISTERED:
+                if ( modem.status() == Modem.Status.RESUMING )
                     triggerUpdateNetworkStatus( modem );
-                }
                 break;
 
             default:
                 break;
         }
-
-        lastStatus = status;
     }
 
     private async void unlockModem()
@@ -105,10 +104,12 @@ public class FsoGsm.GenericWatchDog : FsoGsm.WatchDog, FsoFramework.AbstractObje
         catch ( GLib.Error e1 )
         {
             logger.error( @"Could not unlock SIM PIN: $(e1.message)" );
+
             unlockFailed = true;
-            // resend query to give us a proper PIN
+
             try
             {
+                // resend query to give us a proper PIN
                 yield gatherSimStatusAndUpdate( modem );
             }
             catch ( GLib.Error e2 )
@@ -147,13 +148,14 @@ public class FsoGsm.GenericWatchDog : FsoGsm.WatchDog, FsoFramework.AbstractObje
     public GenericWatchDog( FsoGsm.Modem modem )
     {
         this.modem = modem;
-        lastStatus = modem.status();
-        modem.signalStatusChanged.connect( onModemStatusChange );
+        modem.signalSimStatusChanged.connect( onModemSimStatusChange );
+        modem.signalNetworkStatusChanged.connect( onModemNetworkStatusChange );
     }
 
     public void check()
     {
-        onModemStatusChange( modem.status() );
+        onModemSimStatusChange( modem.simStatus() );
+        onModemNetworkStatusChange( modem.networkStatus() );
     }
 
     public void resetUnlockMarker()

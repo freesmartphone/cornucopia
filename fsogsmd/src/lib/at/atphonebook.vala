@@ -30,11 +30,11 @@ public class FsoGsm.AtPhonebookHandler : FsoGsm.AbstractPhonebookHandler
     // private
     //
 
-    private void onModemStatusChanged( FsoGsm.Modem modem, FsoGsm.Modem.Status status )
+    private void onModemSimStatusChanged( FsoGsm.Modem.SimStatus status )
     {
         switch ( status )
         {
-            case Modem.Status.ALIVE_SIM_READY:
+            case Modem.SimStatus.READY:
                 simIsReady();
                 break;
             default:
@@ -64,7 +64,7 @@ public class FsoGsm.AtPhonebookHandler : FsoGsm.AbstractPhonebookHandler
     public AtPhonebookHandler( FsoGsm.Modem modem )
     {
         base( modem );
-        modem.signalStatusChanged.connect( onModemStatusChanged );
+        modem.signalSimStatusChanged.connect( onModemSimStatusChanged );
     }
 
     public override string repr()
