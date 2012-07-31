@@ -60,7 +60,7 @@ public class IsiUnsolicitedHandler : FsoFramework.AbstractObject
             case GIsiClient.Network.RegistrationStatus.HOME:
             case GIsiClient.Network.RegistrationStatus.ROAM:
             case GIsiClient.Network.RegistrationStatus.ROAM_BLINK:
-                modem.advanceToState( FsoGsm.Modem.Status.ALIVE_REGISTERED );
+                modem.advanceNetworkState( FsoGsm.Modem.NetworkStatus.REGISTERED );
                 break;
 
             default:

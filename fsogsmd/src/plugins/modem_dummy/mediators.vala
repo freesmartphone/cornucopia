@@ -95,7 +95,7 @@ public class DummyAtDeviceGetInformation : DeviceGetInformation
     {
         info = new GLib.HashTable<string,Variant>( str_hash, str_equal );
 
-        if ( modem.status() == FsoGsm.Modem.Status.ALIVE_NO_SIM )
+        if ( modem.simStatus() == FsoGsm.Modem.SimStatus.NO_SIM )
         {
             info.insert( "present", false );
             return;
@@ -328,7 +328,8 @@ public class DummyAtSimSendAuthCode : SimSendAuthCode
         {
             throw new FreeSmartphone.GSM.Error.SIM_AUTH_FAILED( @"PIN $pin not accepted" );
         }
-        modem.advanceToState( Modem.Status.ALIVE_SIM_UNLOCKED );
+
+        modem.advanceSimState( Modem.SimStatus.UNLOCKED );
     }
 }
 

@@ -39,7 +39,7 @@ public class Gtm601.UnsolicitedResponseHandler : FsoGsm.AtUnsolicitedResponseHan
         {
             modem.logger.info( "GTM 601 SIM now ready" );
             Timeout.add_seconds( 2, () => {
-                modem.advanceToState( FsoGsm.Modem.Status.ALIVE_SIM_READY );
+                modem.advanceSimState( FsoGsm.Modem.SimStatus.READY );
                 return false; // don't call again
             } );
         }

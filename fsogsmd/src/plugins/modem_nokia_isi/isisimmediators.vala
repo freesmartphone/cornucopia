@@ -82,7 +82,7 @@ public class IsiSimGetInformation : SimGetInformation
     {
         info = new GLib.HashTable<string,Variant>( str_hash, str_equal );
 
-        if ( modem.status() == FsoGsm.Modem.Status.ALIVE_NO_SIM )
+        if ( modem.simStatus() == FsoGsm.Modem.SimStatus.NO_SIM )
         {
             info.insert( "present", false );
             return;
@@ -129,7 +129,7 @@ public class IsiSimSendAuthCode : SimSendAuthCode
         switch ( isicode )
         {
             case GIsiClient.SIMAuth.IndicationType.OK:
-                modem.advanceToState( FsoGsm.Modem.Status.ALIVE_SIM_UNLOCKED );
+                modem.advanceSimState( FsoGsm.Modem.SimStatus.UNLOCKED );
                 break;
             case GIsiClient.SIMAuth.IndicationType.PUK:
                 throw new FreeSmartphone.GSM.Error.SIM_BLOCKED( @"ISI Code = $isicode" );

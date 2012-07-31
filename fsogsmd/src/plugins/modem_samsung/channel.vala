@@ -30,7 +30,7 @@ public class Samsung.IpcChannel : FsoGsm.Channel, FsoFramework.AbstractCommandQu
     private FsoFramework.Wakelock wakelock;
     private FreeSmartphone.UsageSync usage_sync;
     private uint suspend_lock = 0;
-    private FsoGsm.Modem.Status current_modem_status = FsoGsm.Modem.Status.UNKNOWN;
+    private FsoGsm.Modem.NetworkStatus current_network_status = FsoGsm.Modem.NetworkStatus.UNKNOWN;
     private FsoGsm.Modem modem;
 
     public new Samsung.UnsolicitedResponseHandler urchandler { get; private set; }
@@ -48,27 +48,30 @@ public class Samsung.IpcChannel : FsoGsm.Channel, FsoFramework.AbstractCommandQu
         return current_request_id;
     }
 
-    private void onModemStatusChanged( FsoGsm.Modem modem, FsoGsm.Modem.Status status )
+    private void onModemNetworkStatusChanged( FsoGsm.Modem.NetworkStatus status )
+    {
+        if ( current_network_status == FsoGsm.Modem.NetworkStatus.REGISTERED &&
+             status < FsoGsm.Modem.NetworkStatus.REGISTERED )
+        {
+            ModemState.reset_network_data();
+            // Force update of the signal strength for all connected clients
+            var obj = modem.theDevice<FreeSmartphone.GSM.Network>();
+            obj.signal_strength( ModemState.network_signal_strength );
+        }
+
+        current_network_status = status;
+    }
+
+    private void onModemStatusChanged( FsoGsm.Modem.Status status )
     {
         switch ( status )
         {
             case FsoGsm.Modem.Status.INITIALIZING:
                 initialize();
                 break;
-            case FsoGsm.Modem.Status.ALIVE_SIM_READY:
-                if ( current_modem_status == FsoGsm.Modem.Status.ALIVE_REGISTERED )
-                {
-                    ModemState.reset_network_data();
-                    // Force update of the signal strength for all connected clients
-                    var obj = modem.theDevice<FreeSmartphone.GSM.Network>();
-                    obj.signal_strength( ModemState.network_signal_strength );
-                }
-                break;
             default:
                 break;
         }
-
-        current_modem_status = status;
     }
 
     protected override void onReadFromTransport( FsoFramework.Transport t )
@@ -268,6 +271,7 @@ public class Samsung.IpcChannel : FsoGsm.Channel, FsoFramework.AbstractCommandQu
 
         modem.registerChannel( name, this );
         modem.signalStatusChanged.connect( onModemStatusChanged );
+        modem.signalNetworkStatusChanged.connect( onModemNetworkStatusChanged );
 
         fmtclient = new SamsungIpc.Client( SamsungIpc.ClientType.FMT );
         fmtclient.set_log_handler( ( message ) => { theLogger.debug( message ); } );

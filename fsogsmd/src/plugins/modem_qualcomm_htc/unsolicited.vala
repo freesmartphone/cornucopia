@@ -35,7 +35,7 @@ public class QualcommHtc.UnsolicitedResponseHandler : FsoGsm.AtUnsolicitedRespon
             if ( fullReady )
             {
                 modem.logger.info( "qualcomm_htc sim ready" );
-                modem.advanceToState( FsoGsm.Modem.Status.ALIVE_SIM_READY );
+                modem.advanceSimState( FsoGsm.Modem.SimStatus.READY );
             }
         }
     }

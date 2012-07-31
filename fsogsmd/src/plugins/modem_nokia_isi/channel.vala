@@ -32,15 +32,18 @@ public class IsiChannel : FsoGsm.Channel, FsoFramework.AbstractCommandQueue
 
     private bool _is_initialized;
 
-    private void onModemStatusChanged( FsoGsm.Modem modem, FsoGsm.Modem.Status status )
+    private void onModemSimStatusChanged( FsoGsm.Modem.SimStatus status )
+    {
+        if ( status == FsoGsm.Modem.SimStatus.READY )
+            poweron();
+    }
+
+    private void onModemStatusChanged( FsoGsm.Modem.Status status )
     {
         switch ( status )
         {
             case FsoGsm.Modem.Status.INITIALIZING:
                 initialize();
-                break;
-            case FsoGsm.Modem.Status.ALIVE_SIM_READY:
-                poweron();
                 break;
             case FsoGsm.Modem.Status.CLOSING:
                 shutdown();
@@ -71,6 +74,7 @@ public class IsiChannel : FsoGsm.Channel, FsoFramework.AbstractCommandQueue
 
         modem.registerChannel( name, this );
         modem.signalStatusChanged.connect( onModemStatusChanged );
+        modem.signalSimStatusChanged.connect( onModemSimStatusChanged );
     }
 
     public async void poweron()
@@ -89,12 +93,12 @@ public class IsiChannel : FsoGsm.Channel, FsoFramework.AbstractCommandQueue
 
             if ( getAuthStatus.status == FreeSmartphone.GSM.SIMAuthStatus.READY )
             {
-                modem.advanceToState( Modem.Status.ALIVE_SIM_UNLOCKED );
+                modem.advanceSimState( Modem.SimStatus.UNLOCKED );
             }
             else if ( getAuthStatus.status == FreeSmartphone.GSM.SIMAuthStatus.PIN_REQUIRED ||
                       getAuthStatus.status == FreeSmartphone.GSM.SIMAuthStatus.PUK_REQUIRED )
             {
-                modem.advanceToState( Modem.Status.ALIVE_SIM_LOCKED );
+                modem.advanceSimState( Modem.SimStatus.LOCKED );
             }
 
         }
@@ -102,7 +106,7 @@ public class IsiChannel : FsoGsm.Channel, FsoFramework.AbstractCommandQueue
         {
             if ( e1 is FreeSmartphone.GSM.Error.SIM_NOT_PRESENT )
             {
-                modem.advanceToState( Modem.Status.ALIVE_NO_SIM );
+                modem.advanceSimState( Modem.SimStatus.NO_SIM );
             }
             else
             {
@@ -114,7 +118,6 @@ public class IsiChannel : FsoGsm.Channel, FsoFramework.AbstractCommandQueue
             modem.logger.error( @"Can't get SIM auth status: $(e2.message) - what now?" );
             // FIXME: move to close status?
         }
-
     }
 
     public async void shutdown()

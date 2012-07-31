@@ -60,7 +60,7 @@ public class Samsung.UnsolicitedResponseHandler : FsoFramework.AbstractObject
 
             case SamsungIpc.MessageType.DISP_RSSI_INFO:
                 // Don't report signal strength when we are not registered
-                if ( modem.status() != FsoGsm.Modem.Status.ALIVE_REGISTERED )
+                if ( modem.networkStatus() != FsoGsm.Modem.NetworkStatus.REGISTERED )
                     break;
                 handle_signal_strength( response.data[0] );
                 // notify the user about the change of signal strength
@@ -140,7 +140,7 @@ public class Samsung.UnsolicitedResponseHandler : FsoFramework.AbstractObject
                         break;
                     case SamsungIpc.Security.SimLockStatus.CARD_BLOCKED:
                         // FIXME we need a modem status for a blocked sim card!
-                        modem.advanceToState( FsoGsm.Modem.Status.ALIVE_NO_SIM );
+                        modem.advanceSimState( FsoGsm.Modem.SimStatus.NO_SIM );
                         break;
                 }
                 break;
@@ -152,7 +152,7 @@ public class Samsung.UnsolicitedResponseHandler : FsoFramework.AbstractObject
             case SamsungIpc.Security.SimStatus.SIM_LOCK_REQUIRED:
             case SamsungIpc.Security.SimStatus.CARD_ERROR:
             case SamsungIpc.Security.SimStatus.CARD_NOT_PRESENT:
-                modem.advanceToState( FsoGsm.Modem.Status.ALIVE_NO_SIM );
+                modem.advanceSimState( FsoGsm.Modem.SimStatus.NO_SIM );
                 break;
         }
     }
