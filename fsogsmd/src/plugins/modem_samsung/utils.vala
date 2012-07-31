@@ -29,26 +29,16 @@ public void updateSimAuthStatus( FsoGsm.Modem modem, FreeSmartphone.GSM.SIMAuthS
     // check whether we need to advance the modem state
     if ( status != modem.simAuthStatus() )
     {
-        // advance global modem state
-        var modemStatus = modem.status();
-        if ( modemStatus == Modem.Status.INITIALIZING )
+        if ( status == FreeSmartphone.GSM.SIMAuthStatus.READY )
         {
-            if ( status == FreeSmartphone.GSM.SIMAuthStatus.READY )
-            {
-                modem.advanceToState( Modem.Status.ALIVE_SIM_UNLOCKED );
-            }
-            else
-            {
-                modem.advanceToState( Modem.Status.ALIVE_SIM_LOCKED );
-            }
+            modem.advanceSimState( Modem.SimStatus.UNLOCKED );
         }
-        else if ( modemStatus == Modem.Status.ALIVE_SIM_LOCKED )
+        else
         {
-            if ( status == FreeSmartphone.GSM.SIMAuthStatus.READY )
-            {
-                modem.advanceToState( Modem.Status.ALIVE_SIM_UNLOCKED );
-            }
+            modem.advanceSimState( Modem.SimStatus.LOCKED );
         }
+
+        /*
         // NOTE: If we're registered to a network and we unregister then we need to
         // re-authenticate with the sim card and the correct pin. We are in REGISTERED or
         // UNLOCKED state before this, so we move to LOCKED sim state in this case.
@@ -59,6 +49,7 @@ public void updateSimAuthStatus( FsoGsm.Modem modem, FreeSmartphone.GSM.SIMAuthS
                 modem.advanceToState( Modem.Status.ALIVE_SIM_LOCKED, true );
             }
         }
+        */
     }
 }
 
@@ -71,15 +62,10 @@ public static string gatherFunctionalityLevel( FsoGsm.Modem modem )
     var functionality_level = "minimal";
 
     // Check if SIM access is possible, then we have basic functionality
-    if ( modem.status() == Modem.Status.ALIVE_SIM_READY &&
-         channel.phone_pwr_state == SamsungIpc.Power.PhoneState.LPM )
-    {
+    if ( modem.simStatus() == Modem.SimStatus.READY && channel.phone_pwr_state == SamsungIpc.Power.PhoneState.LPM )
         functionality_level = "airplane";
-    }
-    else if ( modem.status() == Modem.Status.ALIVE_REGISTERED )
-    {
+    else if ( modem.networkStatus() == Modem.NetworkStatus.REGISTERED )
         functionality_level = "full";
-    }
 
     return functionality_level;
 }
