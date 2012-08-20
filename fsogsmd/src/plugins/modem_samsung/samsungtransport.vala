@@ -38,8 +38,6 @@ public class FsoGsm.SamsungModemTransport : FsoFramework.BaseTransport
             return false;
         }
 
-        configure();
-
         return base.open();
     }
 
