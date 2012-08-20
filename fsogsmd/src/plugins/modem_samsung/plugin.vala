@@ -79,10 +79,11 @@ class Samsung.Modem : FsoGsm.AbstractModem
         new Samsung.IpcChannel( this, MAIN_CHANNEL_NAME, fmt_transport );
 
         var rfs_modem_port = config.stringValue( "fsogsm.modem_samsung", "modem_rfs_access", "/dev/modem_rfs" );
-        // FIXME evaluate rfs_modem_port the same way as the default modem access
-        // configuration does.
-        var rfs_transport = new FsoGsm.SamsungModemTransport( rfs_modem_port );
-        new Samsung.RfsChannel( this, RFS_CHANNEL_NAME, rfs_transport );
+        if ( rfs_modem_port != "" )
+        {
+            var rfs_transport = new FsoGsm.SamsungModemTransport( rfs_modem_port );
+            new Samsung.RfsChannel( this, RFS_CHANNEL_NAME, rfs_transport );
+        }
     }
 
     protected override FsoGsm.Channel channelForCommand( FsoGsm.AtCommand command, string query )
