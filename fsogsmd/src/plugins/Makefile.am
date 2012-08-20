@@ -42,6 +42,6 @@ endif
 
 if WANT_SAMSUNG
 SUBDIRS += \
-	lowlevel_samsung_crespo \
+	lowlevel_samsung \
 	modem_samsung
 endif

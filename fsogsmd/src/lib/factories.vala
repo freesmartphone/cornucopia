@@ -35,8 +35,8 @@ namespace FsoGsm
             case "nokia900":
                 typename = "LowLevelNokia900";
                 break;
-            case "samsung_crespo":
-                typename = "LowLevelSamsungCrespo";
+            case "samsung":
+                typename = "LowLevelSamsung";
                 break;
             case "gta04":
                 typename = "LowLevelGTA04";
