@@ -257,6 +257,7 @@ AC_CONFIG_FILES([
   conf/nexusone/Makefile
   conf/nokia_n900/Makefile
   conf/herring/Makefile
+  conf/tuna/Makefile
   conf/GTA04/Makefile
   conf/phonesim/Makefile
   data/Makefile

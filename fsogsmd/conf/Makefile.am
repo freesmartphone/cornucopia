@@ -12,6 +12,7 @@ SUBDIRS = \
 	nexusone \
 	nokia_n900 \
 	herring \
+	tuna \
 	GTA04 \
 	phonesim \
 	$(NULL)
