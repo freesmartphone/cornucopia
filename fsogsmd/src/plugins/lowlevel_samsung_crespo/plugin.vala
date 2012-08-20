@@ -28,16 +28,13 @@ class LowLevel.SamsungCrespo : FsoGsm.LowLevel, FsoFramework.AbstractObject
 
     private SamsungIpc.Client client;
     private bool powered = false;
-    private string power_mode_node;
 
     construct
     {
         client = new SamsungIpc.Client(SamsungIpc.ClientType.FMT);
         client.set_log_handler( ( message ) => { logger.debug( message ); } );
 
-        power_mode_node = config.stringValue( MODULE_NAME, "power_mode_node", "/sys/devices/platform/modemctl/power_mode" );
-
-        logger.info( "Registering Samsung Crespo low level poweron/poweroff handling" );
+        logger.info( "Registering Samsung Crespo low level power handling" );
     }
 
     public override string repr()
@@ -47,8 +44,6 @@ class LowLevel.SamsungCrespo : FsoGsm.LowLevel, FsoFramework.AbstractObject
 
     public bool poweron()
     {
-        assert( logger.debug( "lowlevel_samsung_crespo_poweron()" ) );
-
         if ( powered )
             return false;
 
@@ -58,7 +53,11 @@ class LowLevel.SamsungCrespo : FsoGsm.LowLevel, FsoFramework.AbstractObject
             return false;
         }
 
-        FsoFramework.FileHandling.write( "1", power_mode_node );
+        if ( client.power_on() < 0 )
+        {
+            logger.error( "Failed to power on modem" );
+            return false;
+        }
 
         Posix.sleep( 1 );
 
@@ -67,25 +66,25 @@ class LowLevel.SamsungCrespo : FsoGsm.LowLevel, FsoFramework.AbstractObject
 
     public bool poweroff()
     {
-        assert( logger.debug( "lowlevel_samsung_crespo_poweroff()" ) );
-
         if ( !powered )
             return false;
 
-        FsoFramework.FileHandling.write( "0", power_mode_node );
+        if ( client.power_off() < 0 )
+        {
+            logger.error( "Failed to power off modem" );
+            return false;
+        }
 
         return true;
     }
 
     public bool suspend()
     {
-        assert( logger.debug( "lowlevel_samsung_crespo_suspend()" ) );
         return true;
     }
 
     public bool resume()
     {
-        assert( logger.debug( "lowlevel_samsung_crespo_resume()" ) );
         return true;
     }
 }
