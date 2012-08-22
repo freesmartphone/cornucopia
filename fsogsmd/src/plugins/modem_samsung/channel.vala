@@ -197,22 +197,6 @@ public class Samsung.IpcChannel : FsoGsm.Channel, FsoFramework.AbstractCommandQu
         Idle.add( () => { handler.callback(); return false; } );
     }
 
-    protected int modem_read_request(uint8[] data)
-    {
-        if ( data == null  )
-            return 0;
-
-        return transport.read(data, data.length);
-    }
-
-    protected int modem_write_request(uint8[] data)
-    {
-        if ( data == null )
-            return 0;
-
-        return transport.write(data, data.length);
-    }
-
     private async void initialize()
     {
         initialized = yield set_modem_power_state( SamsungIpc.Power.PhoneState.LPM );
@@ -252,6 +236,22 @@ public class Samsung.IpcChannel : FsoGsm.Channel, FsoFramework.AbstractCommandQu
         return true;
     }
 
+    protected int modem_read_request(uint8[] data)
+    {
+        if ( data == null  )
+            return 0;
+
+        return transport.read(data, data.length);
+    }
+
+    protected int modem_write_request(uint8[] data)
+    {
+        if ( data == null )
+            return 0;
+
+        return transport.write(data, data.length);
+    }
+
     //
     // public API
     //
@@ -271,26 +271,50 @@ public class Samsung.IpcChannel : FsoGsm.Channel, FsoFramework.AbstractCommandQu
 
         fmtclient = new SamsungIpc.Client( SamsungIpc.ClientType.FMT );
         fmtclient.set_log_handler( ( message ) => { theLogger.debug( message ); } );
-        fmtclient.set_io_handlers( modem_read_request, modem_write_request );
+
+        if ( !(transport is SamsungIpcTransport) )
+        {
+            theLogger.debug( @"Not using IPC layer for transport" );
+            fmtclient.set_io_handlers( modem_read_request, modem_write_request );
+        }
+        else
+        {
+            theLogger.debug( @"Using IPC layer for transport" );
+            fmtclient.create_handlers_common_data();
+        }
     }
 
     public override async bool open()
     {
-        bool result = true;
-
-        result = yield transport.openAsync();
-        if (!result)
+        if ( ! yield base.open() )
             return false;
 
-        fmtclient.open();
+        if (transport is SamsungIpcTransport)
+        {
+            if ( fmtclient.open() < 0 )
+            {
+                theLogger.error( "Failed to open IPC client" );
+                return false;
+            }
+
+            int fd = fmtclient.get_handlers_common_data_fd();
+            ((SamsungIpcTransport) transport).assign_fd( fd );
+        }
 
         return true;
     }
 
     public override async void close()
     {
+        if ( transport is SamsungIpcTransport )
+        {
+            // Avoid closing the file descriptor by the transport; libsamsung-ipc should
+            // do this
+            ((SamsungIpcTransport) transport).assign_fd( -1 );
+        }
+
+        base.close();
         fmtclient.close();
-        transport.close();
     }
 
     /**

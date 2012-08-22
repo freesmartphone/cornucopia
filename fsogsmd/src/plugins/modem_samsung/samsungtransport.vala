@@ -19,69 +19,22 @@
 
 using GLib;
 
-public class FsoGsm.SamsungModemTransport : FsoFramework.BaseTransport
+public class FsoGsm.SamsungIpcTransport : FsoFramework.BaseTransport
 {
-    private const uint MAX_BUFFER_SIZE = 0x1000;
-
-    public SamsungModemTransport( string portname )
+    public SamsungIpcTransport()
     {
-        base( portname );
+        base( "" );
         setBuffered( false );
     }
 
-    public override bool open()
+    public void assign_fd( int fd )
     {
-        fd = Posix.open( name, Posix.O_RDWR | Posix.O_NOCTTY | Posix.O_NONBLOCK );
-        if ( fd == -1 )
-        {
-            logger.warning( "could not open %s: %s".printf( name, Posix.strerror( Posix.errno ) ) );
-            return false;
-        }
-
-        return base.open();
-    }
-
-    protected override ssize_t _real_write( int fd, void *data, int len )
-    {
-        var rc = Linux.ioctl( fd, Samsung.ModemIoctlType.SEND, data );
-
-        assert( logger.debug( @"Send request to modem with size = $(len)" ) );
-
-        if ( rc < 0 )
-        {
-            logger.error( @"Can't issue IOCTL_MODEM_SEND ioctl to modem dev node: %s".printf( Posix.strerror( Posix.errno ) ) );
-            return 0; // send HUP signal
-        }
-
-        return (ssize_t) len;
-    }
-
-    protected override ssize_t _real_read( int fd, void *data, int len )
-    {
-        if ( len < MAX_BUFFER_SIZE )
-        {
-            logger.warning( @"Can't receive modem response as read buffer is too small!" );
-            return 0; // send HUP signal
-        }
-
-        var  rc = Linux.ioctl( fd, Samsung.ModemIoctlType.RECV, data );
-        if ( rc < 0 )
-        {
-            logger.error( @"Can't issue IOCTL_MODEM_RECV ioctl to modem dev node: %s".printf( Posix.strerror( Posix.errno ) ) );
-            return 0; // send HUP signal
-        }
-
-        return (ssize_t) len;
-    }
-
-    public override int writeAndRead( uchar* wdata, int wlength, uchar* rdata, int rlength, int maxWait = 5000 )
-    {
-        return 0;
+        this.fd = fd;
     }
 
     public override string repr()
     {
-        return "<Samsung %s (fd %d)>".printf( name, fd );
+        return "<SamsungIpc (fd %d)>".printf( fd );
     }
 
     /**

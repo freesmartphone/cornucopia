@@ -75,15 +75,12 @@ class Samsung.Modem : FsoGsm.AbstractModem
     protected override void createChannels()
     {
         var fmt_transport = ( modem_transport_spec.type == "samsung" ) ?
-            new FsoGsm.SamsungModemTransport( modem_transport_spec.name ) : modem_transport_spec.create();
+            new FsoGsm.SamsungIpcTransport() : modem_transport_spec.create();
         new Samsung.IpcChannel( this, MAIN_CHANNEL_NAME, fmt_transport );
 
-        var rfs_modem_port = config.stringValue( "fsogsm.modem_samsung", "modem_rfs_access", "/dev/modem_rfs" );
-        if ( rfs_modem_port != "" )
-        {
-            var rfs_transport = new FsoGsm.SamsungModemTransport( rfs_modem_port );
-            new Samsung.RfsChannel( this, RFS_CHANNEL_NAME, rfs_transport );
-        }
+        // FIXME determine rfs transport type from configuration too
+        var rfs_transport = new FsoGsm.SamsungIpcTransport();
+        new Samsung.RfsChannel( this, RFS_CHANNEL_NAME, rfs_transport );
     }
 
     protected override FsoGsm.Channel channelForCommand( FsoGsm.AtCommand command, string query )
