@@ -74,7 +74,7 @@ class Samsung.Modem : FsoGsm.AbstractModem
 
     protected override void createChannels()
     {
-        var fmt_transport = ( modem_transport_spec.type == "samsung" ) ?
+        var fmt_transport = ( modem_transport_spec.type == "samsungipc" ) ?
             new FsoGsm.SamsungIpcTransport() : modem_transport_spec.create();
         new Samsung.IpcChannel( this, MAIN_CHANNEL_NAME, fmt_transport );
 
