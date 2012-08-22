@@ -14,7 +14,6 @@ modem_samsung_la_SOURCES = \
  plugin.vala \
  commandhandler.vala \
  channel.vala \
- rfs.vala \
  unsolicited.vala \
  modemstate.vala \
  mediators_sim.vala \
