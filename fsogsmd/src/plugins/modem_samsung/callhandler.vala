@@ -71,6 +71,7 @@ public class Samsung.CallHandler : FsoGsm.AbstractCallHandler
         yield _soundhandler.mute_microphone( false );
         yield _soundhandler.set_speaker_volume( SamsungIpc.Sound.VolumeType.SPEAKER, 0x4 );
         yield _soundhandler.set_audio_path( SamsungIpc.Sound.AudioPath.HANDSET );
+        yield _soundhandler.execute_clock_control();
 
         startTimeoutIfNecessary();
 
