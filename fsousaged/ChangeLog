@@ -1,5 +1,15 @@
 2012-07-27  Simon Busch  <morphis@gravedo.de>
 
+	fsousaged: tests: integration: remove binary which should not be part of version control
+
+	fsousaged: tests: integration: remove unneeded EXTRA_DIST entry
+
+	Enable release mode for all components
+
+	Bump version of all components to 0.12.0-rc1
+
+	Update changelogs of all components
+
 	fsousaged: update README file
 
 	fsousaged/libfsoframework: adjust for recent changes to libfso-glib

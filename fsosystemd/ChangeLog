@@ -1,3 +1,11 @@
+2012-07-27  Simon Busch  <morphis@gravedo.de>
+
+	Enable release mode for all components
+
+	Bump version of all components to 0.12.0-rc1
+
+	Update changelogs of all components
+
 2012-07-19  Simon Busch  <morphis@gravedo.de>
 
 	Update copyright notice for all source files

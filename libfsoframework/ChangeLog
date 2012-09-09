@@ -1,10 +1,47 @@
+2012-08-30  Simon Busch  <morphis@gravedo.de>
+
+	libfsoframework: fsotest: relicense two files under LGPL 2.1 instead of GPL 2
+
 2012-07-27  Simon Busch  <morphis@gravedo.de>
+
+	Merge branch 'master' into 0.12
 
 	fsousaged/libfsoframework: adjust for recent changes to libfso-glib
 
 	Bump required libfso-glib version of all components
 
 	libfsoframework: tests: two more test cases for libfsosystem; but not executed automatically
+
+2012-07-27  Martin Jansa  <Martin.Jansa@gmail.com>
+
+	libfsoframework: fsoresource fix build also for gold + as-needed
+
+	libfsoframework: tests add fsobasics vapidir
+	* after cleaning sysroot all tests/* were failing to find fsobasics vapi
+
+2012-07-27  Simon Busch  <morphis@gravedo.de>
+
+	Enable release mode for all components
+
+	Bump version of all components to 0.12.0-rc1
+
+	Update changelogs of all components
+
+	fsousaged/libfsoframework: adjust for recent changes to libfso-glib
+
+	Bump required libfso-glib version of all components
+
+	libfsoframework: tests: two more test cases for libfsosystem; but not executed automatically
+
+2012-07-27  Martin Jansa  <Martin.Jansa@gmail.com>
+
+	libfsoframework: tests/fsoresource actually revert previous commit and add fsoramework to vapidir
+	* it's needed from fsoresource-2.0.deps
+
+2012-07-26  Martin Jansa  <Martin.Jansa@gmail.com>
+
+	libfsoframework: tests/fsoresource drop fsoframework-2.0 pkg from VALAFLAGS
+	* it's not in requested vapidir anyway
 
 2012-07-26  Simon Busch  <morphis@gravedo.de>
 

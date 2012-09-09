@@ -1,4 +1,68 @@
+2012-08-30  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsodeviced: configuration: make a herring -> crespo symlink.
+	The Nexus S device is mostly known as crespo(for instance in cyanogenmod and
+	  derivatives like replicant), and is known as herring only trough its kernel
+	  board name.
+
+	ffsodeviced: GTA04 alsa scenarios: Fix scenarios switching while playing sound/music
+	Without that fix we have:
+	  [  146.366760] twl4030-codec twl4030-codec: operation mode cannot be changed on-the-fly
+
+	fsodeviced: GTA04 config: add headset definition.
+	With that it switches scenarios automatically under the shr-image.
+
+	However a bug still persist:
+	[  146.366760] twl4030-codec twl4030-codec: operation mode cannot be changed on-the-fly
+	So you have to plug the headset before starting the music.
+
+2012-08-30  Lukas Märdian  <lukasmaerdian@gmail.com>
+
+	fsodeviced: gta04: conf: add preliminary hwrouting scenarios
+	 * Thanks to jeepingben for creating them.
+	 * They still need to be integrated.
+
+2012-08-13  Lukas Märdian  <lukasmaerdian@gmail.com>
+
+	fsodeviced: conf: gta04: kernel_idle: ignore bma150 (fixes SHR#2049)
+	* bma150 prevents the gta04 from accessing the idle states
+
+2012-08-13  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsodeviced: GTA04 alsa configuration: fix the headset scenario
+	Without that fix we have:
+	  [ERROR] RouterLibAlsa <>: Got error while parsing line 37 of scenario headset:
+	  [ERROR] RouterLibAlsa <>: Expected 0 value parameters, got 1
+
+	After fixing that error we have still no sound in the headset.
+	This commit also fixes the absence of sound in the headset.
+
+	fsodeviced: GTA04 alsa configuration: add headset scenario
+
+	fsodeviced: gta04 config: repair the wifi.
+	Without that fix wlan0 doesn't come up(ifconfig wlan0 up
+	  was necessary).
+
+	That fix is necesasry because of commit 0009935df42d5aa6a7098cbe623b153ab2412dc9
+	 (fsodeviced: kernel26_rfkill: don't deal with network interface or bluetooth daemon)
+
+2012-07-29  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: drop router_qdsp5 plugin; it's not used anymore
+
+2012-07-28  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: router_alsa: use AbstractObject class as base and use our own logger instead of framework one
+
+	fsodeviced: router_alsa: don't hand over invalid control id's to ALSA; fixes #683
+
 2012-07-27  Simon Busch  <morphis@gravedo.de>
+
+	Enable release mode for all components
+
+	Bump version of all components to 0.12.0-rc1
+
+	Update changelogs of all components
 
 	fsodeviced: update README file
 
