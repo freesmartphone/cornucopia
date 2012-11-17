@@ -28,6 +28,7 @@ internal List<FsoDevice.BasePowerControlResource> resources;
 internal List<FsoDevice.BasePowerControl> instances;
 
 internal Gta04.Info info;
+internal Gta04.RouterAlsa router_alsa;
 
 /**
  * This function gets called on plugin initialization time.
@@ -57,6 +58,11 @@ public static string fso_factory_function( FsoFramework.Subsystem subsystem ) th
     if ( config.hasSection( @"$(Gta04.MODULE_NAME)/info" ) )
     {
         var info = new Gta04.Info( subsystem );
+    }
+
+    if ( config.hasSection( @"$(Gta04.MODULE_NAME)/router_alsa" ) )
+    {
+        var info = new Gta04.RouterAlsa( subsystem );
     }
 
     return Gta04.MODULE_NAME;

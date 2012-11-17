@@ -16,6 +16,7 @@ gta04_quirks_la_SOURCES = \
 	plugin.vala \
 	powercontrol.vala \
 	info.vala \
+	router_alsa.vala \
 	$(NULL)
 gta04_quirks_la_VALAFLAGS = \
 	--basedir $(top_srcdir) \
