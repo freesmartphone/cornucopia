@@ -36,7 +36,7 @@ internal Gta04.RouterAlsa router_alsa;
  * @note that it needs to be a name in the format <subsystem>.<plugin>
  * else your module will be unloaded immediately.
  **/
-public static string fso_factory_function( FsoFramework.Subsystem subsystem ) throws Error
+public static string fso_factory_function( FsoFramework.DBusSubsystem subsystem ) throws Error
 {
     var config = FsoFramework.theConfig;
     var sysfs_root = config.stringValue( "cornucopia", "sysfs_root", "/sys" );

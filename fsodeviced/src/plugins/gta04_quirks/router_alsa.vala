@@ -33,10 +33,12 @@ class RouterAlsa : FsoDevice.BaseAudioRouter
 
     private string configurationPath;
     private string dataPath;
+    private FsoFramework.DBusSubsystem subsystem;
 
 
-    public RouterAlsa( FsoFramework.Subsystem subsystem )
+    public RouterAlsa( FsoFramework.DBusSubsystem subsystem )
     {
+        this.subsystem = subsystem;
         initScenarios();
         if ( currentscenario != "unknown" )
         {
@@ -98,24 +100,30 @@ class RouterAlsa : FsoDevice.BaseAudioRouter
         // TODO: autodetect gta04 revision and thus the path using this API:
         //       org.freesmartphone.Device.Info.GetCpuInfo
         DBusConnection conn = this.subsystem.dbusConnection();
-        info_proxy = conn.get_proxy_sync<org.freesmartphone.Device.Info>( "org.freesmartphone.odeviced",
+        var info_proxy = conn.get_proxy_sync<FreeSmartphone.Device.Info>( "org.freesmartphone.odeviced",
             "/org/freesmartphone/Device/Info", DBusProxyFlags.DO_NOT_AUTO_START );
-        cpu_info = info_proxy.get_cpu_info();
 
         var config = FsoFramework.theConfig;
-
-        if ( cpu_info["Hardware"] == "GTA04" && cpu_info["Revision"] == "A3" )
-        {
-            // load extra_path config
-            // FIXME: use "swrouting" as extra_path here, as most people will use A4+ revisions
-            var extra_path = config.stringValue( Gta04.MODULE_NAME, "extra_path", "" );
-        }
-        else
-        {
-            // load extra_path config
-            // FIXME: use "" as extra_path here
-            var extra_path = config.stringValue( Gta04.MODULE_NAME, "extra_path", "hwrouting" );
-        }
+        var extra_path = "";
+        info_proxy.get_cpu_info.begin((obj, res) => {
+            try {
+                HashTable<string,Variant> cpu_info = info_proxy.get_cpu_info.end(res);
+                if ( cpu_info["Hardware"] == "GTA04" && cpu_info["Revision"] == "A3" )
+                {
+                    // load extra_path config
+                    // FIXME: use "swrouting" as extra_path here, as most people will use A4+ revisions
+                    extra_path = config.stringValue( Gta04.MODULE_NAME, "extra_path", "" );
+                }
+                else
+                {
+                    // load extra_path config
+                    // FIXME: use "" as extra_path here
+                    extra_path = config.stringValue( Gta04.MODULE_NAME, "extra_path", "hwrouting" );
+                }
+            } catch (IOError e) {
+                logger.warning( @"Could not call FreeSmartphone.Device.Info.GetCpuInfo. It is not possible to detect the GTA04 hardware revision: $(e.message)" );
+            }
+        });
 
         configurationPath = FsoFramework.Utility.machineConfigurationDir() + @"/$extra_path/alsa.conf";
 
