@@ -113,6 +113,9 @@ class AudioManager : FreeSmartphone.Device.Audio,
             case "alsa":
                 typename = "RouterLibAlsa";
                 break;
+            case "gta04":
+                typename = "Gta04RouterAlsa";
+                break;
             case "qdsp5":
                 typename = "RouterQdsp5";
                 break;

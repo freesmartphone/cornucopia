@@ -97,31 +97,35 @@ class RouterAlsa : FsoDevice.BaseAudioRouter
 
     private void initScenarios()
     {
-        // TODO: autodetect gta04 revision and thus the path using this API:
-        //       org.freesmartphone.Device.Info.GetCpuInfo
+        /**
+         * Autodetect gta04 hardware revision and thus the default path for the alsa config using this API:
+         * org.freesmartphone.Device.Info.GetCpuInfo
+         **/
         DBusConnection conn = this.subsystem.dbusConnection();
         var info_proxy = conn.get_proxy_sync<FreeSmartphone.Device.Info>( "org.freesmartphone.odeviced",
             "/org/freesmartphone/Device/Info", DBusProxyFlags.DO_NOT_AUTO_START );
 
         var config = FsoFramework.theConfig;
-        var extra_path = "";
-        info_proxy.get_cpu_info.begin((obj, res) => {
-            try {
+        // default to no extra_path
+        var extra_path = config.stringValue( Gta04.MODULE_NAME, "extra_path", "hwrouting" );
+        yield info_proxy.get_cpu_info.begin((obj, res) => {
+            try
+            {
                 HashTable<string,Variant> cpu_info = info_proxy.get_cpu_info.end(res);
                 if ( cpu_info["Hardware"] == "GTA04" && cpu_info["Revision"] == "A3" )
                 {
-                    // load extra_path config
-                    // FIXME: use "swrouting" as extra_path here, as most people will use A4+ revisions
                     extra_path = config.stringValue( Gta04.MODULE_NAME, "extra_path", "" );
+                    logger.info( @"Detected gta04a3: looking in $(FsoFramework.Utility.machineConfigurationDir()+"/"+extra_path) for alsa config." );
                 }
                 else
                 {
-                    // load extra_path config
-                    // FIXME: use "" as extra_path here
                     extra_path = config.stringValue( Gta04.MODULE_NAME, "extra_path", "hwrouting" );
+                    logger.info( @"Detected gta04a4+: looking in $(FsoFramework.Utility.machineConfigurationDir()+"/"+extra_path) for alsa config." );
                 }
-            } catch (IOError e) {
-                logger.warning( @"Could not call FreeSmartphone.Device.Info.GetCpuInfo. It is not possible to detect the GTA04 hardware revision: $(e.message)" );
+            }
+            catch (DBusError e)
+            {
+                logger.warning( @"Unable to detect the GTA04 hardware revision: $(e.message)" );
             }
         });
 
