@@ -62,7 +62,7 @@ public static string fso_factory_function( FsoFramework.DBusSubsystem subsystem 
 
     if ( config.hasSection( @"$(Gta04.MODULE_NAME)/router_alsa" ) )
     {
-        var info = new Gta04.RouterAlsa( subsystem );
+        var router_alsa = new Gta04.RouterAlsa( subsystem );
     }
 
     return Gta04.MODULE_NAME;

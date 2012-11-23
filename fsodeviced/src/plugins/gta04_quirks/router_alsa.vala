@@ -95,7 +95,7 @@ class RouterAlsa : FsoDevice.BaseAudioRouter
         }
     }
 
-    private void initScenarios()
+    private async void initScenarios()
     {
         /**
          * Autodetect gta04 hardware revision and thus the default path for the alsa config using this API:
@@ -106,28 +106,28 @@ class RouterAlsa : FsoDevice.BaseAudioRouter
             "/org/freesmartphone/Device/Info", DBusProxyFlags.DO_NOT_AUTO_START );
 
         var config = FsoFramework.theConfig;
-        // default to no extra_path
-        var extra_path = config.stringValue( Gta04.MODULE_NAME, "extra_path", "hwrouting" );
-        yield info_proxy.get_cpu_info.begin((obj, res) => {
-            try
+        var extra_path = config.stringValue( Gta04.MODULE_NAME+"/router_alsa", "extra_path", "hwrouting" );
+        try
+        {
+            // FIXME:
+            // 'GLib <>: gee_abstract_map_get: assertion `self != NULL' failed'
+            HashTable<string,Variant> cpu_info = yield info_proxy.get_cpu_info();
+
+            if ( cpu_info["Hardware"] == "GTA04" && cpu_info["Revision"] == "A3" )
             {
-                HashTable<string,Variant> cpu_info = info_proxy.get_cpu_info.end(res);
-                if ( cpu_info["Hardware"] == "GTA04" && cpu_info["Revision"] == "A3" )
-                {
-                    extra_path = config.stringValue( Gta04.MODULE_NAME, "extra_path", "" );
-                    logger.info( @"Detected gta04a3: looking in $(FsoFramework.Utility.machineConfigurationDir()+"/"+extra_path) for alsa config." );
-                }
-                else
-                {
-                    extra_path = config.stringValue( Gta04.MODULE_NAME, "extra_path", "hwrouting" );
-                    logger.info( @"Detected gta04a4+: looking in $(FsoFramework.Utility.machineConfigurationDir()+"/"+extra_path) for alsa config." );
-                }
+                extra_path = config.stringValue( Gta04.MODULE_NAME+"/router_alsa", "extra_path", "" );
+                logger.info( @"Detected gta04a3: looking in $(FsoFramework.Utility.machineConfigurationDir())/$(extra_path) for alsa config." );
             }
-            catch (DBusError e)
+            else
             {
-                logger.warning( @"Unable to detect the GTA04 hardware revision: $(e.message)" );
+                extra_path = config.stringValue( Gta04.MODULE_NAME+"/router_alsa", "extra_path", "hwrouting" );
+                logger.info( @"Detected gta04a4+: looking in $(FsoFramework.Utility.machineConfigurationDir())/$(extra_path) for alsa config." );
             }
-        });
+        }
+        catch (DBusError e)
+        {
+            logger.info( @"Could not detect GTA04 hardware revision: $(e.message)" );
+        }
 
         configurationPath = FsoFramework.Utility.machineConfigurationDir() + @"/$extra_path/alsa.conf";
 
