@@ -34,23 +34,62 @@ class RouterAlsa : FsoDevice.BaseAudioRouter
     private string configurationPath;
     private string dataPath;
     private FsoFramework.DBusSubsystem subsystem;
+    private HashTable<string,Variant> cpu_info = null;
+    private string extra_path = "hwrouting";
 
 
     public RouterAlsa( FsoFramework.DBusSubsystem subsystem )
     {
         this.subsystem = subsystem;
-        initScenarios();
-        if ( currentscenario != "unknown" )
+
+        /**
+         * Autodetect gta04 hardware revision and thus the default path for the alsa config using this API:
+         * org.freesmartphone.Device.Info.GetCpuInfo
+         **/
+        var config = FsoFramework.theConfig;
+        this.extra_path = config.stringValue( Gta04.MODULE_NAME+"/router_alsa", "extra_path", "hwrouting" );
+        try
         {
-            try
-            {
-                device.setAllMixerControls( allscenarios[currentscenario].controls );
-            }
-            catch ( FsoDevice.SoundError e )
-            {
-                logger.warning( @"Setting mixer controls for scenario $currentscenario failed: $(e.message)" );
-            }
+            DBusConnection conn = this.subsystem.dbusConnection();
+            var info_proxy = conn.get_proxy_sync<FreeSmartphone.Device.Info>(
+                "org.freesmartphone.odeviced", "/org/freesmartphone/Device/Info", DBusProxyFlags.DO_NOT_AUTO_START );
+            info_proxy.get_cpu_info.begin((obj, res)  => {
+                cpu_info = info_proxy.get_cpu_info.end(res);
+                if ( cpu_info.contains("Hardware") && cpu_info.contains("Revision") &&
+                     cpu_info["Hardware"].get_string() == "GTA04" && cpu_info["Revision"].get_string() == "A3" )
+                {
+                    this.extra_path = config.stringValue( Gta04.MODULE_NAME+"/router_alsa", "extra_path", "" );
+                    logger.info( @"Detected gta04a3: looking in $(FsoFramework.Utility.machineConfigurationDir())/$(extra_path) for alsa config." );
+                }
+                else
+                {
+                   this.extra_path = config.stringValue( Gta04.MODULE_NAME+"/router_alsa", "extra_path", "hwrouting" );
+                   logger.info( @"Detected gta04a4+: looking in $(FsoFramework.Utility.machineConfigurationDir())/$(extra_path) for alsa config." );
+                }
+
+                initScenarios();
+                if ( currentscenario != "unknown" )
+                {
+                    try
+                    {
+                        device.setAllMixerControls( allscenarios[currentscenario].controls );
+                    }
+                    catch ( FsoDevice.SoundError e )
+                    {
+                        logger.warning( @"Setting mixer controls for scenario $currentscenario failed: $(e.message)" );
+                    }
+                }
+            });
         }
+        catch (DBusError e)
+        {
+            logger.info( @"Could not detect GTA04 hardware revision: $(e.message)" );
+        }
+        catch (IOError e)
+        {
+            logger.info( @"Could not detect GTA04 hardware revision: $(e.message)" );
+        }
+
     }
 
     private void addScenario( string scenario, File file, uint idxMainVolume )
@@ -97,41 +136,6 @@ class RouterAlsa : FsoDevice.BaseAudioRouter
 
     private async void initScenarios()
     {
-        /**
-         * Autodetect gta04 hardware revision and thus the default path for the alsa config using this API:
-         * org.freesmartphone.Device.Info.GetCpuInfo
-         **/
-        var config = FsoFramework.theConfig;
-        var extra_path = config.stringValue( Gta04.MODULE_NAME+"/router_alsa", "extra_path", "hwrouting" );
-        try
-        {
-            DBusConnection conn = this.subsystem.dbusConnection();
-            var info_proxy = conn.get_proxy_sync<FreeSmartphone.Device.Info>(
-		"org.freesmartphone.odeviced", "/org/freesmartphone/Device/Info", DBusProxyFlags.DO_NOT_AUTO_START );
-            HashTable<string,Variant> cpu_info = null;
-            info_proxy.get_cpu_info.begin((obj, res)  => {
-                cpu_info = info_proxy.get_cpu_info.end(res);
-		stderr.printf("Hardware == %s, Revision == %s\n", cpu_info["Hardware"].get_string(), cpu_info["Revision"].get_string() );
-                if ( cpu_info["Hardware"].get_string() == "GTA04" && cpu_info["Revision"].get_string() == "A3" )
-                {
-                    extra_path = config.stringValue( Gta04.MODULE_NAME+"/router_alsa", "extra_path", "" );
-                    logger.info( @"Detected gta04a3: looking in $(FsoFramework.Utility.machineConfigurationDir())/$(extra_path) for alsa config." );
-                }
-                else
-                {
-                   extra_path = config.stringValue( Gta04.MODULE_NAME+"/router_alsa", "extra_path", "hwrouting" );
-                   logger.info( @"Detected gta04a3: looking in $(FsoFramework.Utility.machineConfigurationDir())/$(extra_path) for alsa config." );
-                }
-	    });
-        }
-        catch (DBusError e)
-        {
-            logger.info( @"Could not detect GTA04 hardware revision: $(e.message)" );
-        }
-	catch (GLib.IOError e)
-	{
-		logger.info( @"Could not detect GTA04 hardware revision: $(e.message)" );
-	}
         configurationPath = FsoFramework.Utility.machineConfigurationDir() + @"/$extra_path/alsa.conf";
 
         scenarios = new GLib.Queue<string>();
