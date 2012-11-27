@@ -89,7 +89,7 @@ class RouterAlsa : FsoDevice.BaseAudioRouter
         {
             logger.info( @"Could not detect GTA04 hardware revision: $(e.message)" );
         }
-
+        //FIXME: global variables are lost in the async call, they are not available to the outside
     }
 
     private void addScenario( string scenario, File file, uint idxMainVolume )
