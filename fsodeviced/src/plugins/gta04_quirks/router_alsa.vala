@@ -26,16 +26,16 @@ namespace Gta04
  **/
 class RouterAlsa : FsoDevice.BaseAudioRouter
 {
-    private FsoDevice.SoundDevice device;
-    private Gee.HashMap<string,FsoDevice.BunchOfMixerControls> allscenarios;
-    private string currentscenario;
-    private GLib.Queue<string> scenarios;
+    private static FsoDevice.SoundDevice device;
+    private static Gee.HashMap<string,FsoDevice.BunchOfMixerControls> allscenarios;
+    private static string currentscenario;
+    private static GLib.Queue<string> scenarios;
 
-    private string configurationPath;
-    private string dataPath;
-    private FsoFramework.DBusSubsystem subsystem;
-    private HashTable<string,Variant> cpu_info = null;
-    private string extra_path = "hwrouting";
+    private static string configurationPath;
+    private static string dataPath;
+    private static FsoFramework.DBusSubsystem subsystem;
+    private static HashTable<string,Variant> cpu_info = null;
+    private static string extra_path = "hwrouting";
 
 
     public RouterAlsa( FsoFramework.DBusSubsystem subsystem )
@@ -53,6 +53,11 @@ class RouterAlsa : FsoDevice.BaseAudioRouter
             DBusConnection conn = this.subsystem.dbusConnection();
             var info_proxy = conn.get_proxy_sync<FreeSmartphone.Device.Info>(
                 "org.freesmartphone.odeviced", "/org/freesmartphone/Device/Info", DBusProxyFlags.DO_NOT_AUTO_START );
+
+            /**
+             * ATTENTION: could that be a race condition?
+             * Maybe we should use lazy initialization here, to avoid this.
+             **/
             info_proxy.get_cpu_info.begin((obj, res)  => {
                 cpu_info = info_proxy.get_cpu_info.end(res);
                 if ( cpu_info.contains("Hardware") && cpu_info.contains("Revision") &&
@@ -89,7 +94,6 @@ class RouterAlsa : FsoDevice.BaseAudioRouter
         {
             logger.info( @"Could not detect GTA04 hardware revision: $(e.message)" );
         }
-        //FIXME: global variables are lost in the async call, they are not available to the outside
     }
 
     private void addScenario( string scenario, File file, uint idxMainVolume )
@@ -134,7 +138,7 @@ class RouterAlsa : FsoDevice.BaseAudioRouter
         }
     }
 
-    private async void initScenarios()
+    private void initScenarios()
     {
         configurationPath = FsoFramework.Utility.machineConfigurationDir() + @"/$extra_path/alsa.conf";
 
