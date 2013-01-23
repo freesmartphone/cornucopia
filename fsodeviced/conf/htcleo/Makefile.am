@@ -10,6 +10,6 @@ dist_conf_DATA = \
 	$(NULL)
 
 install-data-local:
-	$(mkinstalldirs) $(DESTDIR)/etc/freesmartphone/conf/
+	$(mkinstalldirs) $(DESTDIR)/${sysconfdir}/freesmartphone/conf/
 
 MAINTAINERCLEANFILES = Makefile.in
