@@ -4,7 +4,6 @@ NULL =
 
 AM_CFLAGS = \
 	-I$(top_srcdir)/src/lib \
-	-I$(top_srcdir)/src/3rdparty \
 	$(GLIB_CFLAGS) \
 	$(GEE_CFLAGS) \
 	$(FSO_CFLAGS) \
@@ -12,13 +11,13 @@ AM_CFLAGS = \
 
 noinst_PROGRAMS = $(TEST_PROGS)
 
-progs_ldadd = \
+LDADD = \
 	$(GLIB_LIBS) \
 	$(GEE_LIBS) \
 	$(FSO_LIBS) \
-	../src/lib/libfsotdl.la
+	$(top_builddir)/src/lib/libfsotdl.la
 
-VALAC_ARGS = \
+AM_VALAFLAGS = \
 	--basedir $(top_srcdir) \
 	--vapidir $(top_srcdir)/src/lib \
 	--pkg posix \
@@ -29,20 +28,11 @@ VALAC_ARGS = \
 	--pkg fsotdl-2.0
 
 TEST_PROGS += testsourcentp
-testsourcentp_VALASOURCES = testsourcentp.vala ../src/plugins/source_ntp/plugin.vala
-testsourcentp_SOURCES = testsourcentp.c ../src/plugins/source_ntp/plugin.c
-$(testsourcentp_SOURCES): $(testsourcentp_VALASOURCES)
-	$(VALAC) -C $(VALAC_ARGS) $^
-	touch $@
-testsourcentp_LDADD = $(progs_ldadd)
-EXTRA_DIST += $(testsourcentp_VALASOURCES) $(testsourcentp_SOURCES)
+testsourcentp_SOURCES = \
+	testsourcentp.vala \
+	$(top_srcdir)/src/plugins/source_ntp/plugin.vala
 
-
-CLEANFILES = \
-    $(TEST_PROGS) \
-    *.? \
-    $(NULL)
-
+CLEANFILES =
 MAINTAINERCLEANFILES = \
   Makefile.in \
   $(NULL)
