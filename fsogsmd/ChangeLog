@@ -1,3 +1,44 @@
+2013-01-25  Paul Fertser  <fercerpav@gmail.com>
+
+	fsogsmd: ti_calypso: allow negative numbers for %EM=2,3 responses
+
+2012-12-03  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsogsmd: conf: GTA04: remove local echo of your voice.
+	This fix removes a local echo(probably produced by the remote party):
+	  if you called your network operator's voice menu(for instance the one
+	  that tells you the amount of credit you have when you press 1, etc...)
+	  and recorded the call with aplay(after killing fsoaudiod of course) like that:
+	    arecord -Dhw:1 -r 8000 -c 1 -f S16_LE > call.raw
+	  and at the same time played some music to the modem:
+	    mplayer 01.ogg -ao alsa:device=hw=1
+	  You would have heared the music in the call when playing back the call(call.raw).
+
+	Thanks cmair for the help in the #gta04 Freenode IRC channel.
+
+	The following AT commands produces a local echo:
+	 * AT_OPCMPROF=0
+	 * AT_OPCMPROF=1
+	While theses don't:
+	 * AT_OPCMPROF=2
+	 * AT_OPCMPROF=3
+
+	AT_OPCMPROF=2 is louder but AT_OPCMPROF=3 had a better sound quality,
+	  so I chose AT_OPCMPROF=3.
+
+	Since theses commands stays across calls, executing AT_OPCMPROF=3
+	  at boot works fine.
+
+	Also note that executing one of theses commands during the call result
+	  in the rest of the call beeing silent (but the next call would work).
+
+	Note that this doesn't fix the echo that the remote party has,
+	  which is probably produced by the GTA04.
+
+2012-09-09  Simon Busch  <morphis@gravedo.de>
+
+	Bump version of all components to 0.12.0-rc2 and update changelogs
+
 2012-08-30  Simon Busch  <morphis@gravedo.de>
 
 	fsogsmd: modem_samsung: Make sound during outgoing calls work again

@@ -1,3 +1,26 @@
+2013-01-25  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsoaudiod: gsmvoice_alsa_cmtspeechdata: activate the forwarder for answering calls.
+	Without that fix the N900 probably doesn't activate the forwarder when answering calls.
+
+	This fix was not tested on the target.
+
+2012-12-04  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsoaudiod: gsmvoice_alsa_forwarder: start the forwarder earlier
+	Without that fix the forwarder is started too late and we miss
+	  the beginning of the conversation.
+
+2012-12-03  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsoaudiod: gsmvoice_alsa_forwarder: try to fix realloc errors.
+	This fix tries to prevent errors like that:
+	  *** glibc detected *** fsoaudiod: realloc(): invalid next size: 0xb5403e58 ***
+
+2012-09-09  Simon Busch  <morphis@gravedo.de>
+
+	Bump version of all components to 0.12.0-rc2 and update changelogs
+
 2012-08-30  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
 
 	fsoaudiod: herring config: use fsodeviced alsa plugin instead of the fsoaudiod one.

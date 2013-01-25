@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ROOT=`pwd`
 . ./scripts/list_components.sh
 for comp in $COMPONENTS; do

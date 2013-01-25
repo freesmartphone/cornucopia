@@ -1,3 +1,93 @@
+2013-01-25  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsodeviced: herring_quirks: fix fsodeviced crash at alsa plugin startup.
+	Without that fix we have:
+	  Aborting due to critical error:
+	  'GLib <GLib-GIO>: g_dbus_connection_register_object: assertion `object_path != NULL && g_variant_is_object_path (object_path)' failed'
+
+	The glib documentation[1] says:
+	  Each sequence must contain only the characters "[A-Z][a-z][0-9]_".
+	  For the g_variant_is_object_path function.
+	  That doesn't include '-', which is why it aborts.
+
+	[1] http://developer.gnome.org/glib/2.33/glib-GVariant.html#g-variant-is-object-path
+
+2013-01-23  Simon Busch  <morphis@gravedo.de>
+
+	fsodeviced: conf: htcleo: used ${sysconfdir} as base for installing config files
+
+2012-12-03  Lukas Märdian  <luk@slyon.de>
+
+	fsodeviced: gta04: move scenarios
+	 * use hwrouting as default scenarios (in conf/GTA04/alsa-3.4)
+	 * use swrouting as extra scenarios (in conf/GTA04/swrouting/alsa-default)
+	   selected by model override in fsodeviced.conf (fsodevice.router_alsa@gta04a3)
+
+2012-12-03  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	ffsodeviced: GTA04 alsa hardware scenarios: Fix scenarios switching while playing sound/music
+	This is a port of the 8bcbd05480af9afc79a142c7f18e22a30f74d927 fix:
+	  (ffsodeviced: GTA04 alsa scenarios: Fix scenarios switching while playing sound/music)
+
+	I couldn't test on the hardware since I only have an A3 version.
+
+2012-12-03  Lukas Märdian  <luk@slyon.de>
+
+	fsodeviced: router_alsa: add extra_path config
+	* This enables us to have a different set of scenarios
+	  (e.g. for hwrouting on the GTA04A4)
+
+	 * To use the hwrouting, we need this kernel patch (otherwise fsodeviced will crash):
+	   http://lists.goldelico.com/pipermail/gta04-owner/2012-April/002191.html
+
+	 * Just applying the kernel patch breaks swrouting on gta04a3 (everything silent during call).
+
+	Tested-by: Benjamin Deering <ben_deering@swissmail.org>
+
+	fsodeviced: gta04: adopt swrouting scenarios to kernel patch
+	 * new 'Voice route' control, introduced by this kernel patch:
+	   http://lists.goldelico.com/pipermail/gta04-owner/2012-April/002191.html
+
+2012-12-03  Rico Rommel  <rico@bierrommel.de>
+
+	fsodeviced: add accelerometer plugin bma180 for gta04
+
+2012-12-03  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
+
+	fsodeviced: GTA04 alsa configuration: really activate gsmheadset.
+
+	fsodeviced: GTA04 alsa configuration: add gsmheadset configuration.
+	With lastest kernel patch( GTA04 audio headset jack detect.)
+	  the scenarios should stop bouncing between gsmheadset and gsmhandset.
+
+	So we can now activate the gsmheadset.
+
+2012-12-03  Lukas Märdian  <luk@slyon.de>
+
+	fsodeviced: gta04_quirks/info: DRY - use preset data
+
+	fsodeviced: gta04_quirks/info check model on startup
+
+	fsodeviced: gta04_quirks/info: set model value
+
+	fsodeviced: gta04_quirks: add info plugin (like kernel_info)
+
+2012-12-03  Paul Fertser  <fercerpav@gmail.com>
+
+	fsodeviced: alsa: fix off-by-one in verifying control index
+	This prevents crash on load in case the scenario has more
+	elements than the currently running kernel provides.
+
+2012-12-03  Lukas Märdian  <lukasmaerdian@gmail.com>
+
+	fsodeviced: GTA04: fix ln argument order
+
+	fsodeviced: GTA04: link to alsa-scenarios for linux-3.5
+
+2012-09-09  Simon Busch  <morphis@gravedo.de>
+
+	Bump version of all components to 0.12.0-rc2 and update changelogs
+
 2012-08-30  Denis 'GNUtoo' Carikli  <GNUtoo@no-log.org>
 
 	fsodeviced: configuration: make a herring -> crespo symlink.
