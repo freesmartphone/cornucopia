@@ -27,6 +27,7 @@ public class FsoGsm.AtChannel : FsoGsm.AtCommandQueue, FsoGsm.Channel
     private bool isInitialized;
     private bool isMainChannel;
     private bool isUrcChannel;
+    private uint timeoutID;
     private FsoGsm.Modem modem;
 
     public AtChannel( FsoGsm.Modem modem, string? name, FsoFramework.Transport transport, FsoFramework.Parser parser, bool isUrcChannel = true )
@@ -46,10 +47,13 @@ public class FsoGsm.AtChannel : FsoGsm.AtCommandQueue, FsoGsm.Channel
 
     public void onModemStatusChanged( FsoGsm.Modem modem, FsoGsm.Modem.Status status )
     {
+        if (timeoutID > 0 ) Source.remove( timeoutID);
+
         switch ( status )
         {
             case Modem.Status.INITIALIZING:
                 initialize();
+                timeoutID = Timeout.add (5000, onInitTimeout);
                 break;
             case Modem.Status.ALIVE_SIM_READY:
                 simIsReady();
@@ -64,6 +68,15 @@ public class FsoGsm.AtChannel : FsoGsm.AtCommandQueue, FsoGsm.Channel
                 break;
         }
     }
+
+
+    private bool onInitTimeout()
+    {
+        modem.logger.debug( "Initializing timed out, re-initializing" );
+        initialize();
+        return true;
+    }
+
 
     private async void initialize()
     {
