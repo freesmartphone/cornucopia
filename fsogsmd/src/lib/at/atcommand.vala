@@ -176,7 +176,11 @@ public abstract class FsoGsm.AbstractAtCommand : GLib.Object, FsoGsm.AtCommandQu
             return Constants.AtResponse.CONNECT;
         }
 
-        assert( modem.logger.debug( @"Did not receive OK (instead '$statusline') for $(Type.from_instance(this).name())" ) );
+#if !NDEBUG
+	if (modem != null)
+	        modem.logger.debug( @"Did not receive OK (instead '$statusline') for $(Type.from_instance(this).name())" );
+#endif
+
         var errorcode = 0;
 
         if ( ! ( ":" in statusline ) )
