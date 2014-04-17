@@ -47,8 +47,11 @@ public class FsoGsm.AtChannel : FsoGsm.AtCommandQueue, FsoGsm.Channel
 
     public void onModemStatusChanged( FsoGsm.Modem modem, FsoGsm.Modem.Status status )
     {
-        if (timeoutID > 0 ) Source.remove( timeoutID);
-
+        if (timeoutID > 0 ) 
+        {
+           Source.remove( timeoutID);
+           timeoutID = 0;
+        }
         switch ( status )
         {
             case Modem.Status.INITIALIZING:
