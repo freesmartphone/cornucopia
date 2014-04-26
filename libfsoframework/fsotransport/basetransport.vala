@@ -372,6 +372,7 @@ public class FsoFramework.BaseTransport : FsoFramework.Transport
         if ( readwatch != 0 )
         {
             Source.remove( readwatch );
+            readwatch = 0;
         }
         channel = null;
         if ( fd != -1 )
