@@ -158,19 +158,33 @@ namespace FsoFramework
 
         public const string MessagesServiceFace = ServiceFacePrefix + ".Messages";
         public const string MessagesServicePath = ServicePathPrefix + "/Messages";
+        public const string MessageServiceFace = ServiceFacePrefix + ".Message";
+        public const string MessageQueryServiceFace = ServiceFacePrefix + ".MessageQuery";
 
         public const string ContactsServiceFace = ServiceFacePrefix + ".Contacts";
         public const string ContactsServicePath = ServicePathPrefix + "/Contacts";
         public const string ContactServiceFace = ServiceFacePrefix + ".Contact";
+        public const string ContactQueryServiceFace = ServiceFacePrefix + ".ContactQuery";
 
         public const string CallsServiceFace = ServiceFacePrefix + ".Calls";
         public const string CallsServicePath = ServicePathPrefix + "/Calls";
+        public const string CallServiceFace = ServiceFacePrefix + ".Call";
+        public const string CallQueryServiceFace = ServiceFacePrefix + ".CallQuery";
 
         public const string TasksServiceFace = ServiceFacePrefix + ".Tasks";
         public const string TasksServicePath = ServicePathPrefix + "/Tasks";
+        public const string TaskServiceFace = ServiceFacePrefix + ".Task";
+        public const string TaskQueryServiceFace = ServiceFacePrefix + ".TaskQuery";
 
         public const string NotesServiceFace = ServiceFacePrefix + ".Notes";
         public const string NotesServicePath = ServicePathPrefix + "/Notes";
+        public const string NoteServiceFace = ServiceFacePrefix + ".Note";
+        public const string NoteQueryServiceFace = ServiceFacePrefix + ".NoteQuery";
+
+        public const string DatesServiceFace = ServiceFacePrefix + ".Dates";
+        public const string DatesServicePath = ServicePathPrefix + "/Dates";
+        public const string DateServiceFace = ServiceFacePrefix + ".Date";
+        public const string DateQueryServiceFace = ServiceFacePrefix + ".DateQuery";
     }
 
     namespace Resource
