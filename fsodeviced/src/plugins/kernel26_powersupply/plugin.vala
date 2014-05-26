@@ -22,6 +22,8 @@ using GLib;
 namespace Kernel26
 {
 
+    internal const string KERNEL26_POWERSUPPLY_PLUGIN_NAME = "fsodevice.kernel26_powersupply";
+
 /**
  * Implementation of org.freesmartphone.Device.PowerSupply for the Kernel26 Power-Class Device
  **/
@@ -515,20 +517,25 @@ public static string fso_factory_function( FsoFramework.Subsystem subsystem ) th
     sysfs_root = config.stringValue( "cornucopia", "sysfs_root", "/sys" );
     sys_class_powersupplies = "%s/class/power_supply".printf( sysfs_root );
 
-    // scan sysfs path for rtcs
+    // scan sysfs path for power supplies
     var dir = Dir.open( sys_class_powersupplies );
     var entry = dir.read_name();
+    var ignoreList = config.stringListValue( Kernel26.KERNEL26_POWERSUPPLY_PLUGIN_NAME, "ignore", new string[] {} );
+
     while ( entry != null )
     {
-        var filename = Path.build_filename( sys_class_powersupplies, entry );
-        instances.append( new Kernel26.PowerSupply( subsystem, filename ) );
+        if ( !(entry in ignoreList) )
+        {
+            var filename = Path.build_filename( sys_class_powersupplies, entry );
+            instances.append( new Kernel26.PowerSupply( subsystem, filename ) );
+        }
         entry = dir.read_name();
     }
 
     // always create aggregated object
     aggregate = new Kernel26.AggregatePowerSupply( subsystem, sys_class_powersupplies );
 
-    return "fsodevice.kernel26_powersupply";
+    return Kernel26.KERNEL26_POWERSUPPLY_PLUGIN_NAME;
 }
 
 [ModuleInit]
