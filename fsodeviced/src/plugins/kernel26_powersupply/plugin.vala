@@ -455,7 +455,7 @@ class AggregatePowerSupply : FreeSmartphone.Device.PowerSupply, FsoFramework.Abs
 
     public int getCapacity()
     {
-        var amount = -1;
+        var amount = 0;
         var numValues = 0;
         // walk through all power nodes and compute arithmetic mean
         foreach( var supply in instances )
