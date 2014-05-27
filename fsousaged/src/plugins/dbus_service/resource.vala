@@ -257,7 +257,14 @@ public class Resource : IResource, Object
 
         if ( policy == FreeSmartphone.UsageResourcePolicy.AUTO && users.size == 0 )
         {
-            yield disable();
+            try
+            {
+                yield disable();
+            }
+            catch ( GLib.Error error )
+            {
+                instance.logger.error( @"Error while disabling '$name' resource after last user disappeared: $(error.message)" );
+            }
         }
         else
         {
