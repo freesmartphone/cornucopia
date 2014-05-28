@@ -59,8 +59,6 @@ class LowLevel.Neo900 : FsoGsm.LowLevel, FsoFramework.AbstractObject
                  ( !desired_power_state  && !FsoFramework.FileHandling.isPresent( modem_node ) ) )
                 break;
 
-            if (!desired_power_state ) break;
-
             Posix.sleep( 2 );
 
             retries++;
