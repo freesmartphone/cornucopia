@@ -10,11 +10,13 @@ SUBDIRS = \
 	lowlevel_openmoko \
 	lowlevel_gta04 \
 	lowlevel_motorola_ezx \
+	lowlevel_neo900 \
 	\
 	modem_dummy \
 	modem_singleline \
 	modem_qualcomm_htc \
 	modem_option_gtm601 \
+	modem_cinterion_ps8 \
 	modem_freescale_neptune \
 	modem_phonesim \
 	\

@@ -30,6 +30,9 @@ public class FsoGsm.ModemFactory : GLib.Object
             case "cinterion_mc75":
                 typename = "CinterionMc75Modem";
                 break;
+            case "cinterion_ps8":
+                typename = "CinterionPS8Modem";
+                break;
             case "dummy":
                 typename = "DummyModem";
                 break;

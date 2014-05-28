@@ -41,6 +41,9 @@ namespace FsoGsm
             case "gta04":
                 typename = "LowLevelGTA04";
                 break;
+            case "neo900":
+                typename = "LowLevelNeo900";
+                break;
             default:
                 FsoFramework.theLogger.warning( @"Invalid lowlevel_type $lowleveltype; vendor specifics will NOT be available" );
                 lowleveltype = "none";
