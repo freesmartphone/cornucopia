@@ -1332,8 +1332,8 @@ public class PlusCREG : AbstractAtCommand
     public enum Mode
     {
         DISABLE = 0,
-        ENABLE_WITH_NETORK_REGISTRATION = 1,
-        ENABLE_WITH_NETORK_REGISTRATION_AND_LOCATION = 2,
+        ENABLE_WITH_NETWORK_REGISTRATION = 1,
+        ENABLE_WITH_NETWORK_REGISTRATION_AND_LOCATION = 2,
     }
 
     public PlusCREG()

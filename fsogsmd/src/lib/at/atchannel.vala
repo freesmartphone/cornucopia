@@ -195,11 +195,11 @@ public class FsoGsm.AtChannel : FsoGsm.AtCommandQueue, FsoGsm.Channel
         string[] response = { };
         var cmd = modem.createAtCommand<PlusCREG>( "+CREG" );
 
-        response = yield enqueueAsync( cmd, cmd.issue( PlusCREG.Mode.ENABLE_WITH_NETORK_REGISTRATION_AND_LOCATION ) );
+        response = yield enqueueAsync( cmd, cmd.issue( PlusCREG.Mode.ENABLE_WITH_NETWORK_REGISTRATION_AND_LOCATION ) );
         if ( cmd.validateOk( response ) == Constants.AtResponse.OK )
             return;
 
-        response = yield enqueueAsync( cmd, cmd.issue( PlusCREG.Mode.ENABLE_WITH_NETORK_REGISTRATION ) );
+        response = yield enqueueAsync( cmd, cmd.issue( PlusCREG.Mode.ENABLE_WITH_NETWORK_REGISTRATION ) );
         if ( cmd.validateOk( response ) != Constants.AtResponse.OK )
         {
             modem.logger.error( "Failed to setup network registration reporting; reports will not be avaible ..." );
