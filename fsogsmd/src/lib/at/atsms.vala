@@ -42,7 +42,7 @@ public class FsoGsm.AtSmsHandler : FsoGsm.AbstractSmsHandler
     {
         foreach ( var p in pref )
         {
-            if ( p in pref )
+            if ( p in supported )
                 return p;
         }
 
