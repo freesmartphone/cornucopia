@@ -30,11 +30,23 @@ public class CinterionPS8.UnsolicitedResponseHandler : FsoGsm.AtUnsolicitedRespo
 
     registerUrc( "^SYSSTART", modemReady );
     registerUrc( "^SYSSTART AIRPLANE MODE", modemReady );
+    registerUrc( "+CIEV", extendedIndicator );
+    registerUrc( "^SSIM READY", simReady );
   }
 
   public virtual void modemReady( string prefix, string rhs )
   {
     assert( modem.logger.info( @"Modem ready: $prefix" ) );
+  }
+
+  public virtual void extendedIndicator( string prefix, string rhs )
+  {
+    assert( modem.logger.info( @"Extended indicator info: $rhs" ) );
+  }
+
+  public virtual void simReady( string prefix, string rhs )
+  {
+    modem.advanceToState( FsoGsm.Modem.Status.ALIVE_SIM_READY );
   }
 
 }

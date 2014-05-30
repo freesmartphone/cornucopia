@@ -38,20 +38,31 @@ class CinterionPS8.Modem : FsoGsm.AbstractModem
         return "<>";
     }
 
+    public override void configureData()
+    {
+      assert( modem_data != null );
+
+      modem_data.simHasReadySignal = true; // ^SSIM READY (enabled by ^SSET=1) or +CIEV: simstatus,5 (enabled by ^SIND="simstatus",1)
+      modem_data.simReadyTimeout = 30; // seconds
+
+      atCommandSequence( "MODEM", "init" ).append( {
+        """^SLED=2""", // enable STATUS LED (non-persistent)
+        """+CFUN=4""", // start in airplane mode with SIM-powered, so GSM resource can be safely requested (for instance by GPS) without registering to the network
+        """^SSET=1""", // enable SIM ready indication
+        """^SIND="nitz",1""", // enable Network Identity and Time Zone indication
+      } );
+
+      atCommandSequence( "MODEM", "shutdown" ).append( {
+        """+CFUN=0""", // put the modem into airplane mode (persistent), so it won't autoregister without user consent when accidentally powered on
+        """^SMSO""" // request shutdown
+      } );
+
+    }
+
     protected override void createChannels()
     {
         var transport = modem_transport_spec.create();
         var parser = new FsoGsm.StateBasedAtParser();
-
-        atCommandSequence( "MODEM", "init" ).append( {
-          """^SLED=2""", // enable STATUS LED (non-persistent)
-          """+CFUN=4"""  // start in airplane mode with SIM-powered, so GSM resource can be safely requested (for instance by GPS) without registering to the network
-        } );
-
-        atCommandSequence( "MODEM", "shutdown" ).append( {
-          """+CFUN=0""", // put the modem into airplane mode (persistent), so it won't autoregister without user consent when accidentally powered on
-          """^SMSO""" // request shutdown
-        } );
 
         new AtChannel( this, CHANNEL_NAME, transport, parser );
 
