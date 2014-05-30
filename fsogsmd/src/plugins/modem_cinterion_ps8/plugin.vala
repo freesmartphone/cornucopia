@@ -47,16 +47,14 @@ class CinterionPS8.Modem : FsoGsm.AbstractModem
 
       atCommandSequence( "MODEM", "init" ).append( {
         """^SLED=2""", // enable STATUS LED (non-persistent)
-        """+CFUN=4""", // start in airplane mode with SIM-powered, so GSM resource can be safely requested (for instance by GPS) without registering to the network
+        """+CFUN=4""", // power up the SIM card
         """^SSET=1""", // enable SIM ready indication
-        """^SIND="nitz",1""", // enable Network Identity and Time Zone indication
+        """^SIND="nitz",1""" // enable Network Identity and Time Zone indication
       } );
 
       atCommandSequence( "MODEM", "shutdown" ).append( {
-        """+CFUN=0""", // put the modem into airplane mode (persistent), so it won't autoregister without user consent when accidentally powered on
-        """^SMSO""" // request shutdown
+        """+CFUN=0""", // put the modem into airplane mode
       } );
-
     }
 
     protected override void createChannels()

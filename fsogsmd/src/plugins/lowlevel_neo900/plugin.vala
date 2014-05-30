@@ -47,7 +47,7 @@ class LowLevel.Neo900 : FsoGsm.LowLevel, FsoFramework.AbstractObject
 
     private bool toggle_modem_power_state( bool desired_power_state)
     {
-        // TODO: power up/down the modem via proper GPIO once the prototype is there
+        // TODO: power up/down the modem via proper ignition line GPIO once the prototype is there
         // for now we have to rely on manual press of power button
 
         var retries = 0;
