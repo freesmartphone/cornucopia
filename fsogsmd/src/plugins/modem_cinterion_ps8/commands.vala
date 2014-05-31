@@ -50,6 +50,11 @@ public class CinterionPlusCSCA : PlusCSCA
         base.parse( response );
         number = Constants.phonenumberTupleToString( decodeString( to_string( "number" ) ), to_int( "ntype" ) );
     }
+
+    public new string issue( string number )
+    {
+        return "+CSCA=\"%s\",%d".printf( encodeString( number ), Constants.determinePhoneNumberType( number ) );
+    }
 }
 
 /**

@@ -51,6 +51,16 @@ namespace CinterionPS8 {
             number = cmd.number;
         }
     }
+    public class CinterionSimSetServiceCenterNumber : AtSimSetServiceCenterNumber
+    {
+        public override async void run( string number ) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
+        {
+            validatePhoneNumber( number );
+            var cmd = modem.createAtCommand<CinterionPlusCSCA>( "+CSCA" );
+            var response = yield modem.processAtCommandAsync( cmd, cmd.issue( number ) );
+            checkResponseOk( cmd, response );
+        }
+    }
 
     /**
     * +CREG doesn't work when in airplane mode, so call it right after +CFUN=1
@@ -80,6 +90,7 @@ namespace CinterionPS8 {
     {
         table[ typeof(CallSendDtmf) ]                   = typeof( CinterionCallSendDtmf );
         table[ typeof(SimGetServiceCenterNumber) ]      = typeof( CinterionSimGetServiceCenterNumber );
+        table[ typeof(SimSetServiceCenterNumber) ]      = typeof( CinterionSimSetServiceCenterNumber );
         table[ typeof(DeviceSetFunctionality) ]         = typeof( CinterionDeviceSetFunctionality );
     }
 
