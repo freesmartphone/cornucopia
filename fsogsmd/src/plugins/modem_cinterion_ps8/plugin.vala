@@ -52,12 +52,22 @@ class CinterionPS8.Modem : FsoGsm.AbstractModem
       modem_data.atCommandReleaseAllHeld = "+CHUP";
 
       registerAtCommandSequence( "MODEM", "init", new AtCommandSequence( {
+        """E0V1""",
+        """+CMEE=1""", // report mobile equipment errors = numerical format
         """^SLED=2""", // enable STATUS LED (non-persistent)
         """+CFUN=4""", // power up the SIM card
         """^SSET=1""", // enable SIM ready indication
         """^SIND="nitz",1""", // enable Network Identity and Time Zone indication (for now to tests)
         """^SCFG="MEopMode/RingOnData","on"""", // set RingOnData - for some reason this one seems to be volatile?
         """^SCFG="MEopMode/PowerMgmt/LCI","enabled"""" // enable Low Current Indicator (aka SLEEP LED), it's volatile as well
+      } ) );
+
+      registerAtCommandSequence( "main", "unlocked", new AtCommandSequence( {
+          "+CRC=1",       // extended cellular result codes = enable
+          "+CLIP=0",      // calling line id present = disable
+          "+CLIR=0",      // calling line id restrict = disable
+          "+COLP=0",      // connected line id present = disable
+          "+CCWA=0"       // call waiting = disable
       } ) );
 
       registerAtCommandSequence( "main", "suspend", new AtCommandSequence( {
