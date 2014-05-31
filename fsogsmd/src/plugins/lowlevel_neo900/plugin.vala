@@ -25,6 +25,8 @@ using FsoGsm;
 class LowLevel.Neo900 : FsoGsm.LowLevel, FsoFramework.AbstractObject
 {
     public const string MODULE_NAME = "fsogsm.lowlevel_neo900";
+    private const int NO_OF_RETRIES = 5;
+    private const int TIME_TO_SLEEP = 2;
     private string modem_node;
     private bool skip_shutdown;
 
@@ -51,20 +53,24 @@ class LowLevel.Neo900 : FsoGsm.LowLevel, FsoFramework.AbstractObject
         // for now we have to rely on manual press of power button
 
         var retries = 0;
-        while ( retries < 5 )
+        while ( retries < NO_OF_RETRIES )
         {
-            assert( logger.debug( "Checking if modem is powered %s ...".printf( desired_power_state ? "on" : "off" ) ) );
+            logger.debug( "Checking if modem is powered %s ...".printf( desired_power_state ? "on" : "off" ) );
 
             if ( ( desired_power_state && FsoFramework.FileHandling.isPresent( modem_node ) ) ||
                  ( !desired_power_state  && !FsoFramework.FileHandling.isPresent( modem_node ) ) )
                 break;
 
-            Posix.sleep( 2 );
+            Posix.sleep( TIME_TO_SLEEP );
 
             retries++;
         }
 
-        return retries < 5;
+        if ( retries == NO_OF_RETRIES ) {
+            logger.error( "Could not set the modem %s!".printf( desired_power_state ? "on" : "off" ) );
+        }
+
+        return retries < NO_OF_RETRIES;
     }
 
     /**
