@@ -49,12 +49,14 @@ class CinterionPS8.Modem : FsoGsm.AbstractModem
         """^SLED=2""", // enable STATUS LED (non-persistent)
         """+CFUN=4""", // power up the SIM card
         """^SSET=1""", // enable SIM ready indication
-        """^SIND="nitz",1""" // enable Network Identity and Time Zone indication
+        """^SIND="nitz",1""", // enable Network Identity and Time Zone indication
+        """^SCFG="MEopMode/RingOnData","on"""" // set RingOnData - for some reason this one seems to be volatile?
       } );
 
       atCommandSequence( "MODEM", "shutdown" ).append( {
         """+CFUN=0""", // put the modem into airplane mode
       } );
+
     }
 
     protected override void createChannels()
