@@ -25,13 +25,17 @@ namespace CinterionPS8
 {
 
 /**
- * ^SMSO: poweroff
+ * +VTS: DTMF and tone generationm
+ * PS8 requires the argument to be enclosed in quotation marks.
  **/
-public class CinterionCarretSMSO : V250terCommand
+public class CinterionPlusVTS : PlusVTS
 {
-  public CinterionCarretSMSO()
+    public new string issue( string tones )
     {
-        base( "^SMSO" );
+        var command = @"+VTS=\"$(tones[0])\"";
+        for ( var n = 1; n < tones.length; n++ )
+            command += @";+VTS=\"$(tones[n])\"";
+        return command;
     }
 }
 
@@ -40,7 +44,7 @@ public class CinterionCarretSMSO : V250terCommand
  **/
 public void registerCustomAtCommands( HashMap<string,AtCommand> table )
 {
-    table[ "^SMSO" ]           = new CinterionCarretSMSO();
+    table[ "+VTS" ]           = new CinterionPlusVTS();
 }
 
 } /* namespace CinterionPS8 */

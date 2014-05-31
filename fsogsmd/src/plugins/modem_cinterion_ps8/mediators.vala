@@ -23,34 +23,49 @@ using Gee;
 
 namespace CinterionPS8 {
 
-  /**
-   * +CREG doesn't work when in airplane mode, so call it right after +CFUN=1
-   **/
-  public class CinterionDeviceSetFunctionality : AtDeviceSetFunctionality
-  {
-    public override async void run(string level, bool autoregister, string pin) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
+    /**
+     * +VTS: DTMF and tone generationm
+     * PS8 requires the argument to be enclosed in quotation marks.
+     **/
+    public class CinterionCallSendDtmf : AtCallSendDtmf
     {
-      yield base.run(level, autoregister, pin);
-      if (level == "full")
-      {
-        modem.logger.debug("Issuing +CREG=2 after setting +CFUN=1...");
-        var regCmd = modem.createAtCommand<PlusCREG>( "+CREG" );
-        var queryanswer = yield modem.processAtCommandAsync( regCmd, regCmd.issue(PlusCREG.Mode.ENABLE_WITH_NETWORK_REGISTRATION_AND_LOCATION) );
-        if ( regCmd.validateOk( queryanswer ) != Constants.AtResponse.OK )
+        public override async void run( string tones ) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
         {
-            modem.logger.error( "Failed to setup network registration reporting; reports will not be available ..." );
+            var cmd = modem.createAtCommand<CinterionPlusVTS>( "+VTS" );
+            var response = yield modem.processAtCommandAsync( cmd, cmd.issue( tones ) );
+            checkResponseOk( cmd, response );
         }
-      }
     }
-  }
 
-  /**
-   * Register all mediators
-   **/
-  public void registerCustomMediators( HashMap<Type,Type> table )
-  {
-    table[ typeof(DeviceSetFunctionality) ]         = typeof( CinterionDeviceSetFunctionality );
-  }
+    /**
+    * +CREG doesn't work when in airplane mode, so call it right after +CFUN=1
+    **/
+    public class CinterionDeviceSetFunctionality : AtDeviceSetFunctionality
+    {
+        public override async void run(string level, bool autoregister, string pin) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
+        {
+            yield base.run(level, autoregister, pin);
+            if (level == "full")
+            {
+                modem.logger.debug("Issuing +CREG=2 after setting +CFUN=1...");
+                var regCmd = modem.createAtCommand<PlusCREG>( "+CREG" );
+                var queryanswer = yield modem.processAtCommandAsync( regCmd, regCmd.issue(PlusCREG.Mode.ENABLE_WITH_NETWORK_REGISTRATION_AND_LOCATION) );
+                if ( regCmd.validateOk( queryanswer ) != Constants.AtResponse.OK )
+                {
+                    modem.logger.error( "Failed to setup network registration reporting; reports will not be available ..." );
+                }
+            }
+        }
+    }
+
+    /**
+    * Register all mediators
+    **/
+    public void registerCustomMediators( HashMap<Type,Type> table )
+    {
+        table[ typeof(CallSendDtmf) ]                   = typeof( CinterionCallSendDtmf );
+        table[ typeof(DeviceSetFunctionality) ]         = typeof( CinterionDeviceSetFunctionality );
+    }
 
 } /* CinterionPS8 */
 
