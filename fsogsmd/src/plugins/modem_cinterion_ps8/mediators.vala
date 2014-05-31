@@ -24,7 +24,7 @@ using Gee;
 namespace CinterionPS8 {
 
     /**
-     * +VTS: DTMF and tone generationm
+     * +VTS: DTMF and tone generation
      * PS8 requires the argument to be enclosed in quotation marks.
      **/
     public class CinterionCallSendDtmf : AtCallSendDtmf
@@ -34,6 +34,21 @@ namespace CinterionPS8 {
             var cmd = modem.createAtCommand<CinterionPlusVTS>( "+VTS" );
             var response = yield modem.processAtCommandAsync( cmd, cmd.issue( tones ) );
             checkResponseOk( cmd, response );
+        }
+    }
+
+    /**
+     * +CSCA: SMS Service Center Address
+     * PS8 returns the number encoded with current channel charset
+     **/
+    public class CinterionSimGetServiceCenterNumber : AtSimGetServiceCenterNumber
+    {
+        public override async void run() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
+        {
+            var cmd = modem.createAtCommand<CinterionPlusCSCA>( "+CSCA" );
+            var response = yield modem.processAtCommandAsync( cmd, cmd.query() );
+            checkResponseValid( cmd, response );
+            number = cmd.number;
         }
     }
 
@@ -64,6 +79,7 @@ namespace CinterionPS8 {
     public void registerCustomMediators( HashMap<Type,Type> table )
     {
         table[ typeof(CallSendDtmf) ]                   = typeof( CinterionCallSendDtmf );
+        table[ typeof(SimGetServiceCenterNumber) ]      = typeof( CinterionSimGetServiceCenterNumber );
         table[ typeof(DeviceSetFunctionality) ]         = typeof( CinterionDeviceSetFunctionality );
     }
 

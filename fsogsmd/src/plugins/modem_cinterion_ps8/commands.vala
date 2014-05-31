@@ -40,11 +40,25 @@ public class CinterionPlusVTS : PlusVTS
 }
 
 /**
+ * +CSCA: SMS Service Center Address
+ * PS8 returns the number encoded with current channel charset
+ **/
+public class CinterionPlusCSCA : PlusCSCA
+{
+    public override void parse( string response ) throws AtCommandError
+    {
+        base.parse( response );
+        number = Constants.phonenumberTupleToString( decodeString( to_string( "number" ) ), to_int( "ntype" ) );
+    }
+}
+
+/**
  * Register all custom commands
  **/
 public void registerCustomAtCommands( HashMap<string,AtCommand> table )
 {
     table[ "+VTS" ]           = new CinterionPlusVTS();
+    table[ "+CSCA" ]          = new CinterionPlusCSCA();
 }
 
 } /* namespace CinterionPS8 */
