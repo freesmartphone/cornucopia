@@ -58,11 +58,14 @@ public class FsoGsm.AtChannel : FsoGsm.AtCommandQueue, FsoGsm.Channel
                 initialize();
                 timeoutID = Timeout.add (5000, onInitTimeout);
                 break;
+            case Modem.Status.ALIVE_SIM_UNLOCKED:
+                simUnlocked();
+                break;
             case Modem.Status.ALIVE_SIM_READY:
                 simIsReady();
                 break;
             case Modem.Status.ALIVE_REGISTERED:
-                simHasRegistered();
+                hasRegistered();
                 break;
             case Modem.Status.CLOSING:
                 shutdown();
@@ -164,11 +167,17 @@ public class FsoGsm.AtChannel : FsoGsm.AtCommandQueue, FsoGsm.Channel
 
     private async void simIsReady()
     {
+        var seq = modem.atCommandSequence( name, "simready" );
+        yield seq.performOnChannel( this );
+    }
+
+    private async void simUnlocked()
+    {
         var seq = modem.atCommandSequence( name, "unlocked" );
         yield seq.performOnChannel( this );
     }
 
-    private async void simHasRegistered()
+    private async void hasRegistered()
     {
         var seq = modem.atCommandSequence( name, "registered" );
         yield seq.performOnChannel( this );
@@ -202,7 +211,7 @@ public class FsoGsm.AtChannel : FsoGsm.AtCommandQueue, FsoGsm.Channel
         response = yield enqueueAsync( cmd, cmd.issue( PlusCREG.Mode.ENABLE_WITH_NETWORK_REGISTRATION ) );
         if ( cmd.validateOk( response ) != Constants.AtResponse.OK )
         {
-            modem.logger.error( "Failed to setup network registration reporting; reports will not be avaible ..." );
+            modem.logger.error( "Failed to setup network registration reporting; reports will not be available ..." );
         }
     }
 

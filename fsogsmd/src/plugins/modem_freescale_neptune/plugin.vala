@@ -82,7 +82,7 @@ class FreescaleNeptune.Modem : FsoGsm.AbstractModem
         } ) );
 
         // sequence for initializing the channel
-        registerAtCommandSequence( "sms", "unlocked", new AtCommandSequence( {
+        registerAtCommandSequence( "sms", "simready", new AtCommandSequence( {
             """+CRRM""",
             //FIXME if this returns an error, we might have no SIM inserted
             """+EPMS?""",
