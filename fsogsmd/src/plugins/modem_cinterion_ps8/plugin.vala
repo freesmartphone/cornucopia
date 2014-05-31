@@ -44,6 +44,12 @@ class CinterionPS8.Modem : FsoGsm.AbstractModem
 
       modem_data.simHasReadySignal = true; // ^SSIM READY (enabled by ^SSET=1) or +CIEV: simstatus,5 (enabled by ^SIND="simstatus",1)
       modem_data.simReadyTimeout = 30; // seconds
+      modem_data.atCommandRejectIncoming = "^SHUP=21,%d"; // release cause "call rejected"
+      modem_data.atCommandRejectIncomingWithId = true;
+      modem_data.atCommandCancelOutgoing = "^SHUP=16,%d"; // release cause "normal call clearing"
+      modem_data.atCommandCancelOutgoingWithId = true;
+      modem_data.atCommandReleaseAllActive = "+CHUP";
+      modem_data.atCommandReleaseAllHeld = "+CHUP";
 
       atCommandSequence( "MODEM", "init" ).append( {
         """^SLED=2""", // enable STATUS LED (non-persistent)

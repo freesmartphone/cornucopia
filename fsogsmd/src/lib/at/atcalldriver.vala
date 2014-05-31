@@ -63,16 +63,36 @@ public class FsoGsm.AtCallDriver : FsoGsm.ICallDriver, FsoFramework.AbstractObje
 
     public async void release_all_held() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
     {
-        var cmd = modem.createAtCommand<PlusCHLD>( "+CHLD" );
-        var response = yield modem.processAtCommandAsync( cmd, cmd.issue( (PlusCHLD.Action) 0 ) );
-        checkResponseOk( cmd, response );
+        var cmd = modem.data().atCommandReleaseAllHeld;
+        if ( cmd != null )
+        {
+            var c1 = new CustomAtCommand();
+            var r1 = yield modem.processAtCommandAsync( c1, cmd );
+            checkResponseOk( c1, r1 );
+        }
+        else
+        {
+            var c2 = modem.createAtCommand<PlusCHLD>( "+CHLD" );
+            var r2 = yield modem.processAtCommandAsync( c2, c2.issue( (PlusCHLD.Action) 0 ) );
+            checkResponseOk( c2, r2 );
+        }
     }
 
     public async void release_all_active() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
     {
-        var cmd = modem.createAtCommand<PlusCHLD>( "+CHLD" );
-        var response = yield modem.processAtCommandAsync( cmd, cmd.issue( (PlusCHLD.Action) 1 ) );
-        checkResponseOk( cmd, response );
+        var cmd = modem.data().atCommandReleaseAllActive;
+        if ( cmd != null )
+        {
+            var c1 = new CustomAtCommand();
+            var r1 = yield modem.processAtCommandAsync( c1, cmd );
+            checkResponseOk( c1, r1 );
+        }
+        else
+        {
+            var c2 = modem.createAtCommand<PlusCHLD>( "+CHLD" );
+            var r2 = yield modem.processAtCommandAsync( c2, c2.issue( (PlusCHLD.Action) 1 ) );
+            checkResponseOk( c2, r2 );
+        }
     }
 
     public async void create_conference() throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
@@ -106,7 +126,7 @@ public class FsoGsm.AtCallDriver : FsoGsm.ICallDriver, FsoFramework.AbstractObje
     public async void cancel_outgoing_with_id( int id ) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
     {
         assert( logger.debug( @"Cancelling outgoing call with ID $id" ) );
-        var cmd = modem.data().atCommandCancelOutgoing;
+        var cmd = modem.data().atCommandCancelOutgoingWithId ? modem.data().atCommandCancelOutgoing.printf(id) : modem.data().atCommandCancelOutgoing;
         if ( cmd != null )
         {
             var c1 = new CustomAtCommand();
@@ -124,7 +144,7 @@ public class FsoGsm.AtCallDriver : FsoGsm.ICallDriver, FsoFramework.AbstractObje
     public async void reject_incoming_with_id( int id ) throws FreeSmartphone.GSM.Error, FreeSmartphone.Error
     {
         assert( logger.debug( @"Rejecting incoming call with ID $id" ) );
-        var cmd = modem.data().atCommandRejectIncoming;
+        var cmd = modem.data().atCommandRejectIncomingWithId ? modem.data().atCommandRejectIncoming.printf(id) : modem.data().atCommandRejectIncoming;
         if ( cmd != null )
         {
             var c1 = new CustomAtCommand();

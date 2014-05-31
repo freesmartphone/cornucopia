@@ -147,7 +147,11 @@ public abstract interface FsoGsm.Modem : FsoFramework.AbstractObject
 
         // Common AT extensions
         public string? atCommandCancelOutgoing;
+        public bool atCommandCancelOutgoingWithId;
         public string? atCommandRejectIncoming;
+        public bool atCommandRejectIncomingWithId;
+        public string? atCommandReleaseAllActive;
+        public string? atCommandReleaseAllHeld;
 
         // Network Information
         public NetworkTimeReport networkTimeReport;
