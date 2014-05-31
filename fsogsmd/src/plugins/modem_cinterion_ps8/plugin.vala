@@ -30,8 +30,8 @@ using FsoGsm;
  **/
 class CinterionPS8.Modem : FsoGsm.AbstractModem
 {
-    private const string CHANNEL_NAME = "main"; // "Modem"
-    private const string URC_CHANNEL_NAME = "urc"; // "Application"
+    private const string CHANNEL_NAME = "main"; // "Modem" (when using two channels) or "Application" (when using only one)
+    private const string URC_CHANNEL_NAME = "urc"; // "Application" (optionally)
 
     public override string repr()
     {
@@ -51,18 +51,28 @@ class CinterionPS8.Modem : FsoGsm.AbstractModem
       modem_data.atCommandReleaseAllActive = "+CHUP";
       modem_data.atCommandReleaseAllHeld = "+CHUP";
 
-      atCommandSequence( "MODEM", "init" ).append( {
+      registerAtCommandSequence( "MODEM", "init", new AtCommandSequence( {
         """^SLED=2""", // enable STATUS LED (non-persistent)
         """+CFUN=4""", // power up the SIM card
         """^SSET=1""", // enable SIM ready indication
-        """^SIND="nitz",1""", // enable Network Identity and Time Zone indication
-        """^SCFG="MEopMode/RingOnData","on"""" // set RingOnData - for some reason this one seems to be volatile?
-      } );
+        """^SIND="nitz",1""", // enable Network Identity and Time Zone indication (for now to tests)
+        """^SCFG="MEopMode/RingOnData","on"""", // set RingOnData - for some reason this one seems to be volatile?
+        """^SCFG="MEopMode/PowerMgmt/LCI","enabled"""" // enable Low Current Indicator (aka SLEEP LED), it's volatile as well
+      } ) );
 
-      atCommandSequence( "MODEM", "shutdown" ).append( {
-        """+CFUN=0""", // put the modem into airplane mode
-      } );
+      registerAtCommandSequence( "main", "suspend", new AtCommandSequence( {
+        """+CREG=0""", // disable network status updates
+        """^SIND="nitz",0""" // disable Network Identity and Time Zone indication
+      } ) );
 
+      registerAtCommandSequence( "main", "resume", new AtCommandSequence( {
+        """+CREG=2""", // enable network status updates
+        """^SIND="nitz",1""" // enable Network Identity and Time Zone indication
+      } ) );
+
+      registerAtCommandSequence( "MODEM", "shutdown", new AtCommandSequence( {
+          """+CFUN=0""", // put the modem into airplane mode
+      } ) );
     }
 
     protected override void createChannels()
@@ -72,12 +82,13 @@ class CinterionPS8.Modem : FsoGsm.AbstractModem
 
         new AtChannel( this, CHANNEL_NAME, transport, parser );
 
+        // we can optionally use second channel to read all URCs
         var modem_urc_access = FsoFramework.theConfig.stringValue( "fsogsm.modem_cinterion_ps8", "modem_urc_access", "" );
         if ( modem_urc_access.length > 0 )
         {
           transport = FsoFramework.TransportSpec.parse( modem_urc_access ).create();
           parser = new FsoGsm.StateBasedAtParser();
-          new AtChannel( this, URC_CHANNEL_NAME, transport, parser );
+          new AtChannel( this, URC_CHANNEL_NAME, transport, parser, true );
         }
     }
 
@@ -98,7 +109,7 @@ class CinterionPS8.Modem : FsoGsm.AbstractModem
 
     protected override FsoGsm.Channel channelForCommand( FsoGsm.AtCommand command, string query )
     {
-        // nothing to round-robin here as we use only one channel ("modem") for sending AT commands
+        // we use only one channel for sending all AT commands
         return channels[ CHANNEL_NAME ];
     }
 }

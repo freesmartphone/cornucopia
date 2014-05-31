@@ -36,6 +36,10 @@ namespace CinterionPS8 {
         modem.logger.debug("Issuing +CREG=2 after setting +CFUN=1...");
         var regCmd = modem.createAtCommand<PlusCREG>( "+CREG" );
         var queryanswer = yield modem.processAtCommandAsync( regCmd, regCmd.issue(PlusCREG.Mode.ENABLE_WITH_NETWORK_REGISTRATION_AND_LOCATION) );
+        if ( regCmd.validateOk( queryanswer ) != Constants.AtResponse.OK )
+        {
+            modem.logger.error( "Failed to setup network registration reporting; reports will not be available ..." );
+        }
       }
     }
   }
