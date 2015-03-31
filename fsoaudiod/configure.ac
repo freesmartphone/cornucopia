@@ -3,7 +3,7 @@ m4_define([fsoaudiod_base_version], [0.13.0])
 m4_define([fsoaudiod_maybe_gitrev], m4_if(fsoaudiod_released, [1], [], [m4_esyscmd([git show-ref --hash=5 HEAD | tr -d '\n\r'])]))
 m4_define([fsoaudiod_version], m4_if(fsoaudiod_released, [1], [fsoaudiod_base_version], [fsoaudiod_base_version-fsoaudiod_maybe_gitrev]))
 
-AC_INIT([fsoaudiod], fsoaudiod_version, [smartphones-userland@linuxtogo.org], [fsoaudiod])
+AC_INIT([fsoaudiod], fsoaudiod_version, [fso@openphoenux.org], [fsoaudiod])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_PREREQ([2.65])
@@ -68,7 +68,7 @@ AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
 PKG_CHECK_MODULES(GEE,
-  gee-1.0 >= $GEE_REQUIRED)
+  gee-0.8 >= $GEE_REQUIRED)
 AC_SUBST(GEE_CFLAGS)
 AC_SUBST(GEE_LIBS)
 

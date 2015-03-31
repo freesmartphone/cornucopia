@@ -19,7 +19,7 @@ gsmvoice_alsa_cmtspeechdata_la_VALAFLAGS = \
 	--vapidir $(top_srcdir)/src/lib \
 	--vapidir $(top_srcdir)/vapi \
 	--pkg glib-2.0 \
-	--pkg gee-1.0 \
+	--pkg gee-0.8 \
 	--pkg fso-glib-1.0 \
 	--pkg fsoframework-2.0 \
 	--pkg fsoaudio-2.0 \
