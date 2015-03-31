@@ -27,7 +27,7 @@ PKG_CHECK_MODULES(DEPS,
   glib-2.0 >= $GLIB_REQUIRED
   gobject-2.0 >= $GLIB_REQUIRED
   gio-2.0 >= $GLIB_REQUIRED
-  gee-1.0 >= $GEE_REQUIRED
+  gee-0.8 >= $GEE_REQUIRED
   dbus-glib-1 >= 0.82
   fsobasics-2.0 >= $FSO_REQUIRED
   fsoframework-2.0 >= $FSO_REQUIRED
