@@ -3,7 +3,7 @@ m4_define([fsonetworkd_base_version], [0.13.0])
 m4_define([fsonetworkd_maybe_gitrev], m4_if(fsonetworkd_released, [1], [], [m4_esyscmd([git show-ref --hash=5 HEAD | tr -d '\n\r'])]))
 m4_define([fsonetworkd_version], m4_if(fsonetworkd_released, [1], [fsonetworkd_base_version], [fsonetworkd_base_version-fsonetworkd_maybe_gitrev]))
 
-AC_INIT([fsonetworkd], fsonetworkd_version, [smartphones-userland@linuxtogo.org], [fsonetworkd])
+AC_INIT([fsonetworkd], fsonetworkd_version, [fso@openphoenux.org], [fsonetworkd])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_PREREQ([2.65])
