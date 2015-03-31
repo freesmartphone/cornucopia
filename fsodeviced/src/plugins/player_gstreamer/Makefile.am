@@ -17,7 +17,7 @@ player_gstreamer_la_VALAFLAGS = \
 	--pkg thread \
 	--pkg gstreamer-0.10 \
 	--pkg glib-2.0 \
-	--pkg gee-1.0 \
+	--pkg gee-0.8 \
 	--pkg fso-glib-1.0 \
 	--pkg fsoframework-2.0 \
 	--pkg fsodevice-2.0 \

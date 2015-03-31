@@ -17,7 +17,7 @@ kernel_idle_la_VALAFLAGS = \
 	--basedir $(top_srcdir) \
 	--vapidir $(top_srcdir)/src/lib \
 	--pkg glib-2.0 \
-	--pkg gee-1.0 \
+	--pkg gee-0.8 \
 	--pkg linux \
 	--pkg fso-glib-1.0 \
 	--pkg fsoresource-2.0 \

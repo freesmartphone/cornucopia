@@ -1,9 +1,9 @@
-m4_define([fsogsmd_released], [0])
-m4_define([fsogsmd_base_version], [0.13.0])
-m4_define([fsogsmd_maybe_gitrev], m4_if(fsogsmd_released, [1], [], [m4_esyscmd([git show-ref --hash=5 HEAD | tr -d '\n\r'])]))
-m4_define([fsogsmd_version], m4_if(fsogsmd_released, [1], [fsogsmd_base_version], [fsogsmd_base_version-fsogsmd_maybe_gitrev]))
+m4_define([fsodeviced_released], [0])
+m4_define([fsodeviced_base_version], [0.13.0])
+m4_define([fsodeviced_maybe_gitrev], m4_if(fsodeviced_released, [1], [], [m4_esyscmd([git show-ref --hash=5 HEAD | tr -d '\n\r'])]))
+m4_define([fsodeviced_version], m4_if(fsodeviced_released, [1], [fsodeviced_base_version], [fsodeviced_base_version-fsodeviced_maybe_gitrev]))
 
-AC_INIT([fsodeviced], fsogsmd_version, [smartphones-userland@linuxtogo.org], [fsodeviced])
+AC_INIT([fsodeviced], fsodeviced_version, [fso@openphoenux.org], [fsodeviced])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_PREREQ([2.65])
@@ -65,7 +65,7 @@ PKG_CHECK_MODULES(GLIB,
   gmodule-2.0 >= $GLIB_REQUIRED
   gobject-2.0 >= $GLIB_REQUIRED
   gio-2.0 >= $GLIB_REQUIRED
-  gee-1.0 >= $GEE_REQUIRED)
+  gee-0.8 >= $GEE_REQUIRED)
 AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
