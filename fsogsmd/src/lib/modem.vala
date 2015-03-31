@@ -25,7 +25,7 @@ namespace FsoGsm
     internal const string PPPD_DEFAULT_COMMAND = "/usr/sbin/pppd";
 
     // This is used to let the plugins define their service dependencies
-    public GLib.List<string> theServiceDependencies = new GLib.List<string>();
+    public GLib.List<string> theServiceDependencies;
 }
 
 /**
@@ -300,6 +300,9 @@ public abstract class FsoGsm.AbstractModem : FsoGsm.Modem, FsoFramework.Abstract
 
     construct
     {
+        // dependencies
+        theServiceDependencies = new GLib.List<string>();
+
         // channel map
         channels = new HashMap<string,FsoGsm.Channel>();
 

@@ -16,7 +16,7 @@ modem_cinterion_mc75_la_VALAFLAGS = \
 	--pkg posix \
 	--pkg glib-2.0 \
 	--pkg gio-2.0 \
-	--pkg gee-1.0 \
+	--pkg gee-0.8 \
 	--pkg fso-glib-1.0 \
 	--pkg gsm0710mux-1.0 \
 	--pkg fsoframework-2.0 \

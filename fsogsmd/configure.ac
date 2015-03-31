@@ -3,13 +3,13 @@ m4_define([fsogsmd_base_version], [0.13.0])
 m4_define([fsogsmd_maybe_gitrev], m4_if(fsogsmd_released, [1], [], [m4_esyscmd([git show-ref --hash=5 HEAD | tr -d '\n\r'])]))
 m4_define([fsogsmd_version], m4_if(fsogsmd_released, [1], [fsogsmd_base_version], [fsogsmd_base_version-fsogsmd_maybe_gitrev]))
 
-AC_INIT([fsogsmd], fsogsmd_version, [smartphones-userland@linuxtogo.org], [fsogsmd])
+AC_INIT([fsogsmd], fsogsmd_version, [fso@openphoenux.org], [fsogsmd])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_PREREQ([2.65])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS(config.h)
-AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip tar-ustar])
+AM_INIT_AUTOMAKE([dist-bzip2 no-dist-gzip tar-ustar subdir-objects])
 AM_MAINTAINER_MODE([enable])
 
 AC_PROG_CC
@@ -77,7 +77,7 @@ AC_SUBST(XML_CFLAGS)
 AC_SUBST(XML_LIBS)
 
 PKG_CHECK_MODULES(GEE,
-  gee-1.0 >= $GEE_REQUIRED)
+  gee-0.8 >= $GEE_REQUIRED)
 AC_SUBST(GEE_CFLAGS)
 AC_SUBST(GEE_LIBS)
 

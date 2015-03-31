@@ -52,22 +52,22 @@ libfsogsm_la_SOURCES = \
 	callhandler.vala \
 	calldriver.vala \
 	\
-	$(top_srcdir)/src/3rdparty/conversions.c \
-	$(top_srcdir)/src/3rdparty/smsutil.c \
-	$(top_srcdir)/src/3rdparty/storage.c \
-	$(top_srcdir)/src/3rdparty/util.c \
+	../3rdparty/conversions.c \
+	../3rdparty/smsutil.c \
+	../3rdparty/storage.c \
+	../3rdparty/util.c \
 	\
-	$(top_srcdir)/src/3rdparty/ppp/crc-ccitt.c \
-	$(top_srcdir)/src/3rdparty/ppp/gathdlc.c \
-	$(top_srcdir)/src/3rdparty/ppp/gatio.c \
-	$(top_srcdir)/src/3rdparty/ppp/gatppp.c \
-	$(top_srcdir)/src/3rdparty/ppp/gatutil.c \
-	$(top_srcdir)/src/3rdparty/ppp/ppp_auth.c \
-	$(top_srcdir)/src/3rdparty/ppp/ppp_cp.c \
-	$(top_srcdir)/src/3rdparty/ppp/ppp_ipcp.c \
-	$(top_srcdir)/src/3rdparty/ppp/ppp_lcp.c \
-	$(top_srcdir)/src/3rdparty/ppp/ppp_net.c \
-	$(top_srcdir)/src/3rdparty/ppp/ringbuffer.c \
+	../3rdparty/ppp/crc-ccitt.c \
+	../3rdparty/ppp/gathdlc.c \
+	../3rdparty/ppp/gatio.c \
+	../3rdparty/ppp/gatppp.c \
+	../3rdparty/ppp/gatutil.c \
+	../3rdparty/ppp/ppp_auth.c \
+	../3rdparty/ppp/ppp_cp.c \
+	../3rdparty/ppp/ppp_ipcp.c \
+	../3rdparty/ppp/ppp_lcp.c \
+	../3rdparty/ppp/ppp_net.c \
+	../3rdparty/ppp/ringbuffer.c \
 	$(NULL)
 libfsogsm_la_VALAFLAGS = \
 	--basedir $(top_srcdir) \
@@ -75,7 +75,7 @@ libfsogsm_la_VALAFLAGS = \
 	--vapidir $(top_srcdir)/src/lib \
 	--pkg glib-2.0 \
 	--pkg gio-2.0 \
-	--pkg gee-1.0 \
+	--pkg gee-0.8 \
 	--pkg fso-glib-1.0 \
 	--pkg fsosystem-2.0 \
 	--pkg fsoframework-2.0 \
