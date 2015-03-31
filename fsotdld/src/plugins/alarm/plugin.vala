@@ -66,7 +66,7 @@ public class AlarmController : FreeSmartphone.Time.Alarm, FsoFramework.AbstractO
 
         logger.info( "created" );
 
-        alarms = new TreeSet<WakeupAlarm>( WakeupAlarm.compare );
+        alarms = new TreeSet<WakeupAlarm>();
     }
 
     public override string repr()
