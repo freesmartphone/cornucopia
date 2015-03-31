@@ -3,7 +3,7 @@ m4_define([fsodatad_base_version], [0.13.0])
 m4_define([fsodatad_maybe_gitrev], m4_if(fsodatad_released, [1], [], [m4_esyscmd([git show-ref --hash=5 HEAD | tr -d '\n\r'])]))
 m4_define([fsodatad_version], m4_if(fsodatad_released, [1], [fsodatad_base_version], [fsodatad_base_version-fsodatad_maybe_gitrev]))
 
-AC_INIT([fsodatad], fsodatad_version, [smartphones-userland@linuxtogo.org], [fsodatad])
+AC_INIT([fsodatad], fsodatad_version, [fso@openphoenux.org], [fsodatad])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_PREREQ([2.65])
@@ -68,7 +68,7 @@ AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
 PKG_CHECK_MODULES(GEE,
-  gee-1.0 >= $GEE_REQUIRED)
+  gee-0.8 >= $GEE_REQUIRED)
 AC_SUBST(GEE_CFLAGS)
 AC_SUBST(GEE_LIBS)
 
