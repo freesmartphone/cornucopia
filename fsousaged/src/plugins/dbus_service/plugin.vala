@@ -55,7 +55,7 @@ public class Controller : FsoFramework.AbstractObject
     private bool disable_on_shutdown;
     private bool wakelock_support;
 
-    private HashMap<string,Resource> resources = new HashMap<string,Resource>( str_hash, str_equal );
+    private HashMap<string,Resource> resources = new HashMap<string,Resource>();
 
     private DBusService.IDBus dbus;
     private FreeSmartphone.Device.IdleNotifier idlenotifier;
@@ -512,7 +512,7 @@ public class Controller : FsoFramework.AbstractObject
         }
 
         // Sort all resources in the list by their priority
-        priorizedResources.sort_with_data( (a, b) => {
+        priorizedResources.sort( (a, b) => {
             int rc = 0;
             Resource ra = a as Resource, rb = b as Resource;
 
