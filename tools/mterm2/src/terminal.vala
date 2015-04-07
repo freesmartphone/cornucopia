@@ -110,8 +110,8 @@ public class Terminal : Object
             return;
         }
 
-        var muxconfig = LinuxExt.Gsm.Config();
-        if ( Linux.ioctl( fd, LinuxExt.Gsm.GSMIOC_GETCONF, &muxconfig ) == -1 )
+        var muxconfig = Linux.Gsm.Config();
+        if ( Linux.ioctl( fd, Linux.Gsm.GSMIOC_GETCONF, &muxconfig ) == -1 )
         {
             quitWithMessage( @"Can't get N_GSM configuration: $(strerror(errno))" );
             Linux.ioctl( fd, Linux.Termios.TIOCSETD, &oldisc );
@@ -121,7 +121,7 @@ public class Terminal : Object
         muxconfig.encapsulation = mode;
         muxconfig.mru = 127;
         muxconfig.mtu = 127;
-        if ( Linux.ioctl( fd, LinuxExt.Gsm.GSMIOC_SETCONF, &muxconfig ) == -1 )
+        if ( Linux.ioctl( fd, Linux.Gsm.GSMIOC_SETCONF, &muxconfig ) == -1 )
         {
             quitWithMessage( @"Can't set N_GSM configuration: $(strerror(errno))" );
             Linux.ioctl( fd, Linux.Termios.TIOCSETD, &oldisc );
@@ -131,7 +131,7 @@ public class Terminal : Object
         fsoMessage( "Creating device nodes... (needs root privileges)" );
         for ( int i = 1; i < 8; ++i )
         {
-            Posix.mknod( @"/dev/ttygsm$i", Posix.S_IFCHR | 0666, LinuxExt.makedev( MKNOD_TTYGSM_MAJOR, i ) );
+            Posix.mknod( @"/dev/ttygsm$i", Posix.S_IFCHR | 0666, Linux.makedev( MKNOD_TTYGSM_MAJOR, i ) );
         }
 
         fsoMessage( "MUX mode established, you can now use /dev/ttygsm[1-n]" );
