@@ -186,7 +186,7 @@ namespace FsoFramework.Network
 
         public void set_power( bool on ) throws FsoFramework.Network.Error
         {
-            var req = LinuxExt.WirelessExtensions.IwReq();
+            var req = Linux.WirelessExtensions.IwReq();
 
             // FIXME we need to use a pointer here as otherwise vala compiles this to
             // something like this:
@@ -194,7 +194,7 @@ namespace FsoFramework.Network
             // struct iwreq _tmp11_;
             // _tmp11_ = iwr; // no reference, direct copy ...
             // strncpy( _tmp11_.ifrn_name, name, ...);
-            var reqp = (LinuxExt.WirelessExtensions.IwReq*)(&req);
+            var reqp = (Linux.WirelessExtensions.IwReq*)(&req);
             strncpy( (string) reqp->ifr_name, name, Linux.Network.INTERFACE_NAME_SIZE );
 
             req.u.power.disabled = on ? 0 : 1;
