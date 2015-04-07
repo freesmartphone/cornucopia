@@ -1,4 +1,9 @@
-AC_INIT([misc-vapi], [0.5.0], [smartphones-userland@linuxtogo.org], [misc-vapi])
+m4_define([misc-vapi_released], [0])
+m4_define([misc-vapi_base_version], [0.5.1])
+m4_define([misc-vapi_maybe_gitrev], m4_if(misc-vapi_released, [1], [], [m4_esyscmd([git show-ref --hash=5 HEAD | tr -d '\n\r'])]))
+m4_define([misc-vapi_version], m4_if(misc-vapi_released, [1], [misc-vapi_base_version], [misc-vapi_base_version-misc-vapi_maybe_gitrev]))
+
+AC_INIT([misc-vapi], misc-vapi_version, [fso@openphoenux.org], [misc-vapi])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS(config.h)
 AM_INIT_AUTOMAKE([dist-bzip2])
@@ -13,19 +18,50 @@ AC_SUBST(CFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(LDFLAGS)
 
-#
-# pkg-config requirements
-#
-PKG_PROG_PKG_CONFIG
+PKG_PROG_PKG_CONFIG([0.21])
+
+#########################################################################################
+# Vala building options -- allows tarball builds without installing vala
+#########################################################################################
+
+VALA_REQUIRED=0.16.0
+
+AC_ARG_ENABLE([vala], AS_HELP_STRING([--enable-vala],[Enable building from Vala sources]),
+              [enable_vala=$enableval], [enable_vala=no])
+
+# Force Vala for non-release builds
+m4_if(fsogsmd_released, [1], [],
+      [
+        enable_vala=yes
+        echo "Vala compiler required for non-release builds; requiring Vala..."
+      ])
+
+if test "x$enable_vala" = "xyes" ; then
+    AM_PROG_VALAC([$VALA_REQUIRED])
+    if test "x$VALAC" = "x" ; then
+        AC_MSG_ERROR([Vala requested but valac is not installed])
+    fi
+fi
+
+AM_CONDITIONAL([HAVE_VALA], [test "x$enable_vala" = "xyes"])
+
+#########################################################################################
+# check for debugging
+#########################################################################################
+
+AC_ARG_ENABLE(debug,
+  [  --enable-debug            Enable debug build (default=disabled)],
+  [enable_debug=$enableval],
+  [enable_debug="no"])
+AM_CONDITIONAL( [WANT_DEBUG], [test x"$enable_debug" = x"yes"])
+
+#########################################################################################
+# Check for various dependencies
+#########################################################################################
+
 VALA_REQUIRED=0.16.0
 GLIB_REQUIRED=2.18.0
 ALSA_REQUIRED=0.20
-
-# vala
-AC_PATH_PROG(VALAC, valac, valac)
-AC_SUBST(VALAC)
-m4_ifdef([AM_PROG_VALAC], [AM_PROG_VALAC([$VALA_REQUIRED])])
-
 # glib and friends
 PKG_CHECK_MODULES(GLIB,
   glib-2.0 >= $GLIB_REQUIRED
@@ -34,7 +70,9 @@ PKG_CHECK_MODULES(GLIB,
 AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
-# shall we compile the tests? [default=yes]
+#########################################################################################
+# optional feature: tests [default=yes]
+#########################################################################################
 AC_ARG_ENABLE(tests,      [  --disable-tests      skip building the tests [[default=no]]])
 AM_CONDITIONAL(MAKE_TESTS, test x$enable_tests != xno)
 AC_MSG_CHECKING([whether to compile the tests])
@@ -49,9 +87,9 @@ else
   AC_MSG_RESULT(no)
 fi
 
-#
+#########################################################################################
 # output
-#
+#########################################################################################
 AC_CONFIG_FILES([Makefile
   tests/Makefile
   vapi/Makefile

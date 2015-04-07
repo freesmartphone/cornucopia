@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2015 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,25 +22,5 @@
  */
 
 using Posix;
-
-[CCode (cprefix = "", lower_case_cprefix = "")]
-namespace PosixExtra {
-
-    /* ------------- netdb --------------- */
-
-    [CCode (cname = "struct hostent", cheader_filename = "netdb.h")]
-    public class HostEnt {
-        public string h_name;
-        [CCode (array_length=false, array_null_terminated=true)]
-        public string[] h_aliases;
-        public int h_addrtype;
-        public int h_length;
-        [CCode (array_length=false, array_null_terminated=true)]
-        public string[] h_addr_list;
-    }
-
-    [CCode (cheader_filename = "netdb.h")]
-    public unowned HostEnt gethostbyname (string name);
-}
 
 // vim:ts=4:sw=4:expandtab
